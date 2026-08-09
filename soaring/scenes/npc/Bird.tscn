@@ -1,0 +1,67 @@
+[gd_scene load_steps=9 format=3 uid="uid://bsoaring_npc_bird"]
+
+[ext_resource type="Script" path="res://scripts/BirdNPC.gd" id="1_npc"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_npc"]
+radius = 0.42
+height = 1.15
+
+[sub_resource type="SphereMesh" id="SphereMesh_body"]
+radius = 0.42
+height = 0.84
+radial_segments = 18
+rings = 12
+
+[sub_resource type="SphereMesh" id="SphereMesh_beak"]
+radius = 0.11
+height = 0.22
+
+[sub_resource type="BoxMesh" id="BoxMesh_wing"]
+size = Vector3(0.95, 0.08, 0.55)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_catch"]
+radius = 1.15
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing"]
+albedo_color = Color(0.88, 0.86, 0.72, 1)
+roughness = 0.82
+
+[node name="Bird" type="CharacterBody3D" groups=["bird"]]
+script = ExtResource("1_npc")
+collision_layer = 2
+collision_mask = 1
+floor_stop_on_slope = false
+floor_constant_speed = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_npc")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_body")
+
+[node name="Beak" type="MeshInstance3D" parent="BodyMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.42)
+mesh = SubResource("SphereMesh_beak")
+
+[node name="Tail" type="MeshInstance3D" parent="BodyMesh"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 0, 0.36)
+mesh = SubResource("SphereMesh_beak")
+
+[node name="WingL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.62, 0.02, 0.02)
+mesh = SubResource("BoxMesh_wing")
+surface_material_override/0 = SubResource("StandardMaterial3D_wing")
+
+[node name="WingR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.62, 0.02, 0.02)
+mesh = SubResource("BoxMesh_wing")
+surface_material_override/0 = SubResource("StandardMaterial3D_wing")
+
+[node name="CatchArea" type="Area3D" parent="."]
+collision_layer = 2
+collision_mask = 2
+monitorable = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CatchArea"]
+shape = SubResource("SphereShape3D_catch")
+

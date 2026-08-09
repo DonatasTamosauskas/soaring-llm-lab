@@ -1,0 +1,63 @@
+[gd_scene load_steps=6 format=3 uid="uid://soaring_main"]
+
+[ext_resource type="Script" path="res://scripts/GameManager.gd" id="1_mgr"]
+[ext_resource type="Script" path="res://scripts/World.gd" id="2_world"]
+[ext_resource type="Script" path="res://scripts/HUD.gd" id="3_hud"]
+[ext_resource type="PackedScene" uid="uid://bsoaring_player" path="res://scenes/player/BirdPlayer.tscn" id="4_player"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_main"]
+sky_top_color = Color(0.18, 0.42, 0.88, 1)
+sky_horizon_color = Color(0.62, 0.78, 1, 1)
+sky_curve = 0.14
+ground_bottom_color = Color(0.18, 0.3, 0.16, 1)
+ground_horizon_color = Color(0.42, 0.58, 0.36, 1)
+sun_amount = 0.85
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ProceduralSkyMaterial_main")
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_source = 2
+ambient_light_color = Color(0.86, 0.89, 0.97, 1)
+ambient_light_energy = 1.18
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.42
+fog_enabled = true
+fog_light_color = Color(0.68, 0.79, 1, 1)
+fog_sun_amount = 0.32
+fog_density = 0.0019
+fog_transmit_enabled = true
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_mgr")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 8, 0)
+light_energy = 1.35
+shadow_enabled = true
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 0, 0)
+light_energy = 0.45
+
+[node name="World" type="Node3D" parent="."]
+script = ExtResource("2_world")
+
+[node name="Ground" type="StaticBody3D" parent="World"]
+collision_layer = 1
+collision_mask = 7
+
+[node name="BirdPlayer" parent="." instance=ExtResource("4_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 18, 0)
+
+[node name="Birds" type="Node3D" parent="."]
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("3_hud")
+layer = 1

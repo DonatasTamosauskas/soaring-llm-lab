@@ -1,0 +1,91 @@
+[gd_scene load_steps=12 format=3 uid="uid://bsoaring_player"]
+
+[ext_resource type="Script" path="res://scripts/BirdPlayer.gd" id="1_player"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.36
+height = 1.05
+
+[sub_resource type="SphereMesh" id="SphereMesh_body_p"]
+radius = 0.34
+height = 0.68
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_beak_p"]
+radius = 0.085
+height = 0.34
+radial_segments = 10
+
+[sub_resource type="BoxMesh" id="BoxMesh_wing_p"]
+size = Vector3(0.82, 0.04, 0.62)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_catch_p"]
+radius = 1.05
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing_p"]
+albedo_color = Color(0.94, 0.94, 0.88, 1)
+roughness = 0.68
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body_p"]
+albedo_color = Color(0.92, 0.78, 0.18, 1)
+roughness = 0.75
+
+[node name="BirdPlayer" type="CharacterBody3D" groups=["player"]]
+script = ExtResource("1_player")
+collision_layer = 2
+collision_mask = 7
+
+[node name="BodyCollision" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_body_p")
+surface_material_override/0 = SubResource("StandardMaterial3D_body_p")
+
+[node name="Beak" type="MeshInstance3D" parent="BodyMesh"]
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 0.02, -0.44)
+mesh = SubResource("CapsuleMesh_beak_p")
+
+[node name="Tail" type="MeshInstance3D" parent="BodyMesh"]
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 0, 0.42)
+mesh = SubResource("CapsuleMesh_beak_p")
+surface_material_override/0 = SubResource("StandardMaterial3D_body_p")
+
+[node name="CatchArea" type="Area3D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CatchArea"]
+shape = SubResource("SphereShape3D_catch_p")
+
+[node name="PerchRay" type="RayCast3D" parent="."]
+target_position = Vector3(0, -1.35, 0)
+collision_mask = 7
+enabled = true
+
+[node name="PerchArea" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PerchArea"]
+shape = SubResource("SphereShape3D_catch_p")
+
+[node name="XROrigin3D" type="XROrigin3D" parent="."]
+
+[node name="XRCamera3D" type="XRCamera3D" parent="XROrigin3D"]
+
+[node name="LeftController" type="XRController3D" parent="XROrigin3D"]
+tracker = &"left_hand"
+pose = &"grip"
+
+[node name="WingMesh" type="MeshInstance3D" parent="XROrigin3D/LeftController"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.06)
+mesh = SubResource("BoxMesh_wing_p")
+surface_material_override/0 = SubResource("StandardMaterial3D_wing_p")
+
+[node name="RightController" type="XRController3D" parent="XROrigin3D"]
+tracker = &"right_hand"
+pose = &"grip"
+
+[node name="WingMesh" type="MeshInstance3D" parent="XROrigin3D/RightController"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.06)
+mesh = SubResource("BoxMesh_wing_p")
+surface_material_override/0 = SubResource("StandardMaterial3D_wing_p")
+
