@@ -99,7 +99,10 @@ func _input(event):
             else:
                 Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
-func _physics_process(delta):
+func _physics_process(delta: float):
+    if not is_finite(delta) or delta <= 0.0:
+        return
+    delta = clamp(delta, 0.0, 0.05)
     _flap_timer = max(0.0, _flap_timer - delta)
 
     var head_basis: Basis
@@ -357,8 +360,14 @@ func _physics_process(delta):
     # --- corrected drag (per-second, not per-tick) ---
     velocity *= (1.0 - clamp(drag_factor * delta * 1.45, 0.0, 0.62))
 
+    # sanitize NaN/INF
+    if not velocity.is_finite():
+        velocity = Vector3.FORWARD * 8.0
     # speed clamp
-    if velocity.length() > max_speed:
+    var _vlen: float = velocity.length()
+    if not is_finite(_vlen):
+        velocity = Vector3.FORWARD * 8.0
+    elif _vlen > max_speed:
         velocity = velocity.normalized() * max_speed
 
     # always keep a tiny forward creep when not perched and not stalled fully, to avoid dead hover
@@ -443,7 +452,11 @@ func _do_flap(power: float, is_sync: bool):
         velocity = velocity.normalized() * max_speed * 1.1
 
 func update_scale():
-    var s = clamp(player_size, 0.65, 3.0)
+    if not is_finite(player_size):
+        player_size = 1.0
+    var s: float = clamp(player_size, 0.65, 3.0)
+    if not is_finite(s):
+        s = 1.0
     scale = Vector3.ONE * s
     if body_collision and body_collision.shape:
         # collision radius scales via node scale, no extra
@@ -476,10 +489,15 @@ func _on_catch_area_entered(area):
     if p and p.has_method("get_bird_size"):
         _try_catch(p)
 
-func _try_catch(other):
-    if not other.has_method("get_bird_size"):
+func _try_catch(other: Node):
+    if other == null or not is_instance_valid(other) or not other.has_method("get_bird_size"):
         return
-    var other_size: float = other.get_bird_size()
+    var _raw = other.get_bird_size()
+    if typeof(_raw) != TYPE_FLOAT and typeof(_raw) != TYPE_INT:
+        return
+    var other_size: float = float(_raw)
+    if not is_finite(other_size):
+        return
     # small grace
     if other_size < player_size * 0.92:
         # we eat them
@@ -504,11 +522,19 @@ func get_bird_size() -> float:
     return player_size
 
 func be_eaten():
-    # player death hook — respawn at safe height
-    global_position = Vector3(randf_range(-18,18), randf_range(18,32), randf_range(-18,18))
-    velocity = Vector3(randf_range(-2,2), 0, randf_range(-4,-1))*2
+    if not is_instance_valid(self):
+        return
+    # respawn at safe height
+    global_position = Vector3(randf_range(-18.0, 18.0), randf_range(18.0, 32.0), randf_range(-18.0, 18.0))
+    var rnd: Vector3 = Vector3(randf_range(-2.0, 2.0), 0.0, randf_range(-4.0, -1.0))
+    velocity = rnd * 2.0
+    if not velocity.is_finite():
+        velocity = Vector3.FORWARD * 6.0
     shrink(0.18)
     print("[Soaring] Player respawned")
 
 func on_ate_player(_player):
     pass
+
+func is_finite(v: float) -> bool:
+    return not is_nan(v) and not is_inf(v)

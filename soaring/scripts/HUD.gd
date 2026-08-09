@@ -78,6 +78,14 @@ func _build_ui():
 func update_hud(p_size: float, eaten: int, speed: float, perched: bool, flaps: int):
     if size_label == null or not is_instance_valid(size_label):
         return
+    # sanitize
+    if not is_finite(p_size):
+        p_size = 1.0
+    if not is_finite(speed):
+        speed = 0.0
+    p_size = clamp(p_size, 0.5, 3.2)
+    eaten = clamp(eaten, 0, 9999)
+    flaps = clamp(flaps, 0, 999999)
     size_label.text = "SIZE  %.2f  ×" % p_size
     size_label.modulate = Color(0.62,1,0.62) if p_size>1.35 else Color(1,1,1) if p_size>0.92 else Color(1,0.9,0.42)
     score_label.text = "CAUGHT  %d   FLAPS %d" % [eaten, flaps]
@@ -86,3 +94,6 @@ func update_hud(p_size: float, eaten: int, speed: float, perched: bool, flaps: i
     state_label.text = "● PERCHED — flap to take off" if perched else ("▲ STALL!" if speed < 5.8 else "◇ GLIDING" if speed < 11 else "✈ SOARING")
     state_label.modulate = Color(0.88,0.62,1) if perched else Color(1,0.42,0.42) if speed < 5.8 else Color(1,1,1)
     hint_label.text = "(Q/E bank • W dive / S climb • SPACE flap • ESC unlock mouse)   — catch smaller, avoid larger"
+
+func is_finite(v: float) -> bool:
+    return not is_nan(v) and not is_inf(v)

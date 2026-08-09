@@ -6,6 +6,10 @@ var _clouds: Array[Node3D] = []
 var _time: float = 0
 
 func _ready():
+    # idempotent: don't rebuild if already built (hot reload guard)
+    if has_meta("_built"):
+        return
+    set_meta("_built", true)
     add_to_group("world")
     _build_ground()
     _place_obstacles()
@@ -303,11 +307,21 @@ func _spawn_clouds():
         add_child(c)
         _clouds.append(c)
 
-func drift(delta):
+func drift(delta: float):
+    if not is_finite(delta) or delta <= 0.0:
+        return
+    delta = clamp(delta, 0.0, 0.05)
     _time += delta
     for c in _clouds:
-        c.position.x += sin(_time*0.06 + c.position.z*0.008)* delta * 1.8
+        if c == null or not is_instance_valid(c):
+            continue
+        if not c.global_position.is_finite():
+            continue
+        c.position.x += sin(_time * 0.06 + c.position.z * 0.008) * delta * 1.8
         c.position.z += delta * 0.55
-        if c.position.z > 210: c.position.z = -210
-        if c.position.x > 210: c.position.x = -210
-        if c.position.x < -210: c.position.x = 210
+        if c.position.z > 210.0: c.position.z = -210.0
+        if c.position.x > 210.0: c.position.x = -210.0
+        if c.position.x < -210.0: c.position.x = 210.0
+
+func is_finite(v: float) -> bool:
+    return not is_nan(v) and not is_inf(v)
