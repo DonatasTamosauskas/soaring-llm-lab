@@ -1,12 +1,14 @@
-# Godot
-/Users/don/Projects/Soaring/soaring/.godot/
-*.tmp
-*.import
-.export/
-build/
-# macOS
-.DS_Store
 .AppleDouble
+.DS_Store
+.export/
 .LSOverride
-# Logs
+*.import
 *.log
+*.tmp
+/Users/don/Projects/Soaring/soaring/.godot/
+# Godot
+# Logs
+# macOS
+build/
+soaring/android/
+soaring/build/

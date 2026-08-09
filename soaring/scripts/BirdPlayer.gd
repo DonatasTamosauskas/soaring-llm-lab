@@ -1,22 +1,22 @@
 extends CharacterBody3D
 
-## Soaring — VR Bird Flight Player
-## Core: flapping via controller vertical velocity, wing tilt for lift/turn.
+## Soaring — VR Bird Flight Player v2
+## Fixed: local-hand flap detection, energy-conserving dive, level sink, bank via hand diff
+## Exposes test hooks: _test_set_hand_local(left_local, right_local, head_basis) and _test_force_flap
 
-# --- Tunables (flight perfected after iteration) ---
 @export var gravity: float = 9.8
-@export var flap_lift: float = 8.5
-@export var flap_thrust: float = 9.0
-@export var flap_threshold: float = 1.8        # m/s down speed to count as flap
-@export var flap_cooldown: float = 0.18
-@export var glide_lift_coeff: float = 0.64
-@export var bank_turn_rate: float = 1.45
-@export var pitch_dive_rate: float = 6.0
-@export var base_drag: float = 0.92
+@export var flap_lift: float = 7.2
+@export var flap_thrust: float = 6.8
+@export var flap_threshold: float = 1.65
+@export var flap_cooldown: float = 0.22
+@export var flap_min_amplitude: float = 0.22  # meters down-stroke required
+@export var glide_lift_coeff: float = 0.55
+@export var bank_turn_rate: float = 1.15
+@export var base_drag: float = 0.82
 @export var stall_speed: float = 5.5
-@export var stall_angle_deg: float = 22.0
-@export var max_speed: float = 26.0
-@export var perch_speed_threshold: float = 3.2
+@export var stall_angle_deg: float = 24.0
+@export var max_speed: float = 28.0
+@export var perch_speed_threshold: float = 3.4
 
 # --- nodes ---
 @onready var xr_origin: XROrigin3D = $XROrigin3D
@@ -28,9 +28,7 @@ extends CharacterBody3D
 @onready var body_collision: CollisionShape3D = $BodyCollision
 @onready var catch_area: Area3D = $CatchArea
 @onready var perch_ray: RayCast3D = $PerchRay
-@onready var perch_shape: Area3D = $PerchArea
 
-# visual
 @onready var body_mesh: MeshInstance3D = $BodyMesh
 @onready var beak_mesh: MeshInstance3D = $BodyMesh/Beak
 @onready var tail_mesh: MeshInstance3D = $BodyMesh/Tail
@@ -41,56 +39,74 @@ var score: int = 0
 var is_perched: bool = false
 var flap_count: int = 0
 
-# flight internal
-var _prev_left_y: float = 0.0
-var _prev_right_y: float = 0.0
-var _left_vel_y: float = 0.0
-var _right_vel_y: float = 0.0
-var _last_left_pos: Vector3 = Vector3.ZERO
-var _last_right_pos: Vector3 = Vector3.ZERO
+# internal
 var _flap_timer: float = 0.0
 var _has_prev: bool = false
+var _left_local_prev: Vector3 = Vector3.ZERO
+var _right_local_prev: Vector3 = Vector3.ZERO
+var _left_vel_local_y: float = 0.0
+var _right_vel_local_y: float = 0.0
 var _xr_active: bool = false
 var _desktop_yaw: float = 0.0
 var _desktop_pitch: float = 0.0
 var _bank_smooth: float = 0.0
 var _pitch_smooth: float = 0.0
 var _speed_smooth: float = 0.0
+var _test_override: bool = false
+var _test_left_local: Vector3 = Vector3.ZERO
+var _test_right_local: Vector3 = Vector3.ZERO
+var _test_head_basis: Basis = Basis.IDENTITY
+
+# Per-hand flap state machine
+class HandFlapState:
+    var peak_y: float = 0.0
+    var trough_y: float = 0.0
+    var moving_down: bool = false
+    var max_down_speed: float = 0.0
+    var last_y: float = 0.0
+    var has_prev: bool = false
+
+var _left_hand_state: HandFlapState = HandFlapState.new()
+var _right_hand_state: HandFlapState = HandFlapState.new()
+var _last_sync_time: float = -999.0
 
 signal bird_caught(value: int, new_size: float)
 signal player_caught_by(bigger_size: float)
 signal size_changed(new_size: float)
 
 func _ready():
-    # XR init
     var xr_interface = XRServer.find_interface("OpenXR")
     if xr_interface and xr_interface.is_initialized():
         get_viewport().use_xr = true
         _xr_active = true
-        print("[Soaring] XR active — wing flight enabled")
+        print("[Soaring v2] XR active — LOCAL-hand flap + energy dive")
     else:
-        # fallback: try enable anyway
         if xr_interface:
             get_viewport().use_xr = true
             _xr_active = xr_interface.is_initialized()
-        print("[Soaring] Desktop fallback — mouse + space to flap")
-    # input mouse capture for desktop
+        print("[Soaring v2] Desktop fallback — mouse + space")
     if not _xr_active:
         Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-    # collisions
-    catch_area.body_entered.connect(_on_catch_area_body_entered)
-    catch_area.area_entered.connect(_on_catch_area_entered)
-    # perch ray
+    if catch_area:
+        if not catch_area.body_entered.is_connected(_on_catch_area_body_entered):
+            catch_area.body_entered.connect(_on_catch_area_body_entered)
+        if not catch_area.area_entered.is_connected(_on_catch_area_entered):
+            catch_area.area_entered.connect(_on_catch_area_entered)
     if perch_ray:
         perch_ray.enabled = true
     add_to_group("player")
     update_scale()
+    # Ensure no initial false flap
+    _has_prev = false
+    _flap_timer = 0.22
 
 func _input(event):
+    if _test_override:
+        return
     if not _xr_active:
         if event is InputEventMouseMotion:
-            _desktop_yaw -= event.relative.x * 0.003
-            _desktop_pitch = clamp(_desktop_pitch - event.relative.y * 0.003, deg_to_rad(-80), deg_to_rad(60))
+            _desktop_yaw -= event.relative.x * 0.0032
+            _desktop_pitch = clamp(_desktop_pitch - event.relative.y * 0.0032, deg_to_rad(-78), deg_to_rad(58))
         if event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
             _do_flap(1.0, true)
         if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -99,6 +115,31 @@ func _input(event):
             else:
                 Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
+# ---- TEST HOOKS ----
+func _test_set_hand_local(left_local: Vector3, right_local: Vector3, head_basis: Basis):
+    _test_override = true
+    _test_left_local = left_local
+    _test_right_local = right_local
+    _test_head_basis = head_basis
+
+func _test_clear_override():
+    _test_override = false
+
+func _test_force_flap(power: float = 1.0):
+    _do_flap(power, true)
+
+func _test_get_state() -> Dictionary:
+    return {
+        "velocity": velocity,
+        "position": global_position,
+        "is_perched": is_perched,
+        "flap_count": flap_count,
+        "bank_smooth": _bank_smooth,
+        "pitch_smooth": _pitch_smooth,
+        "speed": velocity.length(),
+        "player_size": player_size,
+    }
+
 func _physics_process(delta: float):
     if not is_finite(delta) or delta <= 0.0:
         return
@@ -106,350 +147,402 @@ func _physics_process(delta: float):
     _flap_timer = max(0.0, _flap_timer - delta)
 
     var head_basis: Basis
-    var cam_pos: Vector3
-    var left_pos: Vector3
-    var right_pos: Vector3
+    var left_local: Vector3
+    var right_local: Vector3
     var left_basis: Basis
     var right_basis: Basis
 
-    if _xr_active and left_ctrl and right_ctrl:
-        # XR poses are auto-updated by Godot — use global positions
-        left_pos = left_ctrl.global_position
-        right_pos = right_ctrl.global_position
-        left_basis = left_ctrl.global_transform.basis
-        right_basis = right_ctrl.global_transform.basis
-        cam_pos = xr_camera.global_position
-        head_basis = xr_camera.global_transform.basis
-    else:
-        # Desktop: simulate hands in front of camera, driven by yaw/pitch
-        var base = global_position + Vector3(0, 0.35, 0) # chest
-        head_basis = Basis.from_euler(Vector3(_desktop_pitch, _desktop_yaw, 0))
-        cam_pos = global_position + Vector3(0, 0.55, 0)
-        # simulate wing positions: hands 0.7m in front, 0.6 apart
-        var forward = -head_basis.z
-        var right = head_basis.x
-        var up = head_basis.y
-        # add breathing bob
-        var bob = sin(Time.get_ticks_msec() / 700.0) * 0.04 if is_perched else 0
-        left_pos = base + forward * 0.45 + right * -0.65 + up * bob
-        right_pos = base + forward * 0.45 + right * 0.65 + up * bob
+    if _test_override:
+        left_local = _test_left_local
+        right_local = _test_right_local
+        head_basis = _test_head_basis
         left_basis = head_basis
         right_basis = head_basis
-        # mouse wheel / Q E for simulated bank for desktop tuning
-        if Input.is_key_pressed(KEY_Q):
-            left_pos.y -= 0.25
-            right_pos.y += 0.25
-        if Input.is_key_pressed(KEY_E):
-            left_pos.y += 0.25
-            right_pos.y -= 0.25
-        if Input.is_key_pressed(KEY_W):
-            # pitched forward dive
-            head_basis = Basis.from_euler(Vector3(deg_to_rad(-24), _desktop_yaw, 0))
-        if Input.is_key_pressed(KEY_S):
-            head_basis = Basis.from_euler(Vector3(deg_to_rad(28), _desktop_yaw, 0))
-
-    # --- flap detection (XR) ---
-    if _xr_active:
-        if _has_prev:
-            _left_vel_y = (left_pos.y - _last_left_pos.y) / delta
-            _right_vel_y = (right_pos.y - _last_right_pos.y) / delta
-            var left_down_speed = max(0.0, -_left_vel_y)
-            var right_down_speed = max(0.0, -_right_vel_y)
-            # check cooldown
-            if _flap_timer <= 0.0:
-                var flap_power_left = clamp((left_down_speed - 0.4) / flap_threshold, 0.0, 1.7)
-                var flap_power_right = clamp((right_down_speed - 0.4) / flap_threshold, 0.0, 1.7)
-                var triggered = false
-                var power: float = 0
-                var is_sync: bool = false
-                if left_down_speed > flap_threshold and right_down_speed > flap_threshold:
-                    # synchronous powerful flap
-                    power = (flap_power_left + flap_power_right) * 0.5 * 1.25
-                    # bonus if hands are separated (wingspan)
-                    var spread = clamp(left_pos.distance_to(right_pos) / 1.4, 0.35, 1.0)
-                    power *= lerp(0.75, 1.0, spread)
-                    triggered = true
-                    is_sync = true
-                elif left_down_speed > flap_threshold * 1.15:
-                    power = flap_power_left * 0.7
-                    triggered = true
-                elif right_down_speed > flap_threshold * 1.15:
-                    power = flap_power_right * 0.7
-                    triggered = true
-
-                if triggered and power > 0.35:
-                    _do_flap(power, is_sync)
-                    _flap_timer = flap_cooldown
-                    # haptics
-                    if left_ctrl and right_ctrl:
-                        if is_sync:
-                            left_ctrl.trigger_haptic_pulse("haptic", 0.6, 80, 0, 0)
-                            right_ctrl.trigger_haptic_pulse("haptic", 0.6, 80, 0, 0)
-                        else:
-                            if left_down_speed > flap_threshold:
-                                left_ctrl.trigger_haptic_pulse("haptic", 0.35, 55, 0, 0)
-                            if right_down_speed > flap_threshold:
-                                right_ctrl.trigger_haptic_pulse("haptic", 0.35, 55, 0, 0)
-
-        _last_left_pos = left_pos
-        _last_right_pos = right_pos
-        _has_prev = true
+    elif _xr_active and left_ctrl and right_ctrl and xr_origin and xr_camera and is_instance_valid(left_ctrl) and is_instance_valid(right_ctrl):
+        # LOCAL hand pos relative to XROrigin (player body) — eliminates world drift contamination
+        left_local = xr_origin.to_local(left_ctrl.global_position)
+        right_local = xr_origin.to_local(right_ctrl.global_position)
+        left_basis = left_ctrl.global_transform.basis
+        right_basis = right_ctrl.global_transform.basis
+        head_basis = xr_camera.global_transform.basis
     else:
-        # desktop auto-spread detection via W/S/Q/E already; space handled in _input
-        # also hold flap with left mouse or space
-        if Input.is_action_pressed("flap") or Input.is_key_pressed(KEY_SPACE) or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-            if _flap_timer <= 0:
-                _do_flap(1.0, true)
-                _flap_timer = 0.22
+        # Desktop simulated hands relative to body (stored directly as local)
+        var forward = Basis.from_euler(Vector3(_desktop_pitch, _desktop_yaw, 0)).z * -1
+        var right_vec = Basis.from_euler(Vector3(0, _desktop_yaw, 0)).x
+        var up_vec = Vector3.UP
+        # hands 0.65m apart, 0.45 forward, local space
+        left_local = Vector3(-0.62, 0.02, -0.45)  # x,y,z in local (z forward negative?)
+        right_local = Vector3(0.62, 0.02, -0.45)
+        # apply Q/E bank offset in local
+        if Input.is_key_pressed(KEY_Q):
+            left_local.y -= 0.28
+            right_local.y += 0.28
+        if Input.is_key_pressed(KEY_E):
+            left_local.y += 0.28
+            right_local.y -= 0.28
+        # convert to global for head basis but keep local for flap
+        head_basis = Basis.from_euler(Vector3(_desktop_pitch, _desktop_yaw, 0))
+        if Input.is_key_pressed(KEY_W):
+            head_basis = Basis.from_euler(Vector3(deg_to_rad(-28), _desktop_yaw, 0))
+        elif Input.is_key_pressed(KEY_S):
+            head_basis = Basis.from_euler(Vector3(deg_to_rad(30), _desktop_yaw, 0))
+        left_basis = head_basis
+        right_basis = head_basis
+        # For desktop also set left/right global for bank calc compatibility
+        # but flap detection uses local y
 
-    # --- aerodynamics ---
-    # wing metrics
-    var wing_span_dist = left_pos.distance_to(right_pos)
-    var wing_spread = clamp(wing_span_dist / 1.45, 0.0, 1.0)
-    # average wing up (lift direction)
+    # --- robust flap detection (local y, amplitude-gated) ---
+    if _has_prev:
+        _left_vel_local_y = (left_local.y - _left_local_prev.y) / delta
+        _right_vel_local_y = (right_local.y - _right_local_prev.y) / delta
+    else:
+        _left_vel_local_y = 0.0
+        _right_vel_local_y = 0.0
+        # init hand states
+        _left_hand_state.last_y = left_local.y
+        _left_hand_state.peak_y = left_local.y
+        _left_hand_state.trough_y = left_local.y
+        _left_hand_state.has_prev = true
+        _right_hand_state.last_y = right_local.y
+        _right_hand_state.peak_y = right_local.y
+        _right_hand_state.trough_y = right_local.y
+        _right_hand_state.has_prev = true
+
+    # Update hand state machines for flap stroke detection
+    var left_flapped: bool = false
+    var right_flapped: bool = false
+    var left_power: float = 0.0
+    var right_power: float = 0.0
+    if _flap_timer <= 0.0:
+        left_flapped = _update_hand_flap(_left_hand_state, left_local.y, _left_vel_local_y, delta, left_power)
+        if left_flapped:
+            left_power = _get_last_power(_left_hand_state)
+        right_flapped = _update_hand_flap(_right_hand_state, right_local.y, _right_vel_local_y, delta, right_power)
+        if right_flapped:
+            right_power = _get_last_power(_right_hand_state)
+
+        var now_t: float = Time.get_ticks_msec() / 1000.0
+        if left_flapped and right_flapped:
+            var power: float = (left_power + right_power) * 0.5 * 1.22
+            var hand_dist: float = left_local.distance_to(right_local)
+            var spread: float = clamp(hand_dist / 1.35, 0.25, 1.0)
+            power *= lerp(0.82, 1.0, spread)
+            _do_flap(clamp(power, 0.55, 1.85), true)
+            _flap_timer = flap_cooldown
+            _last_sync_time = now_t
+            if _xr_active and left_ctrl and right_ctrl and is_instance_valid(left_ctrl) and is_instance_valid(right_ctrl):
+                left_ctrl.trigger_haptic_pulse("haptic", 0.55, 75, 0.0, 0)
+                right_ctrl.trigger_haptic_pulse("haptic", 0.55, 75, 0.0, 0)
+        elif left_flapped and (now_t - _last_sync_time) > 0.24:
+            _do_flap(clamp(left_power * 0.72, 0.45, 1.35), false)
+            _flap_timer = flap_cooldown * 0.85
+            if _xr_active and left_ctrl and is_instance_valid(left_ctrl):
+                left_ctrl.trigger_haptic_pulse("haptic", 0.32, 50, 0, 0)
+        elif right_flapped and (now_t - _last_sync_time) > 0.24:
+            _do_flap(clamp(right_power * 0.72, 0.45, 1.35), false)
+            _flap_timer = flap_cooldown * 0.85
+            if _xr_active and right_ctrl and is_instance_valid(right_ctrl):
+                right_ctrl.trigger_haptic_pulse("haptic", 0.32, 50, 0, 0)
+    else:
+        _advance_hand_state(_left_hand_state, left_local.y, _left_vel_local_y)
+        _advance_hand_state(_right_hand_state, right_local.y, _right_vel_local_y)
+
+    # Desktop space flap override — respects cooldown
+    if not _test_override and not _xr_active:
+        if Input.is_action_pressed("flap") or Input.is_key_pressed(KEY_SPACE) or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+            if _flap_timer <= 0.0:
+                _do_flap(1.0, true)
+                _flap_timer = 0.24
+
+    _left_local_prev = left_local
+    _right_local_prev = right_local
+    _has_prev = true
+
+    # --- wing metrics (spread & bank & pitch) ---
+    var hand_dist_local: float = left_local.distance_to(right_local)
+    var wing_spread: float = clamp(hand_dist_local / 1.35, 0.18, 1.0)
+    # hand diff bank (most reliable)
+    var hand_diff: float = right_local.y - left_local.y
+    var bank_from_hands: float = clamp(hand_diff * 1.85, -1.0, 1.0) * deg_to_rad(42)
+    # wing roll bank from average wing up (for XR roll)
     var avg_wing_up: Vector3 = (left_basis.y + right_basis.y) * 0.5
     if avg_wing_up.length_squared() < 0.001:
         avg_wing_up = Vector3.UP
     else:
         avg_wing_up = avg_wing_up.normalized()
+    var bank_from_wing: float = atan2(avg_wing_up.x, avg_wing_up.y)
+    # Blend: trust hands diff 60% + wing roll 40% in XR, 100% hands in desktop
+    var bank_angle: float
+    if _xr_active:
+        bank_angle = bank_from_hands * 0.62 + bank_from_wing * 0.38
+    else:
+        bank_angle = bank_from_hands
+    _bank_smooth = lerp(_bank_smooth, bank_angle, delta * 4.8)
 
-    # bank angle from avg wing up tilt (roll)
-    var bank_angle = atan2(avg_wing_up.x, avg_wing_up.y) # rad, -PI..PI
-    # desktop Q/E bank override: use hand height diff
-    if not _xr_active:
-        var hand_bank = clamp((right_pos.y - left_pos.y) * 2.2, -1.0, 1.0)
-        bank_angle = hand_bank * deg_to_rad(45)
+    # pitch
+    var head_pitch: float = asin(clamp((-head_basis.z).y, -1.0, 1.0))
+    var avg_wing_forward: Vector3 = -(left_basis.z + right_basis.z) * 0.5
+    if avg_wing_forward.length_squared() > 0.001:
+        avg_wing_forward = avg_wing_forward.normalized()
+    else:
+        avg_wing_forward = -head_basis.z
+    var wing_pitch: float = asin(clamp(avg_wing_forward.y, -1.0, 1.0))
+    var combined_pitch: float = head_pitch * 0.72 + wing_pitch * 0.28
+    _pitch_smooth = lerp(_pitch_smooth, combined_pitch, delta * 3.6)
 
-    _bank_smooth = lerp(_bank_smooth, bank_angle, delta * 4.0)
+    var airspeed: float = velocity.length()
+    _speed_smooth = lerp(_speed_smooth, airspeed, delta * 2.8)
 
-    # pitch: from head / wing forward pitch
-    # head pitch: look down = dive
-    var head_forward = -head_basis.z
-    head_forward.y = 0
-    head_forward = head_forward.normalized() if head_forward.length_squared() > 0.001 else Vector3.FORWARD
-    var head_pitch = asin(clamp((-head_basis.z).y, -1.0, 1.0)) # positive when looking up
-    # wing pitch (AoA): average of wing normals vs -forward
-    var avg_wing_forward = -(left_basis.z + right_basis.z) * 0.5
-    avg_wing_forward = avg_wing_forward.normalized()
-    var wing_pitch = asin(clamp(avg_wing_forward.y, -1.0, 1.0))
-    var combined_pitch = head_pitch * 0.65 + wing_pitch * 0.35
-    _pitch_smooth = lerp(_pitch_smooth, combined_pitch, delta * 3.2)
-
-    var airspeed = velocity.length()
-    _speed_smooth = lerp(_speed_smooth, airspeed, delta * 2.5)
-
-    # --- perching check ---
-    var can_perch = false
+    # --- perching ---
+    var can_perch: bool = false
+    var perch_collider: Node = null
     if perch_ray and perch_ray.is_colliding():
-        var d = perch_ray.get_collision_point().distance_to(global_position)
-        if airspeed < perch_speed_threshold * 1.2 and d < 2.2:
+        var d: float = perch_ray.get_collision_point().distance_to(global_position)
+        perch_collider = perch_ray.get_collider()
+        if airspeed < perch_speed_threshold * 1.15 and d < 2.4 and perch_collider and perch_collider.is_in_group("perch"):
             can_perch = true
 
-    # if perched: lock unless flap
     if is_perched:
-        # damp motion
-        velocity = velocity.lerp(Vector3.ZERO, delta * 4.0)
-        if airspeed > 0.5:
+        velocity = velocity.lerp(Vector3.ZERO, delta * 5.0)
+        if airspeed > 0.25:
             move_and_slide()
-        # check take-off already handled in _do_flap (it unperches)
-        # also auto-unperch if looking away and small input
-        if not _xr_active and Input.is_key_pressed(KEY_SPACE):
+        if not _test_override and Input.is_key_pressed(KEY_SPACE) and not _xr_active:
             is_perched = false
-        if perch_ray and not perch_ray.is_colliding():
-            # still allow staying if over air? but if player moves off branch, fall
-            pass
-        # slight bob
         return
 
-    # Try to auto-perch if slow and near branch and not flapping recently
-    if can_perch and airspeed < perch_speed_threshold and _flap_timer > 0.32:
-        # require wings somewhat level?
-        if abs(_bank_smooth) < deg_to_rad(28):
-            if perch_ray.get_collider() and perch_ray.get_collider().is_in_group("perch"):
-                is_perched = true
-                velocity = Vector3.ZERO
-                print("[Soaring] Perched on ", perch_ray.get_collider().name)
-                return
+    if can_perch and airspeed < perch_speed_threshold and _flap_timer > 0.34:
+        if abs(_bank_smooth) < deg_to_rad(30):
+            is_perched = true
+            velocity = Vector3.ZERO
+            print("[Soaring v2] Perched on ", perch_collider.name if perch_collider else "?")
+            return
 
-    # --- gravity & lift ---
-    # base gravity
-    var accel = Vector3(0, -gravity, 0)
-
-    # lift: opposing gravity when you have airspeed + wing spread + correct AoA
-    # stall handling
-    var aoa_deg = rad_to_deg(abs(combined_pitch)) # roughly
-    var is_stall = (airspeed < stall_speed and aoa_deg > stall_angle_deg) or (airspeed < 2.0 and wing_spread < 0.35)
+    # --- aerodynamics (energy-conserving) ---
+    var aoa_deg: float = rad_to_deg(abs(combined_pitch))
+    var is_stall: bool = (airspeed < stall_speed and aoa_deg > stall_angle_deg) or (airspeed < 2.2 and wing_spread < 0.32)
     var lift_eff: float = 1.0
     if is_stall:
-        lift_eff = 0.28
+        lift_eff = 0.24
     else:
-        # high AoA reduces efficiency slightly at high speed
-        lift_eff = clamp(1.0 - max(0, aoa_deg - 14) * 0.018, 0.45, 1.0)
+        lift_eff = clamp(1.0 - max(0.0, aoa_deg - 15.0) * 0.018, 0.42, 1.0)
 
-    # spread bonus: too tucked = no lift
-    var spread_lift = lerp(0.18, 1.0, wing_spread)
+    var spread_lift: float = lerp(0.14, 1.0, wing_spread)
 
-    var lift_mag = 0.0
-    if airspeed > 0.7:
-        # classic: lift ~ v * coeff * spread * efficiency, tuned so level glide ~86% gravity at 13 m/s
-        lift_mag = airspeed * glide_lift_coeff * spread_lift * lift_eff * (1.0 + clamp(airspeed * 0.012, 0, 0.24))
-        # pitch modifier: pitched up (positive) gives a touch more lift but more drag; pitched down trades lift for thrust
-        if _pitch_smooth > 0:
-            lift_mag *= 1.0 + clamp(_pitch_smooth * 0.55, 0, 0.35)
-        else:
-            lift_mag *= 1.0 + clamp(_pitch_smooth * 0.35, -0.28, 0) # dive loses lift
+    var accel: Vector3 = Vector3(0, -gravity, 0)
 
-    # lift vector is primarily up, but tilted with bank
+    var lift_mag: float = 0.0
+    if airspeed > 0.65:
+        lift_mag = airspeed * glide_lift_coeff * spread_lift * lift_eff * (1.0 + clamp(airspeed * 0.011, 0.0, 0.22))
+        if _pitch_smooth > 0.08:
+            lift_mag *= 1.0 + clamp(_pitch_smooth * 0.42, 0.0, 0.28)
+        elif _pitch_smooth < -0.08:
+            lift_mag *= clamp(1.0 + _pitch_smooth * 0.52, 0.62, 1.0)  # dive reduces lift
+
+    # stall: lift is mushy and tilted randomly
     var lift_vec: Vector3
     if is_stall:
-        lift_vec = Vector3.UP * lift_mag * 0.55 + avg_wing_up * lift_mag * 0.45
+        lift_vec = Vector3.UP * lift_mag * 0.42 + avg_wing_up * lift_mag * 0.22
     else:
-        # blend between world up and wing up based on bank severity
-        var bank_factor = clamp(abs(_bank_smooth) / deg_to_rad(55), 0, 1)
-        lift_vec = Vector3.UP.lerp(avg_wing_up, bank_factor * 0.92) * lift_mag
+        var bank_factor: float = clamp(abs(_bank_smooth) / deg_to_rad(52), 0.0, 1.0)
+        lift_vec = Vector3.UP.lerp(avg_wing_up, bank_factor * 0.88) * lift_mag
 
     accel += lift_vec
 
-    # --- thrust & pitch dive ---
-    # when pitched down, convert altitude to speed (dive)
-    if _pitch_smooth < -0.12:
-        var dive_strength = clamp(-_pitch_smooth * 1.8, 0, 1.0)
-        # more dive = more forward accel
-        var dive_thrust = head_basis.z * 0.0 # placeholder
-        # forward direction is head forward horizontal
-        var horiz_forward = -head_basis.z
-        horiz_forward.y = 0
-        if horiz_forward.length_squared() > 0.001:
-            horiz_forward = horiz_forward.normalized()
-            accel += horiz_forward * dive_strength * pitch_dive_rate * lerp(0.9, 1.35, clamp(airspeed/16, 0, 1))
-        # also add downwards accel a bit (gravity assist)
-        accel.y -= dive_strength * 2.4
+    # --- dive / climb energy exchange ---
+    # Use component of gravity along forward to trade altitude for speed
+    var forward: Vector3 = -head_basis.z
+    # ensure forward is roughly normalized
+    if forward.length_squared() > 0.001:
+        forward = forward.normalized()
+    else:
+        forward = Vector3.FORWARD
+    # dive: when pitch negative, gravity component along forward accelerates you
+    if _pitch_smooth < -0.10:
+        var dive_factor: float = clamp(-_pitch_smooth / deg_to_rad(34), 0.0, 1.0)
+        # thrust from gravity projected onto forward — energy conserving
+        var grav_along_forward: float = gravity * -forward.y  # positive when forward points down
+        if grav_along_forward < 0:
+            grav_along_forward = 0
+        # scale with speed (more energy to gain at moderate speeds)
+        var dive_thrust: float = grav_along_forward * dive_factor * 0.88 * lerp(0.85, 1.25, clamp(airspeed / 18.0, 0.0, 1.0))
+        # apply along forward (mostly horizontal + down)
+        accel += forward * dive_thrust
+        # slight extra down accel already comes from lift reduction above
+    elif _pitch_smooth > 0.18 and airspeed > 7.0:
+        # climb: convert speed to altitude — induce drag
+        var climb_factor: float = clamp(_pitch_smooth / deg_to_rad(28), 0.0, 1.0)
+        # bleed speed
+        var bleed: float = climb_factor * 3.4 * clamp(airspeed / 14.0, 0.4, 1.2)
+        if velocity.length_squared() > 0.001:
+            accel -= velocity.normalized() * bleed
 
-    # slight pitch-up climb requires speed bleed
-    if _pitch_smooth > 0.18 and airspeed > 7:
-        var climb_drag = clamp(_pitch_smooth * 2.0, 0, 1)
-        # converting speed to altitude: reduce forward speed but lift helps hold
-        accel -= velocity.normalized() * climb_drag * 2.2
-
-    # --- turning from bank ---
-    if abs(_bank_smooth) > 0.08:
-        var turn_power = _bank_smooth * bank_turn_rate * clamp(airspeed / 7.0, 0.35, 1.6)
-        # lateral accel
-        var right_dir = head_basis.x
-        accel += right_dir * turn_power * 7.0
-        # yaw rotation (banked turn): rotate velocity vector
-        var yaw_rate = turn_power * 0.9
-        # apply yaw to the character's facing (so head yaw follows turn)
+    # --- banked turn ---
+    if abs(_bank_smooth) > 0.07:
+        var turn_power: float = _bank_smooth * bank_turn_rate * clamp(airspeed / 8.0, 0.3, 1.65)
+        var right_dir: Vector3 = head_basis.x
+        # bank creates lateral acceleration (coordinated turn)
+        accel += right_dir * turn_power * 8.2
+        var yaw_rate: float = turn_power * 0.86
         if not _xr_active:
             _desktop_yaw += yaw_rate * delta
         else:
-            # in VR, we yaw the whole player body so forward aligns with velocity
-            # rotate velocity around up
+            # rotate velocity vector around world up for coordinated turn
             velocity = velocity.rotated(Vector3.UP, yaw_rate * delta)
-        # also rotate the player node itself for visual / collider alignment
-        rotate_y(yaw_rate * delta * 0.65)
+        rotate_y(yaw_rate * delta * 0.62)
 
     # --- drag ---
-    var drag_factor = base_drag * (1.0 + (1.0 - spread_lift) * 0.25 + (1.0 if is_stall else 0.0) * 0.9)
-    # high speed drag increases quadratically
-    drag_factor += clamp(airspeed * 0.003, 0, 0.06)
-    # banked flight increases induced drag
-    drag_factor += abs(_bank_smooth) * 0.018
+    var drag_factor: float = base_drag * (1.0 + (1.0 - spread_lift) * 0.32)
+    if is_stall:
+        drag_factor += 0.92
+    drag_factor += clamp(airspeed * 0.0028, 0.0, 0.055)
+    drag_factor += abs(_bank_smooth) * 0.022
 
     velocity += accel * delta
-    # --- corrected drag (per-second, not per-tick) ---
-    velocity *= (1.0 - clamp(drag_factor * delta * 1.45, 0.0, 0.62))
+    # per-second exponential drag
+    velocity *= (1.0 - clamp(drag_factor * delta * 1.45, 0.0, 0.64))
 
-    # sanitize NaN/INF
     if not velocity.is_finite():
         velocity = Vector3.FORWARD * 8.0
-    # speed clamp
-    var _vlen: float = velocity.length()
-    if not is_finite(_vlen):
+    var vlen: float = velocity.length()
+    if not is_finite(vlen):
         velocity = Vector3.FORWARD * 8.0
-    elif _vlen > max_speed:
+    elif vlen > max_speed:
         velocity = velocity.normalized() * max_speed
 
-    # always keep a tiny forward creep when not perched and not stalled fully, to avoid dead hover
-    if not is_stall and airspeed < 1.2 and wing_spread > 0.6:
-        var fwd = -head_basis.z
-        fwd.y *= 0.15
-        velocity += fwd.normalized() * 1.2 * delta
+    # tiny forward creep to avoid dead hang when spread
+    if not is_stall and vlen < 1.0 and wing_spread > 0.58:
+        var fwd_creep: Vector3 = forward
+        fwd_creep.y *= 0.12
+        if fwd_creep.length_squared() > 0.001:
+            velocity += fwd_creep.normalized() * 0.9 * delta
 
-    # --- collide & move ---
-    # add small hover safeguard above ground
-    if global_position.y < 1.2 and velocity.y < 0:
-        velocity.y = max(velocity.y, -1.2)
-        if global_position.y < 0.8:
-            global_position.y = 0.8
-            velocity.y = max(velocity.y, 0)
-            if airspeed < 2.0:
-                is_perched = false # not perched, just bumped ground
+    if global_position.y < 1.05 and velocity.y < 0:
+        velocity.y = max(velocity.y, -1.0)
+        if global_position.y < 0.85:
+            global_position.y = 0.85
+            velocity.y = max(velocity.y, 0.0)
 
-    var prev_vel = velocity
     move_and_slide()
-    # stick to floor lightly? we want flight, so no
-    # clamp world bounds
-    var lim = 190.0
+
+    var lim: float = 188.0
     if abs(global_position.x) > lim or abs(global_position.z) > lim:
-        var to_center = Vector3.ZERO - global_position
+        var to_center: Vector3 = Vector3.ZERO - global_position
         to_center.y = 0
-        velocity += to_center.normalized() * 8.0 * delta
-    if global_position.y > 85.0:
+        if to_center.length_squared() > 0.001:
+            velocity += to_center.normalized() * 8.0 * delta
+    if global_position.y > 88.0:
         velocity.y -= 9.0 * delta
-    if global_position.y < 0.9:
-        global_position.y = 0.9
+    if global_position.y < 0.85:
+        global_position.y = 0.85
 
-    # --- wing mesh visual scale ---
-    if wing_left_mesh and wing_right_mesh:
-        var flap_anim = sin(Time.get_ticks_msec() / 90.0) * 0.08 if _flap_timer > 0 else 0
-        wing_left_mesh.scale = Vector3.ONE * player_size
-        wing_right_mesh.scale = Vector3.ONE * player_size
-        # optional tilt visual via rotation
+# helpers for flap state machine
+func _advance_hand_state(state: HandFlapState, y: float, vy: float):
+    if not state.has_prev:
+        state.last_y = y
+        state.peak_y = y
+        state.trough_y = y
+        state.has_prev = true
+        return
+    # update peak/trough tracking
+    if vy < -0.12:
+        # moving down
+        if not state.moving_down:
+            state.moving_down = true
+            state.peak_y = state.last_y  # peak before down
+            state.max_down_speed = 0.0
+        state.max_down_speed = max(state.max_down_speed, -vy)
+        state.trough_y = min(state.trough_y, y)
+    elif vy > 0.12:
+        if state.moving_down:
+            state.moving_down = false
+            state.trough_y = y
+        state.peak_y = max(state.peak_y, y)
+        state.trough_y = y  # reset trough when moving up
+    state.last_y = y
 
-    # --- debug telemetry every ~0.6s ---
-    if Engine.get_frames_drawn() % 38 == 0:
-        # could update UI via GameManager
-        pass
+func _update_hand_flap(state: HandFlapState, y: float, vy: float, delta: float, power_out: float) -> bool:
+    # combined advance + check in one — returns flap detected
+    if not state.has_prev:
+        state.last_y = y
+        state.peak_y = y
+        state.trough_y = y
+        state.has_prev = true
+        return false
+    var was_down: bool = state.moving_down
+    # detect direction
+    if vy < -0.18:
+        if not state.moving_down:
+            state.moving_down = true
+            state.peak_y = state.last_y
+            state.max_down_speed = 0.0
+            state.trough_y = y
+        state.max_down_speed = max(state.max_down_speed, -vy)
+        state.trough_y = min(state.trough_y, y)
+    elif vy > 0.34:
+        if state.moving_down:
+            # just finished down stroke — evaluate flap
+            state.moving_down = false
+            var amplitude: float = state.peak_y - state.trough_y
+            var speed: float = state.max_down_speed
+            # reset for next up
+            state.peak_y = y
+            # flap criteria: amplitude and speed
+            if amplitude > flap_min_amplitude and speed > flap_threshold:
+                var p: float = clamp((speed - flap_threshold) * 0.62 + amplitude * 1.18, 0.0, 1.85)
+                # we cannot return power via param in GDScript easily, so store in state temporarily
+                state.set_meta("last_power", p)
+                state.last_y = y
+                return true
+            state.last_y = y
+            return false
+        state.peak_y = max(state.peak_y, y)
+    state.last_y = y
+    return false
+
+func _get_last_power(state: HandFlapState) -> float:
+    if state.has_meta("last_power"):
+        return float(state.get_meta("last_power"))
+    return 0.0
 
 func _do_flap(power: float, is_sync: bool):
-    power = clamp(power, 0.45, 2.0)
-    var forward = Vector3.FORWARD
-    if _xr_active and xr_camera:
+    power = clamp(power, 0.42, 1.95)
+    var forward: Vector3 = Vector3.FORWARD
+    if _test_override:
+        forward = -_test_head_basis.z
+    elif _xr_active and xr_camera and is_instance_valid(xr_camera):
         forward = -xr_camera.global_transform.basis.z
     else:
         forward = Basis.from_euler(Vector3(_desktop_pitch, _desktop_yaw, 0)).z * -1
 
-    forward.y *= 0.45
-    forward = forward.normalized()
+    forward.y *= 0.38
+    if forward.length_squared() > 0.001:
+        forward = forward.normalized()
+    else:
+        forward = Vector3.FORWARD
 
-    var lift_imp = flap_lift * power * (1.25 if is_sync else 1.0)
-    # AoA at flap moment affects efficiency: if stalled, weaker
-    if _pitch_smooth > deg_to_rad(28) and _speed_smooth < stall_speed:
-        lift_imp *= 0.55
+    var lift_imp: float = flap_lift * power * (1.18 if is_sync else 1.0)
+    if _pitch_smooth > deg_to_rad(32) and _speed_smooth < stall_speed:
+        lift_imp *= 0.52
 
-    var thrust_imp = flap_thrust * power * (1.15 if is_sync else 0.85)
-    # scale with size: larger birds need more flap but get more momentum (scale slightly)
-    var size_factor = clamp(player_size, 0.9, 2.2)
-    lift_imp *= lerp(1.0, 0.88, (size_factor -1)/1.2)
-    thrust_imp *= lerp(1.0, 0.92, (size_factor -1)/1.2)
+    var thrust_imp: float = flap_thrust * power * (1.12 if is_sync else 0.82)
+    var size_factor: float = clamp(player_size, 0.9, 2.2)
+    lift_imp *= lerp(1.0, 0.86, (size_factor - 1.0) / 1.2)
+    thrust_imp *= lerp(1.0, 0.90, (size_factor - 1.0) / 1.2)
 
-    # apply impulses
     velocity.y += lift_imp
     velocity += forward * thrust_imp
 
-    # if perched, strong take-off
     if is_perched:
-        velocity.y += 3.2
-        velocity += forward * 4.0
+        velocity.y += 3.4
+        velocity += forward * 4.2
         is_perched = false
-        print("[Soaring] Take-off flap power=", snapped(power,0.05))
+        print("[Soaring v2] Take-off flap power=", snapped(power, 0.05))
 
-    # flap count anim
     flap_count += 1
-    # clamp
-    if velocity.length() > max_speed * 1.1:
-        velocity = velocity.normalized() * max_speed * 1.1
+    if not velocity.is_finite():
+        velocity = Vector3.FORWARD * 8.0
+    if velocity.length() > max_speed * 1.12:
+        velocity = velocity.normalized() * max_speed * 1.12
 
 func update_scale():
     if not is_finite(player_size):
@@ -458,35 +551,33 @@ func update_scale():
     if not is_finite(s):
         s = 1.0
     scale = Vector3.ONE * s
-    if body_collision and body_collision.shape:
-        # collision radius scales via node scale, no extra
-        pass
-    # inform HUD
-    size_changed.emit(player_size)
 
 func grow(amount: float):
+    if not is_finite(amount):
+        return
     player_size = clamp(player_size + amount, 0.65, 3.2)
     score += 1
     update_scale()
     bird_caught.emit(1, player_size)
-    print("[Soaring] GROW to ", snapped(player_size,0.01), " score ", score)
-    # flash
-    if body_mesh:
-        var tw = create_tween()
-        tw.tween_property(body_mesh, "scale", Vector3.ONE*1.22, 0.12)
-        tw.tween_property(body_mesh, "scale", Vector3.ONE, 0.22)
+    print("[Soaring v2] GROW to ", snapped(player_size, 0.01), " score ", score)
+    if body_mesh and is_instance_valid(body_mesh):
+        var tw: Tween = create_tween()
+        if tw:
+            tw.tween_property(body_mesh, "scale", Vector3.ONE * 1.22, 0.12)
+            tw.tween_property(body_mesh, "scale", Vector3.ONE, 0.22)
 
 func shrink(amount: float):
+    if not is_finite(amount):
+        return
     player_size = max(0.7, player_size - amount)
     update_scale()
 
-# --- catching ---
-func _on_catch_area_body_entered(body):
+func _on_catch_area_body_entered(body: Node):
     _try_catch(body)
 
-func _on_catch_area_entered(area):
-    var p = area.get_parent()
-    if p and p.has_method("get_bird_size"):
+func _on_catch_area_entered(area: Area3D):
+    var p: Node = area.get_parent()
+    if p and is_instance_valid(p) and p.has_method("get_bird_size"):
         _try_catch(p)
 
 func _try_catch(other: Node):
@@ -498,23 +589,24 @@ func _try_catch(other: Node):
     var other_size: float = float(_raw)
     if not is_finite(other_size):
         return
-    # small grace
+    other_size = clamp(other_size, 0.55, 3.2)
     if other_size < player_size * 0.92:
-        # we eat them
         if other.has_method("be_eaten"):
             other.be_eaten()
         grow(0.12 + other_size * 0.06)
-        # haptic success
-        if _xr_active and left_ctrl:
+        if _xr_active and left_ctrl and is_instance_valid(left_ctrl):
             left_ctrl.trigger_haptic_pulse("haptic", 0.9, 120, 1.0, 0)
     elif other_size > player_size * 1.08:
-        # we get eaten -> respawn smaller
-        print("[Soaring] Got caught by size ", other_size, " vs ", player_size)
+        print("[Soaring v2] Got caught by size ", other_size, " vs ", player_size)
         player_caught_by.emit(other_size)
-        # knockback and shrink instead of instant death for playability
-        velocity += (global_position - other.global_position).normalized() * 9.0 + Vector3.UP * 4.0
+        var diff: Vector3 = global_position - other.global_position
+        if diff.length_squared() > 0.001:
+            velocity += diff.normalized() * 9.0 + Vector3.UP * 4.0
+        else:
+            velocity += Vector3.UP * 4.0
+        if not velocity.is_finite():
+            velocity = Vector3.FORWARD * 6.0
         shrink(0.22)
-        # invuln flash? simplified
         if other.has_method("on_ate_player"):
             other.on_ate_player(self)
 
@@ -524,14 +616,13 @@ func get_bird_size() -> float:
 func be_eaten():
     if not is_instance_valid(self):
         return
-    # respawn at safe height
     global_position = Vector3(randf_range(-18.0, 18.0), randf_range(18.0, 32.0), randf_range(-18.0, 18.0))
     var rnd: Vector3 = Vector3(randf_range(-2.0, 2.0), 0.0, randf_range(-4.0, -1.0))
     velocity = rnd * 2.0
     if not velocity.is_finite():
         velocity = Vector3.FORWARD * 6.0
     shrink(0.18)
-    print("[Soaring] Player respawned")
+    print("[Soaring v2] Player respawned")
 
 func on_ate_player(_player):
     pass

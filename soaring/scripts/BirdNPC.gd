@@ -42,15 +42,25 @@ func _ready():
 		_perch_time = randf_range(2.0, 6.0)
 
 func _apply_color():
+	if body_mesh != null and is_instance_valid(body_mesh) and body_mesh.mesh is SphereMesh:
+		(body_mesh.mesh as SphereMesh).radial_segments = 7
+		(body_mesh.mesh as SphereMesh).rings = 4
 	if body_mesh != null and is_instance_valid(body_mesh):
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.albedo_color = color if not is_predator else color.lerp(Color(0.92, 0.18, 0.22, 1), 0.55)
-		mat.roughness = 0.78
+		mat.roughness = 0.92
 		body_mesh.material_override = mat
 	if beak != null and is_instance_valid(beak):
 		var bm: StandardMaterial3D = StandardMaterial3D.new()
-		bm.albedo_color = Color(1, 0.72, 0.12, 1)
+		bm.albedo_color = Color(1, 0.79, 0.18, 1)
+		bm.roughness = 0.88
 		beak.material_override = bm
+	for w in [wing_l, wing_r]:
+		if w != null and is_instance_valid(w) and w.get_surface_override_material(0) == null:
+			var wm = StandardMaterial3D.new()
+			wm.albedo_color = Color(0.90, 0.87, 0.76, 1).lerp(color, 0.28)
+			wm.roughness = 0.90
+			w.set_surface_override_material(0, wm)
 
 func _physics_process(delta: float):
 	if _is_being_eaten:

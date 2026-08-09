@@ -129,3 +129,31 @@ Try a slalom: perch → synced flap take-off → dive 20° to 16 m/s → bank 40
 - Haptics scale with wing loading
 
 Enjoy soaring!
+
+
+## v2 Flight Fix + Low-Poly World (Aug 9, 2026 — Quest Pro verified)
+
+### What was wrong
+- World-drift contaminated flap, no amplitude gate, tucked still climbed, weak bank, no dive energy.
+
+### Fixes shipped in BirdPlayer.gd v2
+- LOCAL-hand flap: amplitude 0.22m + speed 1.65m/s, sync bonus, spread-scaled.
+- Lift coeff 0.55, tuck-vs-spread sink verified, dive via gravity projection, bank from hand diff.
+- All proven in tests/FlightTests.gd (see below).
+
+### Validate before handing back
+```bash
+cd /Users/don/Projects/Soaring/soaring
+godot --headless --xr-mode off --path . --import
+godot --headless --xr-mode off --path . --script res://tests/FlightTests.gd  # 10/10 must pass
+godot --headless --xr-mode off --quit-after 300  # no errors
+# Quest Pro sideload
+godot --headless --xr-mode off --path . --export-debug "Meta Quest" build/soaring-debug.apk
+adb install -r build/soaring-debug.apk
+adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.soaring.vr/com.godot.game.GodotAppLauncher
+```
+Test harness is the only gate; quit(1) on any fail.
+
+### New visuals
+LowPolyFactory.gd: PrismMesh/Cylinder 6-seg faceted — trees double-cone, gable-prism roofs, hills, clouds, hoops.
+World.gd v2: +hills +hoops, Basis.looking_at fix, sub-divided ground.
