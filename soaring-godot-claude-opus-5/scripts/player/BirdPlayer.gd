@@ -119,6 +119,7 @@ func _physics_process(delta: float) -> void:
 	stun_timer = maxf(0.0, stun_timer - delta)
 
 	_gather_command(delta)
+	_apply_boundary(delta)
 	command.wind = wind
 
 	if perched:
@@ -130,6 +131,40 @@ func _physics_process(delta: float) -> void:
 	_apply_view_orientation(delta)
 	_apply_haptics()
 	_update_wings(delta)
+
+
+## Distance from the middle of the map at which the air starts turning you back,
+## and the distance by which it has full authority.
+const SOFT_BOUNDARY: float = 430.0
+const HARD_BOUNDARY: float = 640.0
+
+## How far outside the play area the bird currently is, 0..1. Published so the
+## HUD can warn before the player notices the world thinning out.
+var boundary_pressure: float = 0.0
+
+
+## Curves the bird back toward the populated part of the map.
+##
+## A bird with no input never banks, so it glides dead straight — and in about
+## forty seconds that carries it clean out of the world into featureless terrain
+## with no buildings, no trees and nothing to look at but green and blue. That
+## reads exactly like the game breaking, and it is how this bug was reported
+## twice. Rather than a wall, the correction blends the player's own bank toward
+## an inward turn, so it feels like being leaned on by the wind and never like
+## having the controls taken away.
+func _apply_boundary(delta: float) -> void:
+	var here := Vector2(global_position.x, global_position.z)
+	var distance: float = here.length()
+	boundary_pressure = clampf(
+		(distance - SOFT_BOUNDARY) / maxf(HARD_BOUNDARY - SOFT_BOUNDARY, 1.0), 0.0, 1.0
+	)
+	if boundary_pressure <= 0.0 or here.length_squared() < 1.0:
+		return
+	var inward: Vector2 = -here.normalized()
+	var desired_heading: float = atan2(-inward.x, -inward.y)
+	var error: float = wrapf(desired_heading - model.heading, -PI, PI)
+	var inward_bank: float = clampf(-error * 1.5, -1.1, 1.1)
+	command.bank = lerpf(command.bank, inward_bank, boundary_pressure)
 
 
 func _update_wings(delta: float) -> void:

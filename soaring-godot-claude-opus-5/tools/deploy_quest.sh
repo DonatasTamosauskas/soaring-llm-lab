@@ -42,9 +42,27 @@ echo "== installing"
 adb install -r build/Soaring.apk 2>&1 | tail -1
 
 echo "== launching"
+# Force-stop first. Without it, `am start` on an already-running app merely
+# brings it back to the front: no restart, no fresh log, and the stamp check
+# below reports "unknown" while an old process keeps running the old code.
+adb shell am force-stop "$PACKAGE" >/dev/null 2>&1
+sleep 2
+# The device churns its default log buffer in seconds under Meta's own spam,
+# and world generation takes the better part of a minute on the headset CPU —
+# so the startup line is long gone by the time a fixed sleep finishes. Enlarge
+# the buffer and poll for the stamp instead of guessing at a delay.
+adb logcat -G 16M >/dev/null 2>&1
 adb logcat -c
 adb shell am start -n "$ACTIVITY" >/dev/null 2>&1
-sleep 12
+
+deadline=$(( $(date +%s) + 120 ))
+running=""
+while [ "$(date +%s)" -lt "$deadline" ]; do
+  running="$(adb logcat -d -s godot 2>/dev/null \
+    | grep -oE "build [a-z0-9]+-[0-9]+" | tail -1 | cut -d' ' -f2)"
+  [ -n "$running" ] && break
+  sleep 5
+done
 
 if ! adb shell pidof "$PACKAGE" >/dev/null 2>&1; then
   echo "FAIL: app is not running."
@@ -55,7 +73,6 @@ if ! adb shell pidof "$PACKAGE" >/dev/null 2>&1; then
   exit 1
 fi
 
-running="$(adb logcat -d -s godot 2>/dev/null | grep -oE "build [a-z0-9]+-[0-9]+" | tail -1 | cut -d' ' -f2)"
 if [ "$running" != "$stamp" ]; then
   echo "FAIL: device is running build '${running:-unknown}', expected '$stamp'"
   exit 1
