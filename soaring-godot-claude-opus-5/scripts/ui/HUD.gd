@@ -116,7 +116,12 @@ func _update_vignette() -> void:
 	var speed_term: float = clampf((speed - 16.0) / 34.0, 0.0, 1.0)
 	var turn_term: float = clampf(absf(player.model.bank) / 1.2, 0.0, 1.0) * 0.45
 	var strength: float = clampf((speed_term + turn_term) * Tuning.comfort_vignette, 0.0, 0.85)
-	_vignette_material.set_shader_parameter("strength", strength)
+	# A full-screen transparent quad is not free on a headset — it is two eyes of
+	# blending every frame. Skip it entirely while gliding slowly, which is most
+	# of the time the vignette would be invisible anyway.
+	_vignette.visible = strength > 0.02
+	if _vignette.visible:
+		_vignette_material.set_shader_parameter("strength", strength)
 
 
 func _update_text() -> void:

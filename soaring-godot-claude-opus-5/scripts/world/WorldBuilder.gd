@@ -27,6 +27,20 @@ const POWERLINE_RUNS: int = 8
 const ARCH_COUNT: int = 10
 const THERMAL_COUNT: int = 16
 
+## Standalone headsets get a tighter draw distance and cheaper shadows. Both are
+## invisible behind the aerial haze, and both are the difference between 45 and
+## 90 frames per second on a Quest.
+static var MOBILE: bool = OS.has_feature("mobile") or OS.has_feature("android")
+
+## How far each kind of structure stays drawn. Buildings and arches are
+## landmarks you navigate by, so they persist far longer than the trees and
+## wires that only matter once you are close enough to hit them.
+const RANGE_TREE: float = 380.0
+const RANGE_BUILDING: float = 900.0
+const RANGE_ARCH: float = 1100.0
+const RANGE_POLE: float = 320.0
+const RANGE_WIRE: float = 220.0
+
 @export var world_seed: int = 20260812
 
 var rng := RandomNumberGenerator.new()
@@ -189,6 +203,10 @@ func _build_environment() -> void:
 
 	var sky := Sky.new()
 	sky.sky_material = sky_material
+	# The sky never changes, so there is no reason to re-render its radiance
+	# every frame. On a headset that is pure waste; bake it once instead.
+	sky.process_mode = Sky.PROCESS_MODE_QUALITY
+	sky.radiance_size = Sky.RADIANCE_SIZE_128
 
 	var env := Environment.new()
 	env.background_mode = Environment.BG_SKY
@@ -221,8 +239,15 @@ func _build_environment() -> void:
 	sun.light_energy = 1.2
 	sun.light_color = Color(1.0, 0.96, 0.88)
 	sun.shadow_enabled = true
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
-	sun.directional_shadow_max_distance = 260.0
+	# Shadow splits are the single most expensive thing in this scene: each one
+	# re-renders every tree in range into the shadow atlas, and this world is
+	# mostly trees. A headset gets two shallow splits; a desktop can afford four.
+	if MOBILE:
+		sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+		sun.directional_shadow_max_distance = 110.0
+	else:
+		sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+		sun.directional_shadow_max_distance = 260.0
 	add_child(sun)
 
 
@@ -367,11 +392,20 @@ static func _basis_aligned_to(axis: Vector3) -> Basis:
 	return Basis(right, up, forward)
 
 
-func _finish(body: StaticBody3D, batch: GeometryBatch) -> void:
+## Commits a structure's batched geometry and gives it a draw distance.
+##
+## Colliders deliberately keep working past the visual range: a bird should
+## never fly through a tree just because it faded out, and the fade distances
+## are set well beyond anything you could reach before it pops back in.
+func _finish(body: StaticBody3D, batch: GeometryBatch, draw_range: float = 0.0) -> void:
 	if batch.is_empty():
 		return
 	var visual := MeshInstance3D.new()
 	visual.mesh = batch.commit(_materials)
+	if draw_range > 0.0:
+		visual.visibility_range_end = draw_range * (0.6 if MOBILE else 1.0)
+		visual.visibility_range_end_margin = visual.visibility_range_end * 0.18
+		visual.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 	body.add_child(visual)
 
 
@@ -456,7 +490,7 @@ func _build_tree(tree: StaticBody3D) -> void:
 			_blob(batch, tip, reach * rng.randf_range(0.30, 0.44), leaf)
 			_add_perch(tree, tip)
 
-	_finish(tree, batch)
+	_finish(tree, batch, RANGE_TREE)
 
 
 # --- town --------------------------------------------------------------------
@@ -507,7 +541,7 @@ func _build_building(body: StaticBody3D) -> void:
 			_box(batch, body, sill, Vector3(span + 0.8, 0.24, 0.62), "ledge", basis)
 			_add_perch(body, sill + Vector3(0.0, 0.25, 0.0))
 
-	_finish(body, batch)
+	_finish(body, batch, RANGE_BUILDING)
 
 
 # --- power lines -------------------------------------------------------------
@@ -549,7 +583,7 @@ func _build_pole(body: StaticBody3D, height: float, direction: Vector3) -> Array
 			var attach: Vector3 = across * reach * side + Vector3(0.0, y + 0.22, 0.0)
 			tops.append(body.position + attach)
 			_add_perch(body, attach)
-	_finish(body, batch)
+	_finish(body, batch, RANGE_POLE)
 	return tops
 
 
@@ -568,7 +602,7 @@ func _wire(from: Vector3, to: Vector3) -> void:
 		point.y -= sag * sin(t * PI)
 		_cylinder(batch, body, previous, point, 0.07, "wire")
 		previous = point
-	_finish(body, batch)
+	_finish(body, batch, RANGE_WIRE)
 	_add_perch(body, Vector3(0.0, -sag, 0.0))
 
 
@@ -605,7 +639,7 @@ func _build_arches() -> void:
 				Basis(Vector3.FORWARD, (t - 0.5) * 0.55)
 			)
 		_add_perch(body, Vector3(0.0, height * 1.05, 0.0))
-		_finish(body, batch)
+		_finish(body, batch, RANGE_ARCH)
 
 
 # --- thermals ----------------------------------------------------------------
