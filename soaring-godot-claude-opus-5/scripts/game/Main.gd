@@ -12,7 +12,18 @@ var hud: HUD
 var audio: FlightAudio
 
 
+## Identifies exactly which build is running. Written at export time by
+## tools/deploy_quest.sh. Without it, "is the fix actually on the device?" is
+## unanswerable, and I spent a debugging session assuming instead of knowing.
+func _print_build_stamp() -> void:
+	var stamp: String = "unstamped (built by hand?)"
+	if FileAccess.file_exists("res://build_stamp.txt"):
+		stamp = FileAccess.get_file_as_string("res://build_stamp.txt").strip_edges()
+	print("[Soaring] build %s" % stamp)
+
+
 func _ready() -> void:
+	_print_build_stamp()
 	world = WorldBuilder.new()
 	world.name = "World"
 	add_child(world)
@@ -49,6 +60,22 @@ func _ready() -> void:
 	_maybe_run_probe()
 	_maybe_run_xr_diagnostic()
 	_maybe_run_device_diagnostic()
+	_maybe_run_hands_repro()
+
+
+func _maybe_run_hands_repro() -> void:
+	var separation: float = -1.0
+	for arg: String in OS.get_cmdline_user_args():
+		var parts: PackedStringArray = arg.lstrip("-").split("=")
+		if parts.size() == 2 and parts[0] == "hands":
+			separation = parts[1].to_float()
+	if separation < 0.0:
+		return
+	var repro := HandsRepro.new()
+	repro.name = "HandsRepro"
+	add_child(repro)
+	repro.finished.connect(func(passed: bool) -> void: get_tree().quit(0 if passed else 1))
+	repro.start(player, world, separation)
 
 
 ## On a headset there is no console, so a debug build narrates itself to logcat

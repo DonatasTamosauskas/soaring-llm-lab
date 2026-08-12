@@ -34,8 +34,11 @@ const REACH_USED_FRACTION: float = 0.80
 
 ## Separation that counts as "this player has understood the gesture".
 const FIRST_SPREAD_THRESHOLD: float = 0.60
-## Wing extension held until then: enough to glide, not enough to fly well.
-const GRACE_SPAN: float = 0.55
+## Wing extension held until then. Full, not partial: half-open wings carry so
+## much less lift that the bird still sinks at nearly 9 m/s and reaches the
+## ground in eight seconds — which is no more survivable for a new player than a
+## folded-wing dive, just slower.
+const GRACE_SPAN: float = 1.0
 ## Starting assumption about reach, refined at runtime. Deliberately equal to
 ## [constant FULL_SPAN_AT] rather than a real arm-span: assuming a wide reach
 ## nobody has demonstrated makes every normal posture read as narrow, which is
@@ -268,22 +271,31 @@ func _learn_neutral(
 	_calibration_elapsed += dt
 	if _calibration_elapsed >= CALIBRATION_WINDOW:
 		_calibrating = false
-	if not both_tracked or span_metres < CALIBRATION_MIN_SPAN:
-		return  # a tuck tells us nothing about where neutral is
+	if not both_tracked:
+		return
 
 	var blend: float = clampf(dt / 0.3, 0.0, 1.0)
 
+	# How far forward the hands are held is meaningful at any wingspan, so this
+	# calibrates from whatever pose the player is actually in. It used to be
+	# gated behind a wings-out pose along with the wrist angle, which left a
+	# player holding the controllers close to their chest permanently biased
+	# nose-down against a neutral they never got to set.
+	var mid: Vector3 = (left.origin + right.origin) * 0.5
+	var raw_reach: float = (mid - _last_head_origin).dot(_fallback_forward)
+	reach_zero = clampf(
+		lerpf(reach_zero, raw_reach, blend), MIN_REACH_ZERO, MAX_REACH_ZERO
+	)
+
+	# Wrist angle, though, genuinely needs the wings out: with the hands
+	# together there is no reliable wing line to measure rotation against.
+	if span_metres < CALIBRATION_MIN_SPAN:
+		return
 	var raw_wrist: float = 0.5 * (
 		_wrist_pitch(left, _fallback_forward) + _wrist_pitch(right, _fallback_forward)
 	)
 	wrist_zero = clampf(
 		lerpf(wrist_zero, raw_wrist, blend), -MAX_WRIST_ZERO, MAX_WRIST_ZERO
-	)
-
-	var mid: Vector3 = (left.origin + right.origin) * 0.5
-	var raw_reach: float = (mid - _last_head_origin).dot(_fallback_forward)
-	reach_zero = clampf(
-		lerpf(reach_zero, raw_reach, blend), MIN_REACH_ZERO, MAX_REACH_ZERO
 	)
 
 

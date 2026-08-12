@@ -143,10 +143,23 @@ func _update_wings(delta: float) -> void:
 ## fly the real game from the command line.
 var scripted_command: FlightCommand = null
 
+## Test seam: a Callable returning [head, left, right] as Transform3Ds, standing
+## in for the trackers.
+##
+## Without this, the [WingInput] path only ever runs when a physical headset is
+## attached, so every automated test exercised the sensor in isolation while the
+## thing players actually touch — controllers wired into the real game loop —
+## was covered by nothing. That gap let a bug reach a headset where holding the
+## controllers naturally flew the bird into the ground.
+var pose_source: Callable = Callable()
+
 
 func _gather_command(delta: float) -> void:
 	if scripted_command != null:
 		command = scripted_command
+	elif pose_source.is_valid():
+		var poses: Array = pose_source.call()
+		command = wings.update(poses[0], poses[1], poses[2], true, true, delta)
 	elif xr_active:
 		var head: Transform3D = xr_camera.transform
 		var l: Transform3D = left_hand.transform
@@ -226,17 +239,55 @@ func _move(delta: float) -> void:
 
 func _begin_perch(normal: Vector3) -> void:
 	perched = true
+	_perched_time = 0.0
 	perch_normal = normal if normal.is_normalized() else Vector3.UP
 	model.velocity = Vector3.ZERO
 	velocity = Vector3.ZERO
 	perched_changed.emit(true)
 
 
+## Seconds a player who has never flown may sit on the ground before the game
+## puts them back in the air.
+const NOVICE_RESCUE_DELAY: float = 4.0
+
+var _perched_time: float = 0.0
+
+
+## True when the player is flying by wing gestures, rather than by keyboard or
+## by a script. Only they can be stranded by not knowing the flap, so only they
+## get rescued — a desktop player pressing nothing has not misunderstood
+## anything, and lifting them off a branch they chose would just be the game
+## taking their controls away.
+func is_flying_by_wings() -> bool:
+	return scripted_command == null and (pose_source.is_valid() or xr_active)
+
+
+func _needs_novice_rescue() -> bool:
+	return is_flying_by_wings() and wings.awaiting_first_spread
+
+
 ## While clinging, a wingbeat is what gets you airborne again — which makes
 ## launching from a branch the same gesture as flying, not a separate button.
+##
+## Except for a player who has not yet worked out the flap. For them a landing
+## is a dead end: they sit in a field looking at grass and sky with no idea that
+## anything is expected of them, which is exactly how this game got reported as
+## "the world disappeared". Until they have spread their wings once, the game
+## puts them back in the air by itself.
 func _process_perched(delta: float) -> void:
 	model.velocity = Vector3.ZERO
 	velocity = Vector3.ZERO
+	_perched_time += delta
+
+	if _needs_novice_rescue() and _perched_time >= NOVICE_RESCUE_DELAY:
+		_perched_time = 0.0
+		perched = false
+		perched_changed.emit(false)
+		model.velocity = (Vector3.UP * 0.6 + model.forward() * 0.8).normalized() \
+			* model.trim_speed()
+		global_position += Vector3.UP * 2.0 * size
+		return
+
 	if command.stroke_speed > 0.5:
 		perched = false
 		perched_changed.emit(false)
