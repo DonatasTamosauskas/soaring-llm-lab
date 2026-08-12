@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/BirdPlayer.gd" id="1_player"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
+radius = 0.55
+
+[node name="BirdPlayer" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_body")
+
+[node name="ViewRig" type="Node3D" parent="."]
+
+[node name="XROrigin3D" type="XROrigin3D" parent="ViewRig"]
+
+[node name="XRCamera3D" type="XRCamera3D" parent="ViewRig/XROrigin3D"]
+near = 0.05
+far = 4000.0
+
+[node name="LeftHand" type="XRController3D" parent="ViewRig/XROrigin3D"]
+tracker = &"left_hand"
+pose = &"grip"
+
+[node name="RightHand" type="XRController3D" parent="ViewRig/XROrigin3D"]
+tracker = &"right_hand"
+pose = &"grip"
+
+[node name="DesktopCamera" type="Camera3D" parent="ViewRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+near = 0.05
+far = 4000.0
