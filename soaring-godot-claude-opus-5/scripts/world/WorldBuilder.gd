@@ -40,6 +40,9 @@ const RANGE_BUILDING: float = 900.0
 const RANGE_ARCH: float = 1100.0
 const RANGE_POLE: float = 320.0
 const RANGE_WIRE: float = 220.0
+## Headsets cull closer in. Not as close as the frame budget alone would
+## suggest — without a fade, anything too tight pops visibly as you fly at it.
+const MOBILE_RANGE_SCALE: float = 0.75
 
 @export var world_seed: int = 20260812
 
@@ -395,17 +398,25 @@ static func _basis_aligned_to(axis: Vector3) -> Basis:
 ## Commits a structure's batched geometry and gives it a draw distance.
 ##
 ## Colliders deliberately keep working past the visual range: a bird should
-## never fly through a tree just because it faded out, and the fade distances
-## are set well beyond anything you could reach before it pops back in.
+## never fly through a tree just because it stopped being drawn, and the
+## distances are set well beyond anything you could reach before it reappears.
+##
+## The dithered fade is desktop-only. Its shader variant is broken on Godot
+## 4.7's Forward Mobile renderer — it corrupts on desktop-mobile and renders
+## nothing at all on Quest hardware, which silently deleted every tree,
+## building, pole and arch from the headset build while leaving the terrain
+## (the one thing with no range set) behind. A hard cull needs no shader
+## variant, and at these distances the aerial haze hides the pop.
 func _finish(body: StaticBody3D, batch: GeometryBatch, draw_range: float = 0.0) -> void:
 	if batch.is_empty():
 		return
 	var visual := MeshInstance3D.new()
 	visual.mesh = batch.commit(_materials)
 	if draw_range > 0.0:
-		visual.visibility_range_end = draw_range * (0.6 if MOBILE else 1.0)
-		visual.visibility_range_end_margin = visual.visibility_range_end * 0.18
-		visual.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		visual.visibility_range_end = draw_range * (MOBILE_RANGE_SCALE if MOBILE else 1.0)
+		visual.visibility_range_end_margin = visual.visibility_range_end * 0.15
+		if not MOBILE:
+			visual.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 	body.add_child(visual)
 
 

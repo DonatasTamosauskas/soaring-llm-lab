@@ -67,9 +67,10 @@ than usual here: flight feel is invisible to a compiler, and iterating on it by
 repeatedly putting a headset on is slow and unrepeatable.
 
 ```bash
-tests/run.sh      # 549 assertions: aerodynamics, input mapping, growth rules
-tests/probe.sh    # flies the real game through the real world and checks it
-godot -- --xrdiag=1   # what the live headset and controllers actually report
+tests/run.sh           # 549 assertions: aerodynamics, input mapping, growth rules
+tests/probe.sh         # flies the real game through the real world and checks it
+tests/mobile_check.sh  # renders through the Forward Mobile renderer a Quest uses
+godot -- --xrdiag=1    # what the live headset and controllers actually report
 ```
 
 **`tests/run.sh`** — pure, headless, ~0.7 s. Covers the aerodynamics (energy
@@ -81,6 +82,13 @@ that shaking the controllers earns you nothing), and the growth curve.
 Glide, climb, dive, zoom, hard turn, crash into a hillside, land, launch, catch a
 bird, get caught. This is the layer that caught respawn burying the player
 underground.
+
+**`tests/mobile_check.sh`** — renders a frame through Forward Mobile, the
+renderer a standalone headset uses, and fails on Godot's invalid-material
+magenta or a suspiciously empty scene. Run it before every Quest deploy. A
+shader variant that is fine on Forward+ can fail on Forward Mobile *silently* —
+no error, healthy draw calls, geometry still submitted — and that shipped a
+build where every tree, building and pole was invisible in the headset.
 
 **`--xrdiag=1`** — prints live OpenXR poses and what the wing sensor makes of
 them. A mapping that is correct against invented data and wrong against real
