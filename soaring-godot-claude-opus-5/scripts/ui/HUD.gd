@@ -127,8 +127,15 @@ func _update_vignette() -> void:
 func _update_text() -> void:
 	var speed_kmh: int = int(round(player.airspeed() * 3.6))
 	var status: String = ""
-	if player.perched:
-		status = "  PERCHED — flap to launch"
+	# Folded wings take priority over every other message. A player whose hands
+	# are too close together is falling out of the sky for a reason they cannot
+	# see, and nothing else on this display matters until they know it.
+	if player.xr_active and player.wings.awaiting_first_spread:
+		status = "  SPREAD YOUR ARMS TO OPEN YOUR WINGS"
+	elif player.command.span < 0.35 and not player.perched:
+		status = "  WINGS FOLDED — spread your arms"
+	elif player.perched:
+		status = "  PERCHED — spread your arms and flap"
 	elif player.model.is_stalled:
 		status = "  STALL — drop the nose"
 	_label.text = "size %.2f    %d km/h    %d m%s\nscore %d" % [

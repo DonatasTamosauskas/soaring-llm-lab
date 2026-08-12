@@ -22,10 +22,25 @@ extends RefCounted
 ## is precise but tiring, arm position is coarse but effortless, and having both
 ## lets a player use whichever their body prefers.
 
-## Wingspan below which the wings count as fully tucked, in metres.
-const MIN_SPAN: float = 0.28
-## Starting guess at a player's full reach, refined at runtime.
-const DEFAULT_MAX_SPAN: float = 1.35
+## Wingspan below which the wings count as fully tucked, in metres. Roughly
+## "hands held together in front of you".
+const MIN_SPAN: float = 0.30
+## Hand separation that already counts as fully spread wings. A modest, holdable
+## spread rather than a full arm-span: the wings should open the moment you open
+## your arms, and staying at full extension for a whole session is exhausting.
+const FULL_SPAN_AT: float = 0.85
+## If a player demonstrates a wider reach, use this much of it instead.
+const REACH_USED_FRACTION: float = 0.80
+
+## Separation that counts as "this player has understood the gesture".
+const FIRST_SPREAD_THRESHOLD: float = 0.60
+## Wing extension held until then: enough to glide, not enough to fly well.
+const GRACE_SPAN: float = 0.55
+## Starting assumption about reach, refined at runtime. Deliberately equal to
+## [constant FULL_SPAN_AT] rather than a real arm-span: assuming a wide reach
+## nobody has demonstrated makes every normal posture read as narrow, which is
+## the folded-wing dive all over again. Reach is earned upward, never assumed.
+const DEFAULT_MAX_SPAN: float = FULL_SPAN_AT
 ## Wing axis shorter than this is too degenerate to derive a heading from.
 const DEGENERATE_SPAN: float = 0.22
 
@@ -117,6 +132,16 @@ var flap_strength: float = 0.0
 ## Body forward derived from the wing line — used to orient the bird's mesh.
 var body_forward: Vector3 = Vector3.FORWARD
 
+## True until the player has spread their arms at least once.
+##
+## A player who puts the headset on holding the controllers together is, by the
+## rules of this game, commanding a full tuck — and a full tuck from the spawn
+## altitude is a power dive into the ground inside four seconds, with no way to
+## work out why. Until they have made the gesture once the wings stay partly
+## open, so the bird glides while the HUD explains itself. The moment they do
+## spread, the training wheels come off for good.
+var awaiting_first_spread: bool = true
+
 
 class HandTracker extends RefCounted:
 	var previous_position: Vector3 = Vector3.ZERO
@@ -153,6 +178,7 @@ func reset() -> void:
 	wrist_zero = 0.0
 	reach_zero = REACH_CENTRE
 	max_span = DEFAULT_MAX_SPAN
+	awaiting_first_spread = true
 	recentre()
 	for h: HandTracker in _hands:
 		h.reset()
@@ -184,11 +210,19 @@ func update(
 
 	_last_head_origin = head.origin
 	_update_body_forward(wing, span_metres, head)
+	# Reach tracking always runs. It used to be gated behind neutral calibration
+	# finishing, and neutral calibration only finishes if it sees a wings-out
+	# pose — so a player who never spread their arms wide was pinned to the
+	# default reach forever, which read their hands as permanently folded and
+	# flew them straight into the ground.
+	_calibrate(span_metres, left_tracked and right_tracked, dt)
 	if _calibrating:
 		_learn_neutral(left, right, span_metres, left_tracked and right_tracked, dt)
-	else:
-		_calibrate(span_metres, left_tracked and right_tracked, dt)
 	var target_span: float = _measure_span(span_metres)
+	if span_metres >= FIRST_SPREAD_THRESHOLD:
+		awaiting_first_spread = false
+	if awaiting_first_spread:
+		target_span = maxf(target_span, GRACE_SPAN)
 	var target_bank: float = _measure_bank(wing, span_metres)
 	var target_alpha: float = _measure_alpha(left, right, head)
 
@@ -228,12 +262,14 @@ func recentre() -> void:
 func _learn_neutral(
 	left: Transform3D, right: Transform3D, span_metres: float, both_tracked: bool, dt: float
 ) -> void:
-	if not both_tracked or span_metres < CALIBRATION_MIN_SPAN:
-		return  # a tuck tells us nothing about neutral
+	# The window always closes, whether or not a usable pose ever showed up. If
+	# it never does we simply keep the defaults, which fly fine — far better than
+	# waiting forever for a gesture the player does not know to make.
 	_calibration_elapsed += dt
-	# Snap straight to the observed reach rather than decaying toward it, so the
-	# wings are fully open within a second of the player spreading their arms.
-	max_span = maxf(span_metres, MIN_SPAN + 0.2)
+	if _calibration_elapsed >= CALIBRATION_WINDOW:
+		_calibrating = false
+	if not both_tracked or span_metres < CALIBRATION_MIN_SPAN:
+		return  # a tuck tells us nothing about where neutral is
 
 	var blend: float = clampf(dt / 0.3, 0.0, 1.0)
 
@@ -250,13 +286,10 @@ func _learn_neutral(
 		lerpf(reach_zero, raw_reach, blend), MIN_REACH_ZERO, MAX_REACH_ZERO
 	)
 
-	if _calibration_elapsed >= CALIBRATION_WINDOW:
-		_calibrating = false
 
-
-## Learns the player's actual reach instead of assuming one. Grows immediately
-## to any span they demonstrate, then creeps back down so a one-off tracking
-## glitch does not permanently desensitise the tuck control.
+## Tracks the widest the player actually flies with. Grows immediately to any
+## span they demonstrate, then creeps back down so a one-off tracking glitch
+## does not permanently desensitise the tuck control.
 ##
 ## The decay is deliberately gated on the wings being out. Without that gate a
 ## player who held a long tuck would have their calibration collapse, and would
@@ -271,8 +304,19 @@ func _calibrate(span_metres: float, both_tracked: bool, dt: float) -> void:
 		max_span = maxf(span_metres, max_span - CALIBRATION_DECAY * dt)
 
 
+## Hand separation to wing extension.
+##
+## The upper end is whichever is *smaller*: a comfortable modest spread, or the
+## player's demonstrated reach. That asymmetry is the whole point. Anchoring
+## full span to a full arm-span means anyone holding the controllers in a normal,
+## closed posture reads as fully folded — which is a power dive, and which is
+## exactly how a first play session ends face-down in a field four seconds after
+## spawning. Anchoring it to a reachable spread means the wings open as soon as
+## you open your arms at all, and tucking still requires bringing your hands
+## genuinely together.
 func _measure_span(span_metres: float) -> float:
-	var range_span: float = maxf(max_span - MIN_SPAN, 0.1)
+	var full: float = minf(maxf(max_span * REACH_USED_FRACTION, FULL_SPAN_AT), max_span)
+	var range_span: float = maxf(full - MIN_SPAN, 0.1)
 	return clampf((span_metres - MIN_SPAN) / range_span, 0.0, 1.0)
 
 

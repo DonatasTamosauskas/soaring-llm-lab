@@ -23,6 +23,10 @@ static func run(t: TestCase) -> void:
 	_test_ducking_is_not_a_flap(t)
 	_test_asymmetric_flap_yaws(t)
 	_test_short_arms_still_reach_full_span(t)
+	_test_hands_together_on_spawn_still_glides(t)
+	_test_tuck_works_once_the_gesture_is_learned(t)
+	_test_calibration_always_finishes(t)
+	_test_a_modest_spread_is_full_wings(t)
 	_test_neutral_is_calibrated_not_assumed(t)
 	_test_calibration_ignores_a_tuck(t)
 	_test_wings_open_quickly_on_spawn(t)
@@ -275,6 +279,66 @@ static func _test_short_arms_still_reach_full_span(t: TestCase) -> void:
 	t.greater(reopened.span, 0.9, "wings still open fully after a long tuck")
 
 
+## Found on a real Quest, the hard way. The player put the headset on holding
+## both controllers together — the most natural thing in the world — which is a
+## full-tuck command, and the bird power-dived into the ground four seconds
+## after spawning. They reported it as "the world disappeared"; they were in
+## fact face-down in a field.
+static func _test_hands_together_on_spawn_still_glides(t: TestCase) -> void:
+	t.begin("hands together on spawn still glides")
+	var w := WingInput.new()
+	# 24 cm apart: controllers held together in front of the chest.
+	var cmd: FlightCommand = _settle(
+		w, _head(), _hand(-1.0, 1.30, 0.0, 0.12), _hand(1.0, 1.30, 0.0, 0.12), 3.0
+	)
+	t.ok(w.awaiting_first_spread, "the gesture has not been demonstrated yet")
+	t.greater(cmd.span, 0.45, "wings stay open enough to glide, not plummet")
+
+	# It must actually fly, not merely report a number. Fly the real model with
+	# this command and check the bird is still airborne 8 seconds later.
+	var model := FlightModel.new()
+	var harness := FlightHarness.new(model)
+	harness.launch(model.trim_speed(), 0.0, 95.0)
+	harness.fly(cmd, 8.0)
+	t.greater(harness.altitude, 20.0, "still airborne after 8s of holding the controllers")
+
+
+static func _test_tuck_works_once_the_gesture_is_learned(t: TestCase) -> void:
+	t.begin("tucking still works after the first spread")
+	var w := WingInput.new()
+	_settle(w, _head(), _hand(-1.0, 1.45), _hand(1.0, 1.45), 2.0)
+	t.ok(not w.awaiting_first_spread, "spreading once retires the training wheels")
+
+	var tucked: FlightCommand = _settle(
+		w, _head(), _hand(-1.0, 1.30, 0.0, 0.10), _hand(1.0, 1.30, 0.0, 0.10), 1.5
+	)
+	t.less(tucked.span, 0.12, "hands together is still a full tuck")
+
+
+## The dead end behind the crash: neutral calibration only completed if it saw a
+## wings-out pose, and reach calibration was gated behind neutral finishing. A
+## player who never spread their arms was pinned to the default reach forever.
+static func _test_calibration_always_finishes(t: TestCase) -> void:
+	t.begin("calibration finishes even without a wings-out pose")
+	var w := WingInput.new()
+	var narrow_left: Transform3D = _hand(-1.0, 1.30, 0.0, 0.12)
+	var narrow_right: Transform3D = _hand(1.0, 1.30, 0.0, 0.12)
+	for i in int(5.0 / DT):
+		w.update(_head(), narrow_left, narrow_right, true, true, DT)
+	t.ok(not w._calibrating, "the calibration window closed on its own")
+
+
+static func _test_a_modest_spread_is_full_wings(t: TestCase) -> void:
+	t.begin("a comfortable spread is already full wings")
+	var w := WingInput.new()
+	# 0.9 m between the hands: arms out, elbows soft. Should be full span
+	# without demanding a locked-out crucifix pose for the whole session.
+	var cmd: FlightCommand = _settle(
+		w, _head(), _hand(-1.0, 1.45, 0.0, 0.45), _hand(1.0, 1.45, 0.0, 0.45), 2.5
+	)
+	t.greater(cmd.span, 0.95, "a relaxed spread gives full wings")
+
+
 ## Found by running against the Meta XR Simulator: its resting controller pose
 ## read as 16.3 degrees of angle of attack, with the stall at 17.2. Whatever
 ## angle a player happens to hold their wrists at has to become "level", or the
@@ -332,9 +396,12 @@ static func _test_wings_open_quickly_on_spawn(t: TestCase) -> void:
 		if cmd.span < lowest_span:
 			lowest_span = cmd.span
 			lowest_at = float(i) * DT
+	# A 0.60 m stance is a genuinely narrow spread, so it need not read as full
+	# wings — but it must never read as folded, which is what dropped a player
+	# out of the sky on spawn.
 	t.greater(
-		lowest_span, 0.85,
-		"wings never read as tucked while held out (worst %.2f at t=%.2fs)" % [
+		lowest_span, 0.45,
+		"wings never read as folded while held out (worst %.2f at t=%.2fs)" % [
 			lowest_span, lowest_at
 		]
 	)

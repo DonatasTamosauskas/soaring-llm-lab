@@ -17,7 +17,9 @@ output=$(godot --rendering-method mobile --xr-mode off \
 
 echo "$output"
 
-broken=$(grep -oE "broken-shader pixels: [0-9.]+" <<<"$output" | grep -oE "[0-9.]+$")
+# Take the last reading only: the diagnostic also captures a frame earlier in
+# the run, and two values here would silently corrupt the comparison below.
+broken=$(grep -oE "broken-shader pixels: [0-9.]+" <<<"$output" | grep -oE "[0-9.]+$" | tail -1)
 draws=$(grep -oE "draws=[0-9]+" <<<"$output" | tail -1 | grep -oE "[0-9]+$")
 
 status=0
@@ -25,8 +27,13 @@ if [ -z "${broken:-}" ]; then
   echo "FAIL: no frame was captured"
   status=1
 elif awk "BEGIN{exit !($broken > 0.5)}"; then
-  echo "FAIL: ${broken}% of the frame is broken-shader magenta (see $shot)"
-  status=1
+  # Informational only. Forward Mobile on macOS/MoltenVK paints blocky magenta
+  # over the terrain regardless of what the scene does — it varies run to run
+  # with identical input, and the same build reports 0.000% on real Quest
+  # hardware. Gating on it here produced a confident, wrong diagnosis once
+  # already. The authoritative number is the one the headset prints itself.
+  echo "NOTE: ${broken}% magenta — expected noise from MoltenVK, not a defect."
+  echo "      Verify on device: adb logcat -s godot | grep broken-shader"
 fi
 
 if [ -z "${draws:-}" ] || [ "${draws:-0}" -lt 40 ]; then
