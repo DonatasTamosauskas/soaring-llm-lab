@@ -119,7 +119,6 @@ func _physics_process(delta: float) -> void:
 	stun_timer = maxf(0.0, stun_timer - delta)
 
 	_gather_command(delta)
-	_apply_boundary(delta)
 	command.wind = wind
 
 	if perched:
@@ -132,39 +131,6 @@ func _physics_process(delta: float) -> void:
 	_apply_haptics()
 	_update_wings(delta)
 
-
-## Distance from the middle of the map at which the air starts turning you back,
-## and the distance by which it has full authority.
-const SOFT_BOUNDARY: float = 430.0
-const HARD_BOUNDARY: float = 640.0
-
-## How far outside the play area the bird currently is, 0..1. Published so the
-## HUD can warn before the player notices the world thinning out.
-var boundary_pressure: float = 0.0
-
-
-## Curves the bird back toward the populated part of the map.
-##
-## A bird with no input never banks, so it glides dead straight — and in about
-## forty seconds that carries it clean out of the world into featureless terrain
-## with no buildings, no trees and nothing to look at but green and blue. That
-## reads exactly like the game breaking, and it is how this bug was reported
-## twice. Rather than a wall, the correction blends the player's own bank toward
-## an inward turn, so it feels like being leaned on by the wind and never like
-## having the controls taken away.
-func _apply_boundary(delta: float) -> void:
-	var here := Vector2(global_position.x, global_position.z)
-	var distance: float = here.length()
-	boundary_pressure = clampf(
-		(distance - SOFT_BOUNDARY) / maxf(HARD_BOUNDARY - SOFT_BOUNDARY, 1.0), 0.0, 1.0
-	)
-	if boundary_pressure <= 0.0 or here.length_squared() < 1.0:
-		return
-	var inward: Vector2 = -here.normalized()
-	var desired_heading: float = atan2(-inward.x, -inward.y)
-	var error: float = wrapf(desired_heading - model.heading, -PI, PI)
-	var inward_bank: float = clampf(-error * 1.5, -1.1, 1.1)
-	command.bank = lerpf(command.bank, inward_bank, boundary_pressure)
 
 
 func _update_wings(delta: float) -> void:
@@ -274,31 +240,13 @@ func _move(delta: float) -> void:
 
 func _begin_perch(normal: Vector3) -> void:
 	perched = true
-	_perched_time = 0.0
 	perch_normal = normal if normal.is_normalized() else Vector3.UP
 	model.velocity = Vector3.ZERO
 	velocity = Vector3.ZERO
 	perched_changed.emit(true)
 
 
-## Seconds a player who has never flown may sit on the ground before the game
-## puts them back in the air.
-const NOVICE_RESCUE_DELAY: float = 4.0
 
-var _perched_time: float = 0.0
-
-
-## True when the player is flying by wing gestures, rather than by keyboard or
-## by a script. Only they can be stranded by not knowing the flap, so only they
-## get rescued — a desktop player pressing nothing has not misunderstood
-## anything, and lifting them off a branch they chose would just be the game
-## taking their controls away.
-func is_flying_by_wings() -> bool:
-	return scripted_command == null and (pose_source.is_valid() or xr_active)
-
-
-func _needs_novice_rescue() -> bool:
-	return is_flying_by_wings() and wings.awaiting_first_spread
 
 
 ## While clinging, a wingbeat is what gets you airborne again — which makes
@@ -312,16 +260,7 @@ func _needs_novice_rescue() -> bool:
 func _process_perched(delta: float) -> void:
 	model.velocity = Vector3.ZERO
 	velocity = Vector3.ZERO
-	_perched_time += delta
 
-	if _needs_novice_rescue() and _perched_time >= NOVICE_RESCUE_DELAY:
-		_perched_time = 0.0
-		perched = false
-		perched_changed.emit(false)
-		model.velocity = (Vector3.UP * 0.6 + model.forward() * 0.8).normalized() \
-			* model.trim_speed()
-		global_position += Vector3.UP * 2.0 * size
-		return
 
 	if command.stroke_speed > 0.5:
 		perched = false

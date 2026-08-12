@@ -415,8 +415,7 @@ func _finish(body: StaticBody3D, batch: GeometryBatch, draw_range: float = 0.0) 
 	if draw_range > 0.0:
 		visual.visibility_range_end = draw_range * (MOBILE_RANGE_SCALE if MOBILE else 1.0)
 		visual.visibility_range_end_margin = visual.visibility_range_end * 0.15
-		if not MOBILE:
-			visual.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		visual.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 	body.add_child(visual)
 
 

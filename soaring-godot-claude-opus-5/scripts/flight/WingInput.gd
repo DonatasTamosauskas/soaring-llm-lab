@@ -32,13 +32,6 @@ const FULL_SPAN_AT: float = 0.85
 ## If a player demonstrates a wider reach, use this much of it instead.
 const REACH_USED_FRACTION: float = 0.80
 
-## Separation that counts as "this player has understood the gesture".
-const FIRST_SPREAD_THRESHOLD: float = 0.60
-## Wing extension held until then. Full, not partial: half-open wings carry so
-## much less lift that the bird still sinks at nearly 9 m/s and reaches the
-## ground in eight seconds — which is no more survivable for a new player than a
-## folded-wing dive, just slower.
-const GRACE_SPAN: float = 1.0
 ## Starting assumption about reach, refined at runtime. Deliberately equal to
 ## [constant FULL_SPAN_AT] rather than a real arm-span: assuming a wide reach
 ## nobody has demonstrated makes every normal posture read as narrow, which is
@@ -135,15 +128,6 @@ var flap_strength: float = 0.0
 ## Body forward derived from the wing line — used to orient the bird's mesh.
 var body_forward: Vector3 = Vector3.FORWARD
 
-## True until the player has spread their arms at least once.
-##
-## A player who puts the headset on holding the controllers together is, by the
-## rules of this game, commanding a full tuck — and a full tuck from the spawn
-## altitude is a power dive into the ground inside four seconds, with no way to
-## work out why. Until they have made the gesture once the wings stay partly
-## open, so the bird glides while the HUD explains itself. The moment they do
-## spread, the training wheels come off for good.
-var awaiting_first_spread: bool = true
 
 
 class HandTracker extends RefCounted:
@@ -181,7 +165,6 @@ func reset() -> void:
 	wrist_zero = 0.0
 	reach_zero = REACH_CENTRE
 	max_span = DEFAULT_MAX_SPAN
-	awaiting_first_spread = true
 	recentre()
 	for h: HandTracker in _hands:
 		h.reset()
@@ -222,10 +205,6 @@ func update(
 	if _calibrating:
 		_learn_neutral(left, right, span_metres, left_tracked and right_tracked, dt)
 	var target_span: float = _measure_span(span_metres)
-	if span_metres >= FIRST_SPREAD_THRESHOLD:
-		awaiting_first_spread = false
-	if awaiting_first_spread:
-		target_span = maxf(target_span, GRACE_SPAN)
 	var target_bank: float = _measure_bank(wing, span_metres)
 	var target_alpha: float = _measure_alpha(left, right, head)
 

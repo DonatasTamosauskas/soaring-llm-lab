@@ -130,11 +130,7 @@ func _update_text() -> void:
 	# Folded wings take priority over every other message. A player whose hands
 	# are too close together is falling out of the sky for a reason they cannot
 	# see, and nothing else on this display matters until they know it.
-	if player.boundary_pressure > 0.15:
-		status = "  TURNING BACK — edge of the valley"
-	elif player.is_flying_by_wings() and player.wings.awaiting_first_spread:
-		status = "  SPREAD YOUR ARMS TO OPEN YOUR WINGS"
-	elif player.command.span < 0.35 and not player.perched:
+	if player.command.span < 0.35 and not player.perched:
 		status = "  WINGS FOLDED — spread your arms"
 	elif player.perched:
 		status = "  PERCHED — spread your arms and flap"

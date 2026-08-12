@@ -23,8 +23,6 @@ static func run(t: TestCase) -> void:
 	_test_ducking_is_not_a_flap(t)
 	_test_asymmetric_flap_yaws(t)
 	_test_short_arms_still_reach_full_span(t)
-	_test_hands_together_on_spawn_still_glides(t)
-	_test_tuck_works_once_the_gesture_is_learned(t)
 	_test_calibration_always_finishes(t)
 	_test_a_modest_spread_is_full_wings(t)
 	_test_neutral_is_calibrated_not_assumed(t)
@@ -279,40 +277,6 @@ static func _test_short_arms_still_reach_full_span(t: TestCase) -> void:
 	t.greater(reopened.span, 0.9, "wings still open fully after a long tuck")
 
 
-## Found on a real Quest, the hard way. The player put the headset on holding
-## both controllers together — the most natural thing in the world — which is a
-## full-tuck command, and the bird power-dived into the ground four seconds
-## after spawning. They reported it as "the world disappeared"; they were in
-## fact face-down in a field.
-static func _test_hands_together_on_spawn_still_glides(t: TestCase) -> void:
-	t.begin("hands together on spawn still glides")
-	var w := WingInput.new()
-	# 24 cm apart: controllers held together in front of the chest.
-	var cmd: FlightCommand = _settle(
-		w, _head(), _hand(-1.0, 1.30, 0.0, 0.12), _hand(1.0, 1.30, 0.0, 0.12), 3.0
-	)
-	t.ok(w.awaiting_first_spread, "the gesture has not been demonstrated yet")
-	t.greater(cmd.span, 0.45, "wings stay open enough to glide, not plummet")
-
-	# It must actually fly, not merely report a number. Fly the real model with
-	# this command and check the bird is still airborne 8 seconds later.
-	var model := FlightModel.new()
-	var harness := FlightHarness.new(model)
-	harness.launch(model.trim_speed(), 0.0, 95.0)
-	harness.fly(cmd, 8.0)
-	t.greater(harness.altitude, 20.0, "still airborne after 8s of holding the controllers")
-
-
-static func _test_tuck_works_once_the_gesture_is_learned(t: TestCase) -> void:
-	t.begin("tucking still works after the first spread")
-	var w := WingInput.new()
-	_settle(w, _head(), _hand(-1.0, 1.45), _hand(1.0, 1.45), 2.0)
-	t.ok(not w.awaiting_first_spread, "spreading once retires the training wheels")
-
-	var tucked: FlightCommand = _settle(
-		w, _head(), _hand(-1.0, 1.30, 0.0, 0.10), _hand(1.0, 1.30, 0.0, 0.10), 1.5
-	)
-	t.less(tucked.span, 0.12, "hands together is still a full tuck")
 
 
 ## The dead end behind the crash: neutral calibration only completed if it saw a

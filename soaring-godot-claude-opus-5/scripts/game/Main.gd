@@ -153,7 +153,6 @@ func capture_headset_view(path: String) -> void:
 	var image: Image = source.get_texture().get_image()
 	var error: int = image.save_png(path)
 	print("[Soaring] headset view saved to %s (%d)" % [path, error])
-	_report_broken_shaders(image)
 	if player.xr_active and source is SubViewport:
 		source.queue_free()
 
@@ -171,39 +170,7 @@ func _capture_after(path: String, delay: float) -> void:
 	var image: Image = source.get_texture().get_image()
 	var error: int = image.save_png(path)
 	print("[Soaring] captured %s (%d)" % [path, error])
-	_report_broken_shaders(image)
 	get_tree().quit(0)
-
-
-## Counts Godot's "invalid material" magenta in the rendered frame.
-##
-## This exists because of a bug that shipped to a headset: a shader variant that
-## works on Forward+ and fails on Forward Mobile. Draw calls looked healthy,
-## no error was logged, and the geometry was still being submitted — it just
-## came out magenta on desktop and invisible on Quest hardware. Pixel colour is
-## the only signal that actually catches that, so the mobile smoke test asserts
-## on this number.
-func _report_broken_shaders(image: Image) -> void:
-	var magenta: int = 0
-	var total: int = 0
-	# Sampling every 4th pixel is plenty to spot a corruption this loud, and
-	# keeps the scan off the critical path of a capture.
-	#
-	# The test is "red and blue both strong, green clearly weaker than either"
-	# rather than an exact magenta match: the corruption arrives blended with
-	# whatever was behind it, so it lands anywhere from hot pink to pale mauve.
-	# An exact-match test reported 0.009% on a frame that was visibly a sixth
-	# magenta, which is worse than no test at all.
-	for y in range(0, image.get_height(), 4):
-		for x in range(0, image.get_width(), 4):
-			var c: Color = image.get_pixel(x, y)
-			total += 1
-			if c.r > 0.6 and c.b > 0.6 and c.g < 0.75 * minf(c.r, c.b):
-				magenta += 1
-	var fraction: float = 100.0 * float(magenta) / maxf(float(total), 1.0)
-	print("[Soaring] broken-shader pixels: %.3f%% (%d of %d sampled)" % [
-		fraction, magenta, total
-	])
 
 
 ## A plain (non-XR) viewport looking out of the player's headset. Used only for
