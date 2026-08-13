@@ -82,6 +82,15 @@ to Metal there, which does not interoperate with the Meta XR Simulator's Vulkan
 compositor — the session comes up and then dies inside Metal texture-view
 validation.
 
+## Visual checks on macOS
+
+Use `--rendering-method forward_plus` for any screenshot taken on this machine.
+The project ships the Mobile renderer to match the headset, and Forward Mobile
+on macOS/MoltenVK paints blocky magenta tiles over the terrain. It is a driver
+artifact, not a defect: the identical frame under Forward+ is pixel-clean, and
+the Quest reports 0.000% affected pixels. Confirmed by rendering the same frame
+both ways.
+
 ## Verifying it
 
 Five gates and a shelf of instruments, all runnable from a terminal without a
