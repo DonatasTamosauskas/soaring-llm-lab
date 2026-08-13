@@ -12,8 +12,17 @@ extends Node
 var visual_roll_fraction: float = 0.35
 ## Peripheral vignette strength at top speed. 0 disables it.
 var comfort_vignette: float = 0.7
-## Snap-turn style comfort: cap how fast the view can yaw, rad/s. 0 = uncapped.
+## How the view follows the bird's heading: 0 smooth, 1 eased, 2 stepped. See
+## [enum ViewComfort.Turning] — rotation, not speed, is what makes people ill,
+## and this is the knob that spends visual fidelity to buy the rotation down.
+var turning_comfort: float = 0.0
+## Ceiling on view yaw rate in eased mode, rad/s. 0 uses
+## [constant ViewComfort.EASED_RATE]. Ignored in the other two modes, which have
+## no rate to cap.
 var max_view_yaw_rate: float = 0.0
+## Whether the world quietly turns to face a player who has physically turned
+## around in their room. See [method ViewComfort.update_reorientation].
+var auto_recentre: float = 1.0
 
 # --- Input -------------------------------------------------------------------
 

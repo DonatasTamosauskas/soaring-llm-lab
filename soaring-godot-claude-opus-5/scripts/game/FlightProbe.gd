@@ -152,12 +152,22 @@ func _check_perch(_before: Dictionary) -> String:
 
 ## Puts a bird of a given size directly in the player's path so the chase rules
 ## get exercised without waiting for the AI to oblige.
+##
+## It is aimed at the player as well as placed in front of them, because a catch
+## now requires the hunter to be [i]going for it[/i] — see [method
+## GameRules.within_strike]. A predator parked in the player's path with its own
+## nose pointing away is not striking anything, and before the cone existed this
+## setup was quietly relying on a rule that let it.
 func _plant_bird(relative_size: float) -> void:
 	if manager.birds.is_empty():
 		return
 	var bird: BirdNPC = manager.birds[0]
 	bird.set_size(player.size * relative_size)
 	bird.global_position = player.global_position + player.model.forward() * 2.0
+	var toward: Vector3 = (player.global_position - bird.global_position).normalized()
+	if toward.is_finite() and toward.length_squared() > 0.5:
+		bird.model.heading = atan2(-toward.x, -toward.z)
+		bird.model.velocity = toward * bird.model.trim_speed()
 
 
 func _check_caught_prey(before: Dictionary) -> String:

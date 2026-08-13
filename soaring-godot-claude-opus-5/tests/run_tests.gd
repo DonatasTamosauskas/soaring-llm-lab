@@ -13,6 +13,14 @@ func _initialize() -> void:
 	FlightTests.run(t)
 	WingInputTests.run(t)
 	GameRulesTests.run(t)
+	ProgressionTests.run(t)
+	WorldTests.run(t)
+	PaletteTests.run(t)
+	BirdTests.run(t)
+	AITests.run(t)
+	UITests.run(t)
+	ComfortTests.run(t)
+	AudioTests.run(t)
 
 	var elapsed: int = Time.get_ticks_msec() - started
 	print("")

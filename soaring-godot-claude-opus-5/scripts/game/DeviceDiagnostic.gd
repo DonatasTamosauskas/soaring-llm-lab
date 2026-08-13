@@ -20,14 +20,20 @@ const SAMPLES: int = 20
 
 var player: BirdPlayer
 var world: WorldBuilder
+## Optional: with it, every sample also reports whether the flock is close
+## enough to be seen. Without it the diagnostic behaves exactly as before.
+var manager: GameManager
 
 var _timer: float = 0.0
 var _count: int = 0
 
 
-func start(player_ref: BirdPlayer, world_ref: WorldBuilder) -> void:
+func start(
+	player_ref: BirdPlayer, world_ref: WorldBuilder, manager_ref: GameManager = null
+) -> void:
 	player = player_ref
 	world = world_ref
+	manager = manager_ref
 	print("[diag] renderer=%s driver=%s xr=%s" % [
 		ProjectSettings.get_setting("rendering/renderer/rendering_method", "?"),
 		RenderingServer.get_video_adapter_name(),
@@ -124,3 +130,41 @@ func _sample() -> void:
 				nearest = d
 				nearest_name = child.name
 	print("[diag] nearest building %s at %.1f m" % [nearest_name, nearest])
+	_report_flock(head)
+
+
+## Whether the flock is anywhere you could see it.
+##
+## Distances are the wrong unit for that question, so this reports the answer in
+## degrees of visual angle as well: a bird's wingspan divided by its distance is
+## what decides whether it reads as a bird, a speck or nothing. Below about half
+## a degree there is no silhouette left to read at any headset resolution, which
+## is what a sky where the nearest bird is 200 m away actually looks like.
+func _report_flock(head: Vector3) -> void:
+	if manager == null:
+		return
+	var near: int = 0
+	var middle: int = 0
+	var far: int = 0
+	var closest: float = INF
+	var closest_angle: float = 0.0
+	var biggest: float = 0.0
+	for bird: BirdNPC in manager.birds:
+		if not is_instance_valid(bird):
+			continue
+		var distance: float = bird.global_position.distance_to(head)
+		if distance < 80.0:
+			near += 1
+		elif distance < 200.0:
+			middle += 1
+		else:
+			far += 1
+		var span: float = bird.size * BirdMesh.wingspan(BirdMesh.species_for_size(bird.size))
+		var angle: float = rad_to_deg(2.0 * atan(0.5 * span / maxf(distance, 0.5)))
+		biggest = maxf(biggest, angle)
+		if distance < closest:
+			closest = distance
+			closest_angle = angle
+	print("[diag] flock <80m=%d <200m=%d beyond=%d | nearest %.0f m (%.2f deg) | widest %.2f deg" % [
+		near, middle, far, closest, closest_angle, biggest
+	])

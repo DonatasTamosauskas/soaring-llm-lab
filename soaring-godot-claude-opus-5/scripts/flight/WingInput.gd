@@ -40,6 +40,33 @@ const DEFAULT_MAX_SPAN: float = FULL_SPAN_AT
 ## Wing axis shorter than this is too degenerate to derive a heading from.
 const DEGENERATE_SPAN: float = 0.22
 
+## Hand separation that counts as this player having shown the game what a
+## spread looks like.
+const SPREAD_DEMONSTRATED: float = 0.55
+## Until they have, the wings cannot fold below this.
+##
+## A tuck is something you [i]do[/i], and until the player has opened their arms
+## once the game has been told nothing at all — so reading their resting posture
+## as a command is reading a command that was never given. Measured, not
+## assumed: driving the real game through this sensor with the controllers held
+## still 0.10, 0.25 and 0.40 m apart (tests/hands.sh) folded the wings to zero
+## and put the bird in a field within seconds, every time. Nobody who has just
+## put a headset on knows that holding two controllers near each other is a
+## power dive, and the first thing the game says to them is "spread your arms".
+const NOVICE_MIN_SPAN: float = 0.80
+
+## Seconds of lost tracking before the wings start flying themselves. Long
+## enough to ride out a hand passing behind the head, short enough that a set
+## down controller cannot hold a 70-degree bank all the way into the ground.
+const TRACKING_GRACE: float = 0.35
+## Seconds the abandoned wings take to settle into a level glide.
+const TRACKING_RECOVERY: float = 0.9
+
+## Angle of attack of a level glide. Matches [member FlightModel.alpha_trim];
+## duplicated for the same reason every other tunable here is, so that this
+## class stays a plain object with no lookups in it.
+const TRIM_ALPHA: float = 0.105
+
 ## Converts arm tilt to commanded bank. Above 1 so that a comfortable arm
 ## movement reaches a hard turn without dislocating a shoulder: a 20 cm tilt is
 ## already a gentle turn, and a full-reach tilt pegs the bank limit.
@@ -108,6 +135,15 @@ var wrist_zero: float = 0.0
 var reach_zero: float = REACH_CENTRE
 var _calibrating: bool = true
 var _calibration_elapsed: float = 0.0
+## True once this player has spread their arms at least once. See
+## [constant NOVICE_MIN_SPAN].
+var has_spread: bool = false
+
+## False while the wings are flying themselves because the trackers stopped
+## reporting. Read by the HUD: a bird that has stopped answering the controls
+## needs to say why, or the player concludes the game is broken.
+var tracking_ok: bool = true
+var _lost_for: float = 0.0
 
 # Smoothed outputs.
 var _bank: float = 0.0
@@ -165,6 +201,9 @@ func reset() -> void:
 	wrist_zero = 0.0
 	reach_zero = REACH_CENTRE
 	max_span = DEFAULT_MAX_SPAN
+	has_spread = false
+	tracking_ok = true
+	_lost_for = 0.0
 	recentre()
 	for h: HandTracker in _hands:
 		h.reset()
@@ -182,12 +221,13 @@ func update(
 ) -> FlightCommand:
 	if not is_finite(dt) or dt <= 0.0:
 		return command
-	if not _pose_is_sane(head) or not _pose_is_sane(left) or not _pose_is_sane(right):
-		# Tracking dropped. Hold the last good command and let the bird coast
-		# rather than spasm, but stop crediting flaps.
-		command.stroke_speed = 0.0
-		command.asymmetry = 0.0
+	var poses_sane: bool = _pose_is_sane(head) and _pose_is_sane(left) \
+		and _pose_is_sane(right)
+	if not poses_sane or not left_tracked or not right_tracked:
+		_fly_untracked(dt)
 		return command
+	tracking_ok = true
+	_lost_for = 0.0
 
 	var lp: Vector3 = left.origin
 	var rp: Vector3 = right.origin
@@ -220,6 +260,37 @@ func update(
 	command.alpha = _alpha
 	command.sanitize()
 	return command
+
+
+## What the wings do when nobody is holding them.
+##
+## Holding the last good command used to be the whole answer, and it is the
+## right answer for a blink of lost tracking. It is the wrong answer for a
+## controller put down on a table mid-turn, a headset taken off, or a hand that
+## went behind the player's back and stayed there: the bird keeps whatever bank
+## it had, which is a spiral, and spirals end in the ground. So after
+## [constant TRACKING_GRACE] the wings level themselves, open, and settle to
+## trim — the attitude a real bird falls into when it stops doing anything,
+## and the one a player can be handed back in mid-air without a surprise.
+func _fly_untracked(dt: float) -> void:
+	_lost_for += dt
+	for h: HandTracker in _hands:
+		h.reset()
+	command.stroke_speed = 0.0
+	command.asymmetry = 0.0
+	flap_pulse = false
+	flap_strength = maxf(0.0, flap_strength - dt * 3.0)
+	if _lost_for < TRACKING_GRACE:
+		return
+	tracking_ok = false
+	var weight: float = clampf(dt / TRACKING_RECOVERY, 0.0, 1.0)
+	_bank = lerpf(_bank, 0.0, weight)
+	_alpha = lerpf(_alpha, TRIM_ALPHA, weight)
+	_span = lerpf(_span, 1.0, weight)
+	command.bank = _bank
+	command.alpha = _alpha
+	command.span = _span
+	command.sanitize()
 
 
 func _smoothing_weight(dt: float) -> float:
@@ -308,7 +379,14 @@ func _calibrate(span_metres: float, both_tracked: bool, dt: float) -> void:
 func _measure_span(span_metres: float) -> float:
 	var full: float = minf(maxf(max_span * REACH_USED_FRACTION, FULL_SPAN_AT), max_span)
 	var range_span: float = maxf(full - MIN_SPAN, 0.1)
-	return clampf((span_metres - MIN_SPAN) / range_span, 0.0, 1.0)
+	var extension: float = clampf((span_metres - MIN_SPAN) / range_span, 0.0, 1.0)
+	if span_metres >= SPREAD_DEMONSTRATED:
+		has_spread = true
+	if has_spread:
+		return extension
+	# See [constant NOVICE_MIN_SPAN]: a player who has never opened their arms
+	# has not asked for anything, least of all a dive.
+	return maxf(extension, NOVICE_MIN_SPAN)
 
 
 func _measure_bank(wing: Vector3, span_metres: float) -> float:
@@ -348,9 +426,8 @@ func _measure_alpha(left: Transform3D, right: Transform3D, head: Transform3D) ->
 	var reach: float = clampf((offset.dot(fwd) - reach_zero) / REACH_RANGE, -1.0, 1.0)
 
 	var model_range: float = 0.42  # matches FlightModel.alpha_range
-	var trim: float = 0.105  # matches FlightModel.alpha_trim
 	var blended: float = WRIST_AOA_WEIGHT * (wrist / (PI * 0.4)) - REACH_AOA_WEIGHT * reach
-	return trim + clampf(blended * tilt_sensitivity, -1.0, 1.0) * model_range
+	return TRIM_ALPHA + clampf(blended * tilt_sensitivity, -1.0, 1.0) * model_range
 
 
 ## Rotation of one hand about its own wing axis: how far the back of the hand

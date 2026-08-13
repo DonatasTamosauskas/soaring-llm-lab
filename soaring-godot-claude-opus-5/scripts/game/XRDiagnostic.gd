@@ -22,6 +22,8 @@ var _frames: int = 0
 var _frame_clock: float = 0.0
 var _left_seen: bool = false
 var _right_seen: bool = false
+var _grip_seen: bool = false
+var _trigger_seen: bool = false
 var _span_min: float = INF
 var _span_max: float = -INF
 
@@ -42,7 +44,10 @@ func start(player_ref: BirdPlayer) -> void:
 		else PackedVector2Array([interface.get_render_target_size()])
 	print("  render target: %s" % str(sizes))
 	print("")
-	print("  time   L-tracked R-tracked  span(m)  span  bank(deg)  AoA(deg)  stroke  fps")
+	print(
+		"  time   L-tracked R-tracked  span(m)  span  bank(deg)  AoA(deg)  stroke"
+		+ "  grip  trig  fps"
+	)
 
 
 func _process(delta: float) -> void:
@@ -74,13 +79,22 @@ func _sample() -> void:
 	_frames = 0
 	_frame_clock = 0.0
 
+	# The buttons this game binds, so that "is the grip reaching the game" has an
+	# answer other than putting a headset on and hoping. Both are read exactly
+	# the way [BirdPlayer] reads them.
+	var gripping: bool = player.is_clinging()
+	var triggering: bool = player.both_triggers_held()
+	_grip_seen = _grip_seen or gripping
+	_trigger_seen = _trigger_seen or triggering
+
 	var cmd: FlightCommand = player.command
-	print("  %5.1f  %9s %9s  %7.2f  %4.2f  %9.1f  %8.1f  %6.2f  %4.0f" % [
+	print("  %5.1f  %9s %9s  %7.2f  %4.2f  %9.1f  %8.1f  %6.2f  %4s  %4s  %4.0f" % [
 		_samples * SAMPLE_INTERVAL,
 		"yes" if left_tracked else "NO",
 		"yes" if right_tracked else "NO",
 		separation, cmd.span, rad_to_deg(cmd.bank), rad_to_deg(cmd.alpha),
-		cmd.stroke_speed, fps
+		cmd.stroke_speed,
+		"HELD" if gripping else "-", "HELD" if triggering else "-", fps
 	])
 	_samples += 1
 
@@ -98,6 +112,12 @@ func report() -> bool:
 
 	print("")
 	print("  hand separation observed: %.2f .. %.2f m" % [_span_min, _span_max])
+	# Not a failure: a diagnostic run where nobody squeezed anything is the
+	# normal case. It is here so that a session where somebody [i]did[/i] squeeze
+	# and the game did nothing has a line to point at.
+	print("  grip seen: %s,  both triggers seen: %s" % [
+		str(_grip_seen), str(_trigger_seen)
+	])
 	if problems.is_empty():
 		print("XR INPUT OK")
 		return true

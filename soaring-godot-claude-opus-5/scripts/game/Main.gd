@@ -3,12 +3,19 @@ extends Node3D
 ## Assembles the game: world, player, flock, HUD.
 
 const PLAYER_SCENE: String = "res://scenes/Player.tscn"
-const SPAWN_ALTITUDE: float = 95.0
+## High enough to learn to fly in. Measured, not chosen: [FirstContact] flies a
+## novice through the coach's four lessons and they cost about 70 m of glide
+## before the dive lesson, which then spends another 50 m — so at the old 95 m a
+## player following the game's own instructions reached the last lesson at
+## treetop height and finished it in a field. This leaves a first session about
+## a minute of air to be wrong in.
+const SPAWN_ALTITUDE: float = 190.0
 
 var world: WorldBuilder
 var player: BirdPlayer
 var manager: GameManager
 var hud: HUD
+var menu: GameMenu
 var audio: FlightAudio
 
 
@@ -47,20 +54,212 @@ func _ready() -> void:
 	hud.name = "HUD"
 	hud.attach(player, manager)
 
+	# The menu is a sibling of the world rather than a child of the camera: it is
+	# an object standing in the sky, not a layer stuck to the player's face.
+	menu = GameMenu.new()
+	menu.name = "GameMenu"
+	add_child(menu)
+	menu.attach(player, manager, hud)
+
 	audio = FlightAudio.new()
 	audio.name = "FlightAudio"
 	add_child(audio)
-	audio.attach(player)
+	audio.attach(player, manager, world)
 
 	player.perched_changed.connect(_on_perched_changed)
 	manager.player_was_caught.connect(_on_player_caught)
+	manager.event_occurred.connect(_on_game_event)
 
 	print("[Soaring] ready — %d birds aloft" % manager.birds.size())
+	_maybe_open_menu()
+	_maybe_run_menu_probe()
 	_maybe_schedule_capture()
 	_maybe_run_probe()
+	_maybe_run_hunt_probe()
+	_maybe_demo_event()
 	_maybe_run_xr_diagnostic()
 	_maybe_run_device_diagnostic()
 	_maybe_run_hands_repro()
+	_maybe_run_first_contact()
+
+
+## Catching something has to be felt, not read. The event channel is the only
+## place that knows a catch happened, so the sound and the haptic pulse are wired
+## here rather than inside the rules — [GameManager] stays a scene-light object
+## that emits what happened and does not care who reacts.
+func _on_game_event(kind: StringName, payload: Dictionary) -> void:
+	match kind:
+		&"catch":
+			audio.cue(&"catch")
+			player.haptic_cue(
+				&"catch", clampf(0.5 + 0.1 * float(payload.get("streak", 1)), 0.5, 1.0)
+			)
+		&"caught":
+			audio.cue(&"caught")
+			player.haptic_cue(&"caught", 1.0)
+		&"rank_up":
+			audio.cue(&"rank_up")
+			player.haptic_cue(&"rank_up", 1.0)
+		&"rank_down":
+			audio.cue(&"rank_down")
+		&"ended":
+			audio.cue(&"won" if bool(payload.get("won", false)) else &"lost")
+
+
+## Flags that mean "something is flying this game from a script": a probe, a
+## diagnostic, a capture. None of them can press a FLY button, so none of them
+## get a main menu.
+## `uiprobe` is deliberately absent: the menu probe's first job is to check that
+## the game opens on a menu at all, so it has to arrive the way a player does.
+const HEADLESS_FLAGS: PackedStringArray = [
+	"probe", "hunt", "hands", "demo", "xrdiag", "diag", "capture", "firstcontact",
+]
+
+
+const MENU_SCREENS: Dictionary = {
+	"main": MenuModel.Screen.MAIN,
+	"pause": MenuModel.Screen.PAUSE,
+	"settings": MenuModel.Screen.SETTINGS,
+	"controls": MenuModel.Screen.CONTROLS,
+}
+
+
+## A player arrives at a menu; everything else arrives in mid-air. `--menu=` also
+## names a screen, which is how each one gets photographed and looked at:
+##   godot --xr-mode off -- --menu=settings --capture=/tmp/m.png --capture_delay=6
+## (the summary is reached through `--demo=ended`, which loses a run for you.)
+func _maybe_open_menu() -> void:
+	var wanted: String = _argument("menu")
+	if MENU_SCREENS.has(wanted):
+		menu.open(MENU_SCREENS[wanted])
+		return
+	if _flag("menu"):
+		menu.open(MenuModel.Screen.MAIN)
+		return
+	if wanted == "0":
+		return
+	for flag: String in HEADLESS_FLAGS:
+		if _argument(flag) != "":
+			return
+	menu.open(MenuModel.Screen.MAIN)
+
+
+func _argument(name: String) -> String:
+	for arg: String in OS.get_cmdline_user_args():
+		var parts: PackedStringArray = arg.lstrip("-").split("=")
+		if parts.size() == 2 and parts[0] == name:
+			return parts[1]
+	return ""
+
+
+## Drives the real menu through the real game the way a player does — points at
+## rows, presses them, and checks that the world stopped, started and restarted.
+##   godot --headless --xr-mode off --fixed-fps 90 -- --uiprobe=1
+func _maybe_run_menu_probe() -> void:
+	if not _flag("uiprobe"):
+		return
+	var probe := MenuProbe.new()
+	probe.name = "MenuProbe"
+	add_child(probe)
+	probe.finished.connect(func(passed: bool) -> void: get_tree().quit(0 if passed else 1))
+	probe.start(player, manager, menu)
+
+
+## Fires one game event a moment after launch so the HUD states that only happen
+## mid-run — a catch banner, a promotion, the end-of-run summary — can be
+## photographed and looked at:
+##   godot --xr-mode off -- --demo=ended --capture=/tmp/x.png --capture_delay=8
+## Without it the only way to see the summary panel is to lose a real run, which
+## takes a quarter of an hour and cannot be aimed at a screenshot.
+func _maybe_demo_event() -> void:
+	var kind: String = ""
+	for arg: String in OS.get_cmdline_user_args():
+		var parts: PackedStringArray = arg.lstrip("-").split("=")
+		if parts.size() == 2 and parts[0] == "demo":
+			kind = parts[1]
+	if kind.is_empty():
+		return
+	_fire_demo_event(kind)
+
+
+func _fire_demo_event(kind: String) -> void:
+	await get_tree().create_timer(3.0).timeout
+	match kind:
+		"catch":
+			# The player's size is moved too, not just the session's: rank is
+			# re-derived from the bird every frame, so a session that grew while
+			# the bird did not would be demoted again a frame later.
+			for size: float in [1.18, 1.30, 1.42]:
+				player.set_size(size)
+				manager.session.record_catch(0.7, size)
+			manager.event_occurred.emit(&"catch", {
+				"prey": 0.7, "score": 43, "streak": 3, "total": 96, "size": 1.42,
+			})
+		"rank":
+			manager.event_occurred.emit(
+				&"rank_up", {"index": 2, "name": "RAIDER", "size": 1.24}
+			)
+		"caught":
+			manager.event_occurred.emit(
+				&"caught", {"by": 2.1, "lives": 3, "size": 0.86, "final": false}
+			)
+		"restart":
+			# Ends a run, waits out the arm delay, then beats the wings once and
+			# checks that the next run actually started. The only automated cover
+			# for the way a player leaves the summary screen, which is otherwise
+			# unreachable without losing a real quarter-hour run.
+			for i in Progression.LIVES:
+				manager.session.record_death(2.4)
+			await get_tree().create_timer(GameManager.RESTART_ARM_DELAY + 0.6).timeout
+			var beat := FlightCommand.new()
+			beat.span = 1.0
+			beat.alpha = player.model.alpha_trim
+			beat.stroke_speed = 3.0
+			player.scripted_command = beat
+			await get_tree().create_timer(0.4).timeout
+			player.scripted_command = null
+			var flying: bool = not manager.session.is_over()
+			print("[Soaring] restart check: state %s, size %.2f, lives %d, catches %d" % [
+				"FLYING" if flying else "OVER", player.size, manager.session.lives,
+				manager.session.catches,
+			])
+			get_tree().quit(
+				0 if flying and is_equal_approx(player.size, Progression.START_SIZE)
+					and manager.session.lives == Progression.LIVES else 1
+			)
+		"ended", "won":
+			for i in 6:
+				player.set_size(1.4 + 0.3 * float(i))
+				manager.session.record_catch(1.0, player.size)
+			if kind == "won":
+				player.set_size(Progression.APEX_SIZE)
+				manager.session.record_catch(2.9, player.size)
+			else:
+				for i in Progression.LIVES:
+					manager.session.record_death(2.4)
+			# The armed prompt only appears after the delay a real run gives you.
+			await get_tree().create_timer(GameManager.RESTART_ARM_DELAY + 0.4).timeout
+
+
+## Measures the real hunting loop: an autopilot flies the real game and counts
+## catches, chases and deaths, which is what [SessionSim] is calibrated against.
+##   godot --headless --xr-mode off --fixed-fps 90 -- --hunt=600
+func _maybe_run_hunt_probe() -> void:
+	var seconds: float = -1.0
+	for arg: String in OS.get_cmdline_user_args():
+		var parts: PackedStringArray = arg.lstrip("-").split("=")
+		if parts.size() == 2 and parts[0] == "hunt":
+			seconds = parts[1].to_float()
+	if seconds <= 0.0:
+		return
+	var probe := SessionProbe.new()
+	probe.name = "SessionProbe"
+	probe.evade = _flag("hunt_evade")
+	probe.endless = _flag("hunt_endless")
+	probe.gate = _flag("hunt_gate")
+	add_child(probe)
+	probe.finished.connect(func(passed: bool) -> void: get_tree().quit(0 if passed else 1))
+	probe.start(player, world, manager, seconds)
 
 
 func _maybe_run_hands_repro() -> void:
@@ -78,6 +277,19 @@ func _maybe_run_hands_repro() -> void:
 	repro.start(player, world, separation)
 
 
+## Flies somebody's first session and checks that following the game's own
+## instructions leaves them in the air:
+##   godot --headless --xr-mode off --fixed-fps 90 -- --firstcontact=1
+func _maybe_run_first_contact() -> void:
+	if not _flag("firstcontact"):
+		return
+	var probe := FirstContact.new()
+	probe.name = "FirstContact"
+	add_child(probe)
+	probe.finished.connect(func(passed: bool) -> void: get_tree().quit(0 if passed else 1))
+	probe.start(player, world, hud)
+
+
 ## On a headset there is no console, so a debug build narrates itself to logcat
 ## for the first minute. Read it with `adb logcat -s godot`.
 func _maybe_run_device_diagnostic() -> void:
@@ -86,7 +298,7 @@ func _maybe_run_device_diagnostic() -> void:
 	var diagnostic := DeviceDiagnostic.new()
 	diagnostic.name = "DeviceDiagnostic"
 	add_child(diagnostic)
-	diagnostic.start(player, world)
+	diagnostic.start(player, world, manager)
 
 
 func _maybe_run_xr_diagnostic() -> void:

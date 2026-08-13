@@ -72,6 +72,15 @@ regardless** — the world genuinely runs out — but it is not this bug. Left f
 the world-building work to solve properly (a larger or bounded arena) rather
 than patched with the soft boundary that was reverted along with the rest.
 
+**Fixed since, in the world-building pass**, and not with a boundary rule: the
+arena is now closed by a 340 m mountain wall with more mountains rising behind
+it, and structures are placed on a district-aware grid instead of scattered.
+`WorldTests` walks all 720 bearings for a gap in the wall and ray-marches 96
+bearings for a bare patch. The hands-still repro's furthest landmark went from
+230 m to 71 m. It still fails, but now only on "spent the run on the ground",
+which is a game-loop question (a bird given no input has to land eventually),
+not a world one.
+
 ## Process failures worth not repeating
 
 - **Deploys were never verified.** `build_stamp.txt` was not in the APK at all
