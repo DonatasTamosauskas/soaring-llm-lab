@@ -4,3 +4,10 @@
 android/
 build/
 build_stamp.txt
+
+# Desktop export output. The editor drops these in the project root, and
+# Soaring.exe alone is 103 MB — build artifacts do not belong in the repo.
+Soaring.exe
+Soaring.console.exe
+Soaring.pck
+*.dll
