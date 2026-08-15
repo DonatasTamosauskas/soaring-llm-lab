@@ -1,14 +1,15 @@
+# macOS
 .AppleDouble
 .DS_Store
-.export/
 .LSOverride
+
+# Godot — engine caches, imports and export output are regenerated
+.godot/
+.export/
 *.import
+*.translation
+
+# Build output and scratch
+build/
 *.log
 *.tmp
-/Users/don/Projects/Soaring/soaring/.godot/
-# Godot
-# Logs
-# macOS
-build/
-soaring/android/
-soaring/build/
