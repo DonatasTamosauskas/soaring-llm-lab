@@ -1,0 +1,26 @@
+# Unity regenerates all of this from Assets/, Packages/ and ProjectSettings/.
+# Library/ alone is 3.5 GB.
+Soaring/[Ll]ibrary/
+Soaring/[Tt]emp/
+Soaring/[Oo]bj/
+Soaring/[Bb]uild/
+Soaring/[Bb]uilds/
+Soaring/[Ll]ogs/
+Soaring/[Uu]ser[Ss]ettings/
+Soaring/[Mm]emoryCaptures/
+Soaring/[Rr]ecordings/
+
+# Generated IDE project files
+Soaring/*.csproj
+Soaring/*.sln
+Soaring/*.unityproj
+Soaring/*.pidb
+Soaring/.vs/
+Soaring/.vscode/
+Soaring/.idea/
+
+# Crash dumps
+mono_crash.*.json
+
+# Asset meta files for ignored directories
+*.pidb.meta
