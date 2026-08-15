@@ -64,7 +64,7 @@ HUD (CanvasLayer) shows size, caught, airspeed, STALL/GLIDING/SOARING/PERCHED, f
 
 ## Project layout
 ```
-soaring/
+soaring-godot-prime-muse-1.2/
   project.godot          # OpenXR on, Jolt, main -> res://scenes/Main.tscn
   openxr_action_map.tres # from meta-demo (oculus/touch)
   export_presets.cfg     # Meta Quest (Android) arm64
@@ -88,7 +88,7 @@ soaring/
 
 ```bash
 # Where the project lives
-cd /Users/don/Projects/Soaring/soaring
+cd /Users/don/Projects/Soaring/soaring-godot-prime-muse-1.2
 
 # 1) Import (first time, or after editing scenes)
 godot --headless --path . --import
@@ -143,7 +143,7 @@ Enjoy soaring!
 
 ### Validate before handing back
 ```bash
-cd /Users/don/Projects/Soaring/soaring
+cd /Users/don/Projects/Soaring/soaring-godot-prime-muse-1.2
 godot --headless --xr-mode off --path . --import
 godot --headless --xr-mode off --path . --script res://tests/FlightTests.gd  # 10/10 must pass
 godot --headless --xr-mode off --quit-after 300  # no errors
