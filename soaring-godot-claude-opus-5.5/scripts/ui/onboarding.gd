@@ -42,7 +42,7 @@ signal catch_lesson(on: bool)
 ## shows it instead of "hint" outside VR - integration round 2: no desktop
 ## screen named a key).
 const LESSONS: Array[Dictionary] = [
-	{"id": &"spread", "art": &"spread", "title": "Spread your wings", "hint": "Hold both arms out", "keys": "No key: wings open"},
+	{"id": &"spread", "art": &"spread", "title": "Spread your wings", "hint": "Arms out, relaxed", "keys": "No key: wings open"},
 	{"id": &"flap", "art": &"flap", "title": "Flap to climb", "hint": "Sweep down hard", "keys": "Hold Space to flap"},
 	{"id": &"glide", "art": &"glide", "title": "Glide", "hint": "Arms out, hold still", "keys": "Let go of all keys"},
 	{"id": &"speed", "art": &"speed", "title": "Tilt for speed", "hint": "Twist wrists down", "keys": "W faster, S balloon"},

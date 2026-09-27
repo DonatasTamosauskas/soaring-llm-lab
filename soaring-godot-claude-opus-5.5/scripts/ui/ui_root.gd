@@ -28,7 +28,7 @@ enum Mode { AUTO, VR, DESKTOP }
 ## Fallback respawn countdown when GameLoop's stats have no "respawn_in".
 @export var respawn_delay := 3.0
 
-const SCREEN_IDS: Array[StringName] = [&"main", &"pause", &"settings", &"howto", &"caught", &"summary"]
+const SCREEN_IDS: Array[StringName] = [&"main", &"pause", &"settings", &"howto", &"caught", &"summary", &"dev"]
 ## Two menu-button presses closer than this are one press (the VR area may
 ## emit Events.menu_requested for the same button).
 const MENU_DEBOUNCE_MS := 250
@@ -241,6 +241,8 @@ static func _make_screen(id: StringName) -> UIScreen:
 			return PauseScreen.new()
 		&"settings":
 			return SettingsScreen.new()
+		&"dev":
+			return DevScreen.new()
 		&"howto":
 			return HowToScreen.new()
 		&"caught":
@@ -614,6 +616,8 @@ func _on_action(action_id: StringName, _screen_id: StringName) -> void:
 			push_screen(&"howto")
 		&"settings":
 			push_screen(&"settings")
+		&"dev":
+			push_screen(&"dev")
 		&"back":
 			pop_screen()
 		&"quit":

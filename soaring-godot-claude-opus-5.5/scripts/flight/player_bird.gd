@@ -370,9 +370,26 @@ func _apply_settings() -> void:
 	var s := func(k: String, dflt: Variant) -> Variant:
 		return Settings.get_value(k, dflt) if use_settings and has_node(^"/root/Settings") else dflt
 	var preset: int = int(s.call("flight_assist", tuning.preset))
-	if preset != tuning.preset:
+	# Developer-menu flight levers (Settings dev_*, each 0..1; see
+	# scripts/ui/screens/dev_screen.gd). Without Settings the tuning's own
+	# values (the tested physics) stand.
+	var lv := {}
+	if use_settings and has_node(^"/root/Settings"):
+		lv = {
+			"flap_power": 0.5 + 2.0 * float(s.call("dev_flap_power", 0.55)),
+			"glide_efficiency": 0.8 + 0.8 * float(s.call("dev_speed", 0.625)),
+			"dive_speed": 0.8 + 0.8 * float(s.call("dev_speed", 0.625)),
+			"roll_rate_scale": 0.6 + 1.4 * float(s.call("dev_roll_rate", 0.5)),
+			"stretch_bonus": 1.0 * float(s.call("dev_stretch_bonus", 0.6)),
+		}
+	var changed := preset != tuning.preset
+	for k in lv:
+		changed = changed or absf(float(tuning.get(k)) - float(lv[k])) > 1e-4
+	if changed:
 		tuning = tuning.duplicate() as FlightTuning
 		tuning.preset = preset
+		for k in lv:
+			tuning.set(k, lv[k])
 		model.set_tuning(tuning)
 	body_steer = bool(s.call("body_steer", body_steer)) and tuning.assists()[&"body_steer"]
 	heave_smoothing = bool(s.call("heave_smoothing", heave_smoothing))
@@ -394,6 +411,23 @@ func _apply_settings() -> void:
 		wing_input.wrist_sensitivity = clampf(float(s.call("wrist_sensitivity", 1.0)), 0.5, 2.0)
 		wing_input.soar_lock_enabled = bool(s.call("soar_lock", true))
 		wing_input.auto_trim = bool(s.call("auto_trim", true))
+		if use_settings and has_node(^"/root/Settings"):
+			# Playtest #1: a real dead zone and a steeper curve (small hand
+			# movements do nothing, far deflections turn hard).
+			var dz := 20.0 * float(s.call("dev_turn_deadzone", 0.5))
+			var full := lerpf(70.0, 25.0, float(s.call("dev_turn_sensitivity", 0.5)))
+			var expo := 1.0 + 2.0 * float(s.call("dev_turn_curve", 0.5))
+			wing_input.turn_deadzone_deg = dz
+			wing_input.arm_full_deg = full + 5.0
+			wing_input.tilt_full_deg = full
+			wing_input.arm_expo = expo
+			wing_input.tilt_expo = expo
+			wing_input.arm_turn = bool(s.call("dev_arm_turn", true))
+			wing_input.tilt_turn = bool(s.call("dev_tilt_turn", true))
+			wing_input.tilt_invert = bool(s.call("dev_tilt_invert", true))
+			var relaxed := bool(s.call("dev_relaxed_glide", true))
+			wing_input.glide_reach_cap = 0.48 if relaxed else 10.0
+			wing_input.fold_elevation_cap = deg_to_rad(-68.0) if relaxed else 0.0
 
 
 func _on_setting_changed(_key: String, _value: Variant) -> void:

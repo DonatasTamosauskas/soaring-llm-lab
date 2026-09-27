@@ -1671,6 +1671,13 @@ func test_pb34_telemetry_read_in_a_handler_is_not_kept() -> void:
 ## deg/s, and the gentlest (90 deg/s) still turns the bird.
 func test_pb28_turn_comfort_setting_caps_the_turn() -> void:
 	var saved: Variant = Settings.get_value("turn_comfort")
+	# The full-input turn below banks with arms and wrists together; pin the
+	# spec tilt direction (the playtest default inverts it).
+	var pinned := {"dev_tilt_invert": false, "dev_turn_deadzone": 0.2, "dev_turn_sensitivity": 1.0, "dev_turn_curve": 0.1}
+	var saved_dev := {}
+	for k in pinned:
+		saved_dev[k] = Settings.get_value(k)
+		Settings.set_value(k, pinned[k])
 	eq(float(Settings.DEFAULTS["turn_comfort"]), 0.75, "the default is Brisk")
 	eq(FlightTuning.turn_comfort_rate(0.75), 180.0, "Brisk is 180 deg/s")
 	var peaks := {}
@@ -1696,6 +1703,8 @@ func test_pb28_turn_comfort_setting_caps_the_turn() -> void:
 		fx = null
 	metric("turn_comfort_peak_deg_s", peaks)
 	Settings.set_value("turn_comfort", saved)
+	for k in saved_dev:
+		Settings.set_value(k, saved_dev[k])
 
 
 ## Integration round 2 (the Quest verifier): a recenter taken while paused

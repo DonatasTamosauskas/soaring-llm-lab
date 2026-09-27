@@ -55,3 +55,20 @@ buffer timing fail spuriously).
   in the simulator UI.
 - `addons/godotopenxrvendors` was upgraded 3.1.2 → 5.1.0 (required for the
   Quest export); the old copy was only kept in a session scratch directory.
+
+## Playtest build #1 changes (2026-09-27 evening, `playtest-notes.md`)
+
+New APK built 18:41. All changes are live-tunable in **Settings → Developer**
+(persisted; "Reset" restores the defaults below). Please report which values
+feel best.
+
+| Note | Change (default) | Developer control |
+|---|---|---|
+| Turning too sensitive | 10° dead zone around neutral, non-linear curve (x²), full turn at ~47° of tilt | Turn dead zone 0–20°, Turn sensitivity (full at 70–25°), Turn curve (x^1–x^3) |
+| Arms-out T-pose tiring | Full wings now with elbows relaxed / upper arms down (reach 0.48 of arm, folds only below -68°); stretching fully out gives a +60% power flap | Glide: T / Relax |
+| Too slow vs NPCs | Flap force and climb x1.6, glide efficiency and dive limit x1.3, roll rate x1.3 | Flap power, Speed / glide, Roll rate |
+| Tilt turns the wrong way | Wrist-tilt turning inverted by default | Tilt dir: Norm / Inv; Tilt turn: Off / On; Arm turn: Off / On |
+
+The flight/vr/ui/core suites pass (they pin the original tested physics
+where they measure it). Not re-run: the long real-flight pacing evidence, so
+catching and growth pacing will be somewhat faster than the numbers above.

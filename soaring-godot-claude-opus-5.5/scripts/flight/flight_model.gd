@@ -1139,6 +1139,7 @@ func _acc(x: Vector3, v: Vector3, ws: WingState, env: FlightEnv, f_a: float, alp
 	if pl > 1e-9 or pr > 1e-9 or ul > 1e-9 or ur > 1e-9:
 		var rr := vh / _c_v_min
 		var k := _c_k_flap if rr >= 1.0 else lerpf(_c_k_hover, _c_k_flap, rr * rr * (3.0 - 2.0 * rr))
+		k *= 1.0 + tuning.stretch_bonus * clampf(ws.stretch, 0.0, 1.0)
 		var up_b := Vector3.UP * cph + rh * sph
 		var r_b := rh * cph - Vector3.UP * sph
 		var floor_tilt := 0.0

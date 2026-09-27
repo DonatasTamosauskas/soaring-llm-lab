@@ -81,6 +81,15 @@ extends Resource
 @export_range(0.0, 0.9) var one_wing_deadzone := 0.15
 
 @export_group("Flapping")
+## Playtest levers (1.0 / 0.0 = the tested physics; the game's Settings
+## defaults raise them for fun): flap force and climb power, glide
+## efficiency (L/D), dive speed limit, roll rate, and the extra flap force
+## for a stroke made with the arms fully stretched (WingState.stretch).
+@export var flap_power := 1.0
+@export var glide_efficiency := 1.0
+@export var dive_speed := 1.0
+@export var roll_rate_scale := 1.0
+@export var stretch_bonus := 0.0
 @export var flap_floor_deg := 8.0
 @export var p_spec_gain := 1.08
 @export var p_spec_offset := 0.40

@@ -22,6 +22,18 @@ const DEFAULTS := {
 	"vr_foveation_dynamic": true, # let the runtime lower foveation when GPU allows
 	"world_scale_exponent": 1.0,  # growth: world_scale = (span / arm)^exponent
 	"record_poses": false,        # dev: record controller poses for replay
+	# Developer menu (playtest #1), bars 0..1 mapped in PlayerBird._apply_settings:
+	"dev_turn_deadzone": 0.5,     # 0..20 deg with no turn around neutral
+	"dev_turn_sensitivity": 0.5,  # full turn at 70 (0) .. 25 (1) deg of tilt
+	"dev_turn_curve": 0.5,        # curve exponent 1 (linear) .. 3
+	"dev_flap_power": 0.55,       # flap force/climb x0.5 .. x2.5 (x1.6)
+	"dev_speed": 0.625,           # glide efficiency and dive limit x0.8 .. x1.6 (x1.3)
+	"dev_roll_rate": 0.5,         # roll rate x0.6 .. x2.0 (x1.3)
+	"dev_stretch_bonus": 0.6,     # extra flap force with arms fully stretched (+60%)
+	"dev_arm_turn": true,         # turn by lowering one hand
+	"dev_tilt_turn": true,        # turn by opposite wrist tilts
+	"dev_tilt_invert": true,      # playtest #1: tilt turned the wrong way
+	"dev_relaxed_glide": true,    # full wings with elbows relaxed (not a T-pose)
 }
 
 var _values := {}

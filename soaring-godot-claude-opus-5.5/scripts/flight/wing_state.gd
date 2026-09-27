@@ -20,6 +20,7 @@ var up_r := 0.0
 var flap_dir_l := Vector3.UP     ## unit, LEVEL body frame (x right, y up, z back)
 var flap_dir_r := Vector3.UP
 var body_yaw := 0.0              ## rad, torso yaw in tracking space. NPC: 0
+var stretch := 0.0               ## 0..1 arms fully stretched (power-stroke bonus)
 var tracking := 1.0              ## 0..1; 0 = both hands lost
 
 # ---- measurements ----
@@ -81,6 +82,7 @@ func set_neutral() -> void:
 func copy_from(o: WingState) -> void:
 	pitch = o.pitch
 	roll = o.roll
+	stretch = o.stretch
 	ext_l = o.ext_l
 	ext_r = o.ext_r
 	flap_l = o.flap_l

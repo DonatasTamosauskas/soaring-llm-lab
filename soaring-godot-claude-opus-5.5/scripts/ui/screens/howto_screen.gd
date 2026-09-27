@@ -12,7 +12,7 @@ const CARDS := [
 		"text": "Sweep both arms down hard. Tip the wings forward to push ahead too.",
 		"keys": "Hold Space to flap; a tap is one beat. Hold W as you flap to go ahead."},
 	{"id": &"glide", "tab": "Glide", "title": "Glide",
-		"text": "Hold your arms out wide and still. Trade height for distance.",
+		"text": "Arms out to your sides, elbows relaxed and still. Stretch fully for a power flap.",
 		"keys": "Let go of every key: wings out and still. Trade height for distance."},
 	{"id": &"speed", "tab": "Speed", "title": "Speed and balloon",
 		"text": "Twist both wrists. Edge up: balloon, then slow. Edge down: go faster.",

@@ -24,6 +24,24 @@ var size_x := 0.3044
 var deadzone_scale := 1.0
 var wrist_sensitivity := 1.0
 var invert_pitch := false
+## Turn input shaping (playtest build #1): dead zone and full-deflection
+## angles for the two turn gestures (one hand lower = arm, opposite wrist
+## tilt = tilt), the curve exponent (>1: gentle near neutral, strong far
+## out), and switches. PlayerBird sets them from Settings (developer menu);
+## these defaults are the tested originals.
+var turn_deadzone_deg := 4.0
+var arm_full_deg := 30.0
+var tilt_full_deg := 25.0
+var arm_expo := 1.2
+var tilt_expo := 1.3
+var arm_turn := true
+var tilt_turn := true
+var tilt_invert := false
+## Playtest #1 relaxed glide pose (upper arms down, forearms out): caps on
+## the calibration's full-extension reach and fold elevation. Defaults = no
+## change; PlayerBird sets 0.48 and -68 deg from Settings.
+var glide_reach_cap := 10.0
+var fold_elevation_cap := 0.0
 var sweep_pitch := true
 var sweep_gain := 0.30
 var soar_lock_enabled := true
@@ -383,8 +401,8 @@ func update(frame: PoseFrame, dt_in: float) -> WingState:
 	shoulders[1] = centre + br * cal.shoulder_width * 0.5
 
 	# ---- per wing ------------------------------------------------------------
-	var r_hi := 0.58 if cal.seated else cal.glide_reach
-	var fold_hi := -55.0 * DEG if cal.seated else cal.fold_elevation
+	var r_hi := minf(0.58 if cal.seated else cal.glide_reach, glide_reach_cap)
+	var fold_hi := minf(-55.0 * DEG if cal.seated else cal.fold_elevation, fold_elevation_cap)
 	var fold_lo := -75.0 * DEG if cal.seated else cal.fold_elevation - 20.0 * DEG
 	var twists := _twists
 	var dihs := _dihs
@@ -568,8 +586,13 @@ func update(frame: PoseFrame, dt_in: float) -> WingState:
 	var d_a := 0.0
 	if reach[0] > 0.3 and reach[1] > 0.3:
 		d_a = 0.5 * (dihs[0] - dihs[1])
-	var roll := clampf(FlightMath.shape(d_a, 4.0 * DEG * dzs, 30.0 * DEG, 30.0 * DEG, 1.2)
-		+ _shape(t_a, 4.0, 25.0, 25.0, 1.3, true), -1.0, 1.0)
+	var roll_arm := FlightMath.shape(d_a, turn_deadzone_deg * DEG * dzs, arm_full_deg * DEG, arm_full_deg * DEG, arm_expo) if arm_turn else 0.0
+	var roll_tilt := _shape(t_a, turn_deadzone_deg, tilt_full_deg, tilt_full_deg, tilt_expo, true) if tilt_turn else 0.0
+	if tilt_invert:
+		roll_tilt = -roll_tilt
+	var roll := clampf(roll_arm + roll_tilt, -1.0, 1.0)
+	# Arms fully stretched (beyond the relaxed glide pose): a power stroke.
+	ws.stretch = FlightMath.sstep(0.82, 0.97, minf(reach[0], reach[1])) if (hand_ok[0] and hand_ok[1]) else 0.0
 	if invert_pitch:
 		pitch = -pitch
 

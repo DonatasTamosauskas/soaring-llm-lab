@@ -47,6 +47,10 @@ func build() -> void:
 	col.add_child(top)
 	top.add_child(make_label("Settings", &"TitleLabel"))
 	top.add_child(spacer(false))
+	var dev := make_button(&"dev", "Developer", 92)
+	dev.custom_minimum_size.x = 260
+	dev.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	top.add_child(dev)
 	var back := make_button(&"back", "Back", 92)
 	back.custom_minimum_size.x = 220
 	back.alignment = HORIZONTAL_ALIGNMENT_CENTER
