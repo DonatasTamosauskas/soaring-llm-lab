@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/audio_director.gd" id="1_dir"]
+
+[node name="AudioDirector" type="Node" groups=["audio_director"]]
+process_mode = 3
+script = ExtResource("1_dir")

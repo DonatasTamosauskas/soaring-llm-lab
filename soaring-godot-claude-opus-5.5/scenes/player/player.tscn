@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/flight/player_bird.gd" id="1_player"]
+
+[node name="PlayerBird" type="Node3D"]
+script = ExtResource("1_player")
+
+[node name="XROrigin3D" type="XROrigin3D" parent="." groups=["player_rig"]]
+process_mode = 3
+
+[node name="XRCamera3D" type="XRCamera3D" parent="XROrigin3D"]
+process_mode = 3
+near = 0.06
+far = 3000.0
+
+[node name="LeftHand" type="XRController3D" parent="XROrigin3D"]
+process_mode = 3
+tracker = &"left_hand"
+pose = &"grip"
+
+[node name="RightHand" type="XRController3D" parent="XROrigin3D"]
+process_mode = 3
+tracker = &"right_hand"
+pose = &"grip"
+
+[node name="LeftAim" type="XRController3D" parent="XROrigin3D"]
+process_mode = 3
+tracker = &"left_hand"
+pose = &"aim"
+
+[node name="RightAim" type="XRController3D" parent="XROrigin3D"]
+process_mode = 3
+tracker = &"right_hand"
+pose = &"aim"
+
+[node name="WingAnchors" type="Node3D" parent="XROrigin3D"]
+process_mode = 3
+
+[node name="L" type="Node3D" parent="XROrigin3D/WingAnchors"]
+process_mode = 3
+
+[node name="R" type="Node3D" parent="XROrigin3D/WingAnchors"]
+process_mode = 3

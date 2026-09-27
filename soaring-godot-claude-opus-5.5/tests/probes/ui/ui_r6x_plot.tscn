@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/probes/ui/ui_r6x_plot.gd" id="1"]
+
+[node name="Plot" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1400.0
+offset_bottom = 1000.0
+script = ExtResource("1")

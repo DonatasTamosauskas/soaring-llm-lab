@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/shots/birds_fx.gd" id="1"]
+
+[node name="Birds_fx" type="Node"]
+script = ExtResource("1")

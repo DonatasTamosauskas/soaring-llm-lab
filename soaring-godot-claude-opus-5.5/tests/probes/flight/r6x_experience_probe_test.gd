@@ -1,0 +1,498 @@
+extends TestCase
+## Verifier probe (round 6, flight, EXPERIENCE & REQUIREMENTS lens).
+## The round-5 ground landing (friction, touchdown at <= 1.2 V_min, the
+## run-out on the feet, the legs, the stall guard) is tested by G1-G7 on a
+## FLAT meadow only. The world is not flat: hillsides, the arena's ring of
+## hills, ridge-lift slopes, and every village house has a 34-44 deg pitched
+## roof (village.gd), which is a floor for PlayerBird (n.y > 0.7). This probe
+## lands and takes off where a player actually does:
+##  1. Touchdowns on slopes (uphill, downhill, across) and pitched roofs:
+##     the view's per-tick velocity change against G1's 0.45 x bound.
+##  2. A neutral glide into gently rising ground.
+##  3. Taking off again from a slope or roof.
+##  4. A tall flat roof (the stall guard reads the terrain, not buildings).
+##  5. Resume from the pause menu straight into strokes (latency).
+## Output: artifacts/flight/verify/r6exp/experience_probe.txt
+
+const FX := preload("res://tests/unit/flight/pb_fixture.gd")
+const DEG := PI / 180.0
+const DT := 1.0 / 72.0
+const S3: Array[StringName] = [&"sparrow", &"pigeon", &"eagle"]
+## Height of the slope's reference line (keeps downhill runs above the
+## fixture's flat ground).
+const H0 := 30.0
+
+var fx: FX
+var _lines := PackedStringArray()
+
+
+func _log(s: String) -> void:
+	_lines.append(s)
+	print("[flight-verify] ", s)
+
+
+func after_each() -> void:
+	if fx != null:
+		fx.teardown()
+		fx = null
+	await get_tree().process_frame
+
+
+func after_all() -> void:
+	var path := Paths.artifacts("flight").path_join("verify/r6exp/experience_probe.txt")
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f:
+		f.store_string("\n".join(_lines) + "\n")
+
+
+func _new_fx(sp: StringName, world_setup: Callable = Callable()) -> FX:
+	fx = FX.new(self)
+	await fx.setup(sp, world_setup)
+	return fx
+
+
+func _done() -> void:
+	fx.teardown()
+	fx = null
+	await get_tree().process_frame
+
+
+## A planar slab whose top face passes through (0, H0, 0) and rises toward
+## -Z (the bird's forward at yaw 0) at `deg` (negative: falls toward -Z).
+func _slope_setup(deg: float) -> Callable:
+	return func(w: Variant) -> void:
+		var th := deg * DEG
+		var b := Basis(Vector3.RIGHT, th)
+		var n := b * Vector3.UP
+		FlightGeometry.box(w, Vector3(0, H0, 0) - n * 0.5, Vector3(120, 1.0, 900), FlightGeometry.C_WALL, false,
+			FlightGeometry.LAYER_WORLD, b, "Slope")
+
+
+static func _surf_y(deg: float, z: float) -> float:
+	return H0 - z * tan(deg * DEG)
+
+
+## Per-tick camera velocity change (the eye; what G1 measures), the body's
+## worst per-tick horizontal speed change while GROUNDED, stuns, mode.
+func _touchdown_monitor(st: Dictionary) -> Callable:
+	return func(_i: int, f: Variant) -> void:
+		var pl: PlayerBird = f.player
+		var c := pl.camera.global_position
+		if st.has("last"):
+			var v: Vector3 = (c - st["last"]) / DT
+			if st.has("lastv"):
+				var dv: float = (v - st["lastv"]).length()
+				if dv > float(st.get("worst_dv", 0.0)):
+					st["worst_dv"] = dv
+					st["worst_mode"] = pl.mode_name()
+			st["lastv"] = v
+		st["last"] = c
+		if pl.mode == PlayerBird.Mode.GROUNDED:
+			if int(st.get("td_tick", -1)) < 0:
+				st["td_tick"] = fx.ticks
+			var hv := Vector2(pl.model.velocity.x, pl.model.velocity.z)
+			if st.has("last_hv"):
+				st["worst_run_dv"] = maxf(float(st.get("worst_run_dv", 0.0)), ((st["last_hv"] as Vector2) - hv).length())
+			st["last_hv"] = hv
+		else:
+			st.erase("last_hv")
+		if pl.mode == PlayerBird.Mode.STUNNED and st.get("prev_mode", -1) != PlayerBird.Mode.STUNNED:
+			st["stuns"] = int(st.get("stuns", 0)) + 1
+		if pl.mode == PlayerBird.Mode.GROUNDED and st.get("prev_mode", -1) != PlayerBird.Mode.GROUNDED:
+			st["groundings"] = int(st.get("groundings", 0)) + 1
+		st["prev_mode"] = pl.mode
+
+
+# --- 1. Touchdowns on slopes and pitched roofs ------------------------------------------
+
+## One touchdown: `deg` slope (+ = rising ahead), heading `yaw_deg` off the
+## fall line, forward `vf` and sink `vs` (x V_min), from `gap` m above.
+func _touchdown(sp: StringName, deg: float, yaw_deg: float, vf: float, vs: float, gap: float) -> Dictionary:
+	await _new_fx(sp, _slope_setup(deg))
+	var p := fx.player
+	var pr := p.model.params
+	var z0 := -2.0 * pr.span
+	var start := Vector3(0, _surf_y(deg, z0) + (pr.r_body + gap) / cos(deg * DEG), z0)
+	var yaw := yaw_deg * DEG
+	p.start_flying(start, yaw, 0.0)
+	var v0 := FlightMath.yaw_forward(yaw) * vf * pr.v_min + Vector3.DOWN * vs * pr.v_min
+	p.model.reset(start, v0, yaw)
+	var st := {"lastv": v0}
+	fx.on_tick = _touchdown_monitor(st)
+	fx.run(2.0)
+	var out := {
+		"ratio": float(st.get("worst_dv", 0.0)) / v0.length(),
+		"worst_mode": st.get("worst_mode", "-"),
+		"run_ratio": float(st.get("worst_run_dv", 0.0)) / v0.length(),
+		"stuns": int(st.get("stuns", 0)),
+		"groundings": int(st.get("groundings", 0)),
+		"mode": p.mode_name(),
+		"perceived": float(st.get("worst_dv", 0.0)) / maxf(p.origin.world_scale, 1e-4),
+		"v0": v0.length(),
+	}
+	await _done()
+	return out
+
+
+func test_r6x_touchdown_on_slopes_and_roofs() -> void:
+	# [slope deg, heading off the fall line deg, label]
+	var cases := [
+		[0.0, 0.0, "flat (G1 reference)"],
+		[5.0, 0.0, "5 deg uphill"],
+		[10.0, 0.0, "10 deg uphill"],
+		[20.0, 0.0, "20 deg uphill"],
+		[38.0, 0.0, "38 deg roof, facing the ridge"],
+		[38.0, 60.0, "38 deg roof, 60 deg across"],
+		[-10.0, 0.0, "10 deg downhill"],
+		[-38.0, 0.0, "38 deg roof, facing the gutter"],
+	]
+	# PB-11's slow touchdown and a faster flared touchdown at 1.1 V_min.
+	var speeds := [[0.6, 0.2, 0.25, "PB-11 0.6 V_min"], [1.1, 0.15, 0.1, "1.1 V_min"]]
+	for sp in S3:
+		for c in cases:
+			for s in speeds:
+				var r: Dictionary = await _touchdown(sp, float(c[0]), float(c[1]), float(s[0]), float(s[1]), float(s[2]))
+				_log("%s touchdown %-30s %-15s: view dv/tick %.2f x V_td (%.1f m/s perceived, worst while %s), run dv/tick %.2f x V_td, stuns %d, groundings %d, end %s" % [
+					sp, c[2], s[3], r["ratio"], r["perceived"], r["worst_mode"], r["run_ratio"], r["stuns"], r["groundings"], r["mode"]])
+				metric("%s_%s_%s_view_dv_ratio" % [sp, str(c[2]).replace(" ", "_"), str(s[3]).replace(" ", "_")], r["ratio"])
+				var tag := "%s %s %s" % [sp, c[2], s[3]]
+				eq(int(r["stuns"]), 0, "%s: a slow touchdown is no stun" % tag)
+				lt(float(r["ratio"]), 0.45, "%s: the view's per-tick velocity change stays within G1's 0.45 x the touchdown speed" % tag)
+
+
+# --- 2. A neutral glide into gently rising ground ----------------------------------------
+
+func test_r6x_neutral_glide_into_rising_ground() -> void:
+	for sp in S3:
+		for deg in [5.0, 10.0]:
+			await _new_fx(sp, _slope_setup(deg))
+			var p := fx.player
+			var pr := p.model.params
+			var z0 := 40.0 * pr.span
+			p.start_flying(Vector3(0, _surf_y(deg, z0) + 6.0 * pr.span + 2.0, z0), 0.0, 0.0)
+			var st := {"rest_t": -1.0, "first_contact_t": -1.0}
+			var mon := _touchdown_monitor(st)
+			fx.on_tick = func(i: int, f: Variant) -> void:
+				mon.call(i, f)
+				var pl: PlayerBird = f.player
+				var nc: int = pl.contacts["slide"] + pl.contacts["silent"] + pl.contacts["land"] + pl.contacts["stun"]
+				if float(st["first_contact_t"]) < 0.0 and nc > 0:
+					st["first_contact_t"] = i * DT
+					st["worst_dv"] = 0.0     # only after the ground is met
+				if float(st["rest_t"]) < 0.0 and pl.mode == PlayerBird.Mode.GROUNDED and pl.model.velocity.length() < 1e-4:
+					st["rest_t"] = i * DT
+			var n := 0
+			while n < int(25.0 / DT) and (float(st["rest_t"]) < 0.0 or n * DT < float(st["rest_t"]) + 0.5):
+				fx.step()
+				n += 1
+			var vmin := pr.v_min
+			var ratio := float(st.get("worst_dv", 0.0)) / vmin
+			_log("%s neutral glide into a %.0f deg rise: first contact %.2f s, stuns %d, at rest %.2f s, end %s, worst view dv/tick after contact %.2f x V_min (%.1f m/s perceived, while %s), worst run dv/tick %.2f x V_min" % [
+				sp, deg, st["first_contact_t"], int(st.get("stuns", 0)), st["rest_t"], p.mode_name(), ratio,
+				float(st.get("worst_dv", 0.0)) / maxf(p.origin.world_scale, 1e-4), st.get("worst_mode", "-"), float(st.get("worst_run_dv", 0.0)) / vmin])
+			eq(int(st.get("stuns", 0)), 0, "%s %.0f deg rise: a glide into gently rising ground is no stun" % [sp, deg])
+			between(float(st["rest_t"]), 0.0, 20.0, "%s %.0f deg rise: at rest within 20 s (G2's bound)" % [sp, deg])
+			lt(ratio, 0.45 * 1.2, "%s %.0f deg rise: per-tick view dv <= 0.45 x the 1.2 V_min touchdown speed" % [sp, deg])
+			await _done()
+
+
+# --- 3. Taking off from a slope or roof -----------------------------------------------------
+
+func test_r6x_takeoff_from_slopes_and_roofs() -> void:
+	var cases := [
+		[0.0, 0.0, "flat"],
+		[15.0, 0.0, "15 deg hillside facing uphill"],
+		[38.0, 0.0, "38 deg roof facing the ridge"],
+		[38.0, 90.0, "38 deg roof facing along it"],
+		[-38.0, 0.0, "38 deg roof facing the gutter"],
+	]
+	for sp in S3:
+		for c in cases:
+			var deg: float = c[0]
+			await _new_fx(sp, _slope_setup(deg))
+			var p := fx.player
+			var pr := p.model.params
+			var z0 := -2.0 * pr.span
+			var yaw := float(c[1]) * DEG
+			var start := Vector3(0, _surf_y(deg, z0) + (pr.r_body + 0.05) / cos(deg * DEG), z0)
+			p.start_flying(start, yaw, 0.0)
+			p.model.reset(start, FlightMath.yaw_forward(yaw) * 0.3 * pr.v_min + Vector3.DOWN * 0.2 * pr.v_min, yaw)
+			fx.run(2.0)
+			var grounded := p.mode == PlayerBird.Mode.GROUNDED
+			# Reference strokes (1.3 Hz, 45 deg, the r3 take-off's better strategy).
+			fx.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+				b.set_airplane()
+				ScriptedPoseSource.flap(b, t + 0.5, 45.0, 1.3)
+			var st := {}
+			var mon := _touchdown_monitor(st)
+			var mx := {"clear": 0.0}
+			fx.reset_events()
+			fx.on_tick = func(i: int, f: Variant) -> void:
+				mon.call(i, f)
+				var pl: PlayerBird = f.player
+				var pos: Vector3 = pl.model.position
+				var h := (pos.y - _surf_y(deg, pos.z)) * cos(deg * DEG) - pr.r_body
+				mx["clear"] = maxf(mx["clear"], minf(h, pos.y - pr.r_body))
+			fx.run(6.0)
+			var pos := p.model.position
+			var clear_end := minf((pos.y - _surf_y(deg, pos.z)) * cos(deg * DEG) - pr.r_body, pos.y - pr.r_body)
+			var ok := p.mode == PlayerBird.Mode.FLYING and clear_end > 2.0 * pr.span
+			_log("%s take-off from %-32s: landed first %s, took_off events %d, re-groundings %d, stuns %d, max clearance %.1f spans, end clearance %.1f spans, end %s -> %s" % [
+				sp, c[2], grounded, fx.events["took_off"], int(st.get("groundings", 0)), int(st.get("stuns", 0)),
+				float(mx["clear"]) / pr.span, clear_end / pr.span, p.mode_name(), "OK" if ok else "STUCK"])
+			check(grounded, "%s %s: the set-up lands first" % [sp, c[2]])
+			check(ok, "%s %s: 6 s of strokes leave the ground (FLYING, > 2 spans clear at the end)" % [sp, c[2]])
+			await _done()
+
+
+# --- 4. A tall flat roof (a tower, the water tower's tank) ---------------------------------------
+
+func _roof_setup(top: float) -> Callable:
+	return func(w: Variant) -> void:
+		FlightGeometry.box(w, Vector3(0, 0.5 * top, -250.0), Vector3(80, top, 700), FlightGeometry.C_WALL, false)
+
+
+func test_r6x_tall_flat_roof_glide_and_flare() -> void:
+	var top := 25.0
+	for sp in S3:
+		for twist in [0.0, 40.0]:
+			await _new_fx(sp, _roof_setup(top))
+			var p := fx.player
+			var pr := p.model.params
+			p.start_flying(Vector3(0, top + 6.0 * pr.span + 2.0, 0), 0.0, 0.0)
+			var st := {"flare_t": -1.0, "ground_t": -1.0, "rest_t": -1.0}
+			fx.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+				b.set_airplane()
+				if twist > 0.0 and float(st["flare_t"]) >= 0.0:
+					var k := clampf((t - float(st["flare_t"])) / 0.3, 0.0, 1.0)
+					b.arms[0].twist = k * twist * DEG
+					b.arms[1].twist = k * twist * DEG
+			fx.reset_events()
+			fx.on_tick = func(i: int, f: Variant) -> void:
+				var pl: PlayerBird = f.player
+				if float(st["flare_t"]) < 0.0 and pl.model.position.y - pr.r_body - top < pr.span:
+					st["flare_t"] = fx.src.tick * DT
+				if float(st["ground_t"]) < 0.0 and pl.mode == PlayerBird.Mode.GROUNDED:
+					st["ground_t"] = i * DT
+				if float(st["rest_t"]) < 0.0 and pl.mode == PlayerBird.Mode.GROUNDED and pl.model.velocity.length() < 1e-4:
+					st["rest_t"] = i * DT
+			var n := 0
+			while n < int(30.0 / DT) and (float(st["rest_t"]) < 0.0 or n * DT < float(st["rest_t"]) + 0.5):
+				fx.step()
+				n += 1
+			var on_roof := p.model.position.y > top
+			_log("%s onto a %.0f m flat roof, %s: stalls %d, stuns %d, grounded %.2f s, at rest %.2f s, on the roof %s, end %s" % [
+				sp, top, "neutral glide" if twist == 0.0 else "full flare (+%.0f deg) from 1 span" % twist,
+				fx.events["stalled"], p.contacts["stun"], st["ground_t"], st["rest_t"], on_roof, p.mode_name()])
+			eq(p.contacts["stun"], 0, "%s roof %s: no stun (G4 on the meadow: none)" % [sp, twist])
+			eq(fx.events["stalled"], 0, "%s roof %s: no stall within a stall's recovery height of the roof (the G5 guard's intent)" % [sp, twist])
+			check(on_roof, "%s roof %s: comes to rest on the roof" % [sp, twist])
+			await _done()
+
+
+# --- 5. Resume from the pause menu straight into strokes -------------------------------------------
+
+func test_r6x_resume_then_flap_at_once() -> void:
+	for sp in S3:
+		for paused in [false, true]:
+			await _new_fx(sp)
+			var p := fx.player
+			p.start_flying(Vector3(0, 150, 0), 0.0, 0.0)
+			var st := {"phase": 0, "t0": 0.0}
+			fx.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+				b.set_airplane()
+				if st["phase"] == 1:
+					var u := t - float(st["t0"])
+					if paused:
+						# 0.4 s from the menu pose (pointing at Resume) back out...
+						var k := clampf(u / 0.4, 0.0, 1.0)
+						var e := k * k * (3.0 - 2.0 * k)
+						b.arms[0].dihedral = lerpf(-80.0 * DEG, 0.0, e)
+						b.arms[1].dihedral = lerpf(35.0 * DEG, 0.0, e)
+						b.arms[1].sweep = lerpf(60.0 * DEG, 0.0, e)
+					# ...and straight into strokes (a player escaping a hawk).
+					if u >= 0.4:
+						ScriptedPoseSource.flap(b, u - 0.4 + 0.5, 45.0, 1.3)
+			fx.run(2.0)
+			var y0 := p.model.position.y
+			st["phase"] = 1
+			st["t0"] = fx.src.tick * DT
+			if paused:
+				p.notification(Node.NOTIFICATION_UNPAUSED)
+			fx.reset_events()
+			var first := {"t": -1.0}
+			var t_start := fx.ticks
+			fx.on_tick = func(i: int, f: Variant) -> void:
+				if float(first["t"]) < 0.0 and f.events["flapped"] > 0:
+					first["t"] = (i - t_start) * DT
+			fx.run(4.0)
+			var dy := p.model.position.y - y0
+			_log("%s %s then strokes from +0.4 s: first flap event at +%.2f s, flaps in 4 s %d, dy %.2f m" % [
+				sp, "resume from the menu pose" if paused else "no pause (control)", first["t"], fx.events["flapped"], dy])
+			metric("%s_%s_first_flap_s" % [sp, "resume" if paused else "control"], first["t"])
+			if paused:
+				between(float(first["t"]), 0.0, 1.6, "%s: after a resume, the first real strokes are credited within 1.6 s" % sp)
+			fx.assert_comfort(self, "%s resume strokes" % sp)
+			await _done()
+
+
+# --- 3b. Characterise the roof take-off: slope sweep, strategies, the turn-round workaround ---------
+
+func _grounded_on(sp: StringName, deg: float, yaw: float) -> FX:
+	await _new_fx(sp, _slope_setup(deg))
+	var p := fx.player
+	var pr := p.model.params
+	var z0 := -2.0 * pr.span
+	var start := Vector3(0, _surf_y(deg, z0) + (pr.r_body + 0.05) / cos(deg * DEG), z0)
+	p.start_flying(start, yaw, 0.0)
+	p.model.reset(start, FlightMath.yaw_forward(yaw) * 0.3 * pr.v_min + Vector3.DOWN * 0.2 * pr.v_min, yaw)
+	fx.run(2.0)
+	return fx
+
+
+func _clearance(p: PlayerBird, deg: float) -> float:
+	var pos := p.model.position
+	var pr := p.model.params
+	return minf((pos.y - _surf_y(deg, pos.z)) * cos(deg * DEG) - pr.r_body, pos.y - pr.r_body)
+
+
+func test_r6x_takeoff_uphill_sweep() -> void:
+	# [hz, amp deg, wrist twist deg (- = leading edge down), label]
+	var strategies := [[1.3, 45.0, 0.0, "1.3 Hz 45"], [2.0, 60.0, 0.0, "2 Hz 60"], [1.3, 45.0, -15.0, "1.3 Hz 45 wrists -15"]]
+	for sp in S3:
+		for deg in [20.0, 25.0, 30.0, 34.0, 44.0]:
+			var res := PackedStringArray()
+			var any_ok := false
+			for s in strategies:
+				await _grounded_on(sp, deg, 0.0)
+				var p := fx.player
+				var pr := p.model.params
+				var landed := p.mode == PlayerBird.Mode.GROUNDED
+				var hz: float = s[0]
+				var amp: float = s[1]
+				var tw: float = float(s[2]) * DEG
+				fx.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+					b.set_airplane()
+					ScriptedPoseSource.flap(b, t + 0.5, amp, hz)
+					for a in b.arms:
+						a.twist = tw
+				fx.reset_events()
+				fx.run(6.0)
+				var ok := p.mode == PlayerBird.Mode.FLYING and _clearance(p, deg) > 2.0 * pr.span
+				any_ok = any_ok or ok
+				res.append("%s: landed %s, took_off %d, perched %d, end %s %.1f spans %s" % [s[3], landed, fx.events["took_off"], fx.events["perched"],
+					p.mode_name(), _clearance(p, deg) / pr.span, "OK" if ok else "STUCK"])
+				await _done()
+			_log("%s take-off facing up a %.0f deg slope | %s" % [sp, deg, " | ".join(res)])
+			check(any_ok, "%s %.0f deg: some flapping strategy leaves a slope the bird landed on facing uphill" % [sp, deg])
+
+
+func test_r6x_roof_turn_round_then_takeoff() -> void:
+	# The workaround: stuck facing the ridge, the player turns round in the
+	# room (the grounded heading follows the torso), then flaps.
+	for sp in S3:
+		var deg := 38.0
+		await _grounded_on(sp, deg, 0.0)
+		var p := fx.player
+		var pr := p.model.params
+		var st := {"t0": fx.src.tick * DT}
+		fx.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			var u := t - float(st["t0"])
+			b.torso_yaw = clampf(u / 2.0, 0.0, 1.0) * PI
+			if u > 2.5:
+				ScriptedPoseSource.flap(b, u - 2.5 + 0.5, 45.0, 1.3)
+		fx.reset_events()
+		fx.run(8.0)
+		var ok := p.mode == PlayerBird.Mode.FLYING and _clearance(p, deg) > 2.0 * pr.span
+		_log("%s on a 38 deg roof facing the ridge, turns round (torso 180 deg over 2 s) then flaps: took_off %d, perched %d, end %s %.1f spans, heading %.0f deg -> %s" % [
+			sp, fx.events["took_off"], fx.events["perched"], p.mode_name(), _clearance(p, deg) / pr.span,
+			rad_to_deg(p.model.heading()), "OK" if ok else "STUCK"])
+		check(ok, "%s: turned round on the roof, the flap leaves it" % sp)
+		await _done()
+
+
+# --- Evidence plot -------------------------------------------------------------------------------
+
+func _takeoff_series(sp: StringName, deg: float, yaw_deg: float) -> Dictionary:
+	await _grounded_on(sp, deg, yaw_deg * DEG)
+	var p := fx.player
+	var pr := p.model.params
+	fx.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+		b.set_airplane()
+		ScriptedPoseSource.flap(b, t + 0.5, 45.0, 1.3)
+	var out := {"t": PackedFloat64Array(), "c": PackedFloat64Array(), "g": PackedFloat64Array()}
+	var t0 := fx.ticks
+	fx.reset_events()
+	fx.on_tick = func(i: int, f: Variant) -> void:
+		var pl: PlayerBird = f.player
+		out["t"].append((i - t0) * DT)
+		out["c"].append(_clearance(pl, deg) / pr.span)
+		out["g"].append(1.0 if pl.mode == PlayerBird.Mode.GROUNDED else 0.0)
+	fx.run(6.0)
+	out["took_off"] = fx.events["took_off"]
+	await _done()
+	return out
+
+
+func _touchdown_series(sp: StringName, deg: float, vf: float, vs: float, gap: float) -> Dictionary:
+	await _new_fx(sp, _slope_setup(deg))
+	var p := fx.player
+	var pr := p.model.params
+	var z0 := -2.0 * pr.span
+	var start := Vector3(0, _surf_y(deg, z0) + (pr.r_body + gap) / cos(deg * DEG), z0)
+	p.start_flying(start, 0.0, 0.0)
+	var v0 := Vector3(0, -vs, -vf) * pr.v_min
+	p.model.reset(start, v0, 0.0)
+	var out := {"t": PackedFloat64Array(), "vb": PackedFloat64Array(), "vc": PackedFloat64Array()}
+	var st := {"last": p.camera.global_position}
+	fx.on_tick = func(i: int, f: Variant) -> void:
+		var pl: PlayerBird = f.player
+		var c := pl.camera.global_position
+		out["t"].append(i * DT)
+		out["vb"].append(Vector2(pl.model.velocity.x, pl.model.velocity.z).length() / pr.v_min)
+		out["vc"].append(((c - st["last"]) / DT).length() / pr.v_min)
+		st["last"] = c
+	fx.run(0.8)
+	await _done()
+	return out
+
+
+func test_r6x_zz_evidence_plot() -> void:
+	var pl := FlightPlot.new(1600, 1000, "Verifier r6 (experience): landing on slopes and roofs, and taking off again")
+	pl.note("Top left: 6 s of reference strokes (1.3 Hz, 45 deg) by a bird that touched down on a 38 deg roof (village roofs are 34-44 deg). Facing the ridge no size leaves the roof: every stroke launches and touches down again (took_off events in the legend). Facing along the roof they fly away. Top right: the view's worst per-tick velocity change at the touchdown / the touchdown speed vs the slope rising ahead (1.1 V_min approach), against G1's 0.45 bound (G1 tests flat ground only). Bottom: sparrow touchdown at 1.1 V_min on a 20 deg upslope - the run-out's horizontal speed stops in one tick (the uphill cast removes the run's uphill component).")
+	var W := 720
+	var H := 360
+	var p1 := pl.panel(Rect2i(60, 170, W, H), "38 deg roof: clearance during 6 s of strokes (spans)", "t (s)", "spans")
+	var p2 := pl.panel(Rect2i(60 + W + 80, 170, W, H), "Touchdown at 1.1 V_min: worst view dv/tick / V_td", "slope rising ahead (deg)", "ratio")
+	var p3 := pl.panel(Rect2i(60, 170 + H + 70, W, H - 20), "Sparrow, 20 deg upslope, 1.1 V_min: body |v_xz| / V_min", "t (s)", "V / V_min")
+	var p4 := pl.panel(Rect2i(60 + W + 80, 170 + H + 70, W, H - 20), "Same touchdown: camera speed / V_min (the eye)", "t (s)", "V / V_min")
+	var slot := 0
+	for sp in S3:
+		var a: Dictionary = await _takeoff_series(sp, 38.0, 0.0)
+		p1.line(a["t"], a["c"], slot, "%s facing the ridge (took_off x%d)" % [sp, a["took_off"]])
+		slot += 1
+	var b: Dictionary = await _takeoff_series(&"sparrow", 38.0, 90.0)
+	p1.line(b["t"], b["c"], 3, "sparrow facing along the roof (took_off x%d)" % b["took_off"])
+	p1.set_y(-0.5, 12.0)
+	slot = 0
+	for sp in S3:
+		var xs := PackedFloat64Array()
+		var ys := PackedFloat64Array()
+		for deg in [0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 34.0, 38.0, 44.0]:
+			var r: Dictionary = await _touchdown(sp, deg, 0.0, 1.1, 0.15, 0.1)
+			xs.append(deg)
+			ys.append(r["ratio"] if int(r["stuns"]) == 0 else NAN)
+			_log("sweep %s %.0f deg 1.1 V_min: ratio %.2f stuns %d run %.2f" % [sp, deg, r["ratio"], r["stuns"], r["run_ratio"]])
+		p2.line(xs, ys, slot, sp)
+		p2.points(xs, ys, slot)
+		slot += 1
+	p2.hline(0.45, FlightPlot.AXIS, "G1 bound 0.45")
+	var c: Dictionary = await _touchdown_series(&"sparrow", 20.0, 1.1, 0.15, 0.1)
+	p3.line(c["t"], c["vb"], 0, "body |v_xz|")
+	p4.line(c["t"], c["vc"], 1, "camera |v|")
+	var path := Paths.artifacts("flight").path_join("verify/r6exp/r6x_slopes_roofs.png")
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	eq(pl.save(path), OK, "plot saved")
+	_log("plot: " + path)

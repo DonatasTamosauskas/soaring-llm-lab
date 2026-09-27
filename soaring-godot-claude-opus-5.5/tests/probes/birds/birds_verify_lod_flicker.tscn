@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/probes/birds/birds_verify_lod_flicker.gd" id="1"]
+
+[node name="BirdsVerifyLodFlicker" type="Node"]
+script = ExtResource("1")

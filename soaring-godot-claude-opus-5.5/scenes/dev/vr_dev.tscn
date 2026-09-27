@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/dev/vr_dev.gd" id="1_dev"]
+
+[node name="VRDev" type="Node3D"]
+script = ExtResource("1_dev")

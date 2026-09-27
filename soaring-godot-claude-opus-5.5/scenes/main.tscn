@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/birds/bird_fx_director.gd" id="2_fx"]
+[ext_resource type="Script" path="res://scripts/vr/xr_mirror.gd" id="3_mirror"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="World" parent="." instance_placeholder="res://scenes/world/world.tscn"]
+
+[node name="Ecosystem" parent="." instance_placeholder="res://scenes/ai/ecosystem.tscn"]
+
+[node name="Player" parent="." instance_placeholder="res://scenes/player/player.tscn"]
+
+[node name="UI" parent="." instance_placeholder="res://scenes/ui/ui_root.tscn"]
+
+[node name="Audio" parent="." instance_placeholder="res://scenes/audio/audio_director.tscn"]
+
+[node name="BirdFX" type="Node" parent="."]
+script = ExtResource("2_fx")
+
+[node name="XRMirror" type="Node" parent="."]
+script = ExtResource("3_mirror")

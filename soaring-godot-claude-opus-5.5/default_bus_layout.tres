@@ -1,0 +1,81 @@
+[gd_resource type="AudioBusLayout" format=3]
+
+[sub_resource type="AudioEffectHardLimiter" id="AudioEffectHardLimiter_sprqy"]
+ceiling_db = -1.5
+release = 0.12
+
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_ntcx0"]
+cutoff_hz = 900.0
+
+[sub_resource type="AudioEffectHighPassFilter" id="AudioEffectHighPassFilter_lgks4"]
+cutoff_hz = 30.0
+
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_w770p"]
+cutoff_hz = 1000.0
+
+[sub_resource type="AudioEffectPanner" id="AudioEffectPanner_scnct"]
+
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_ylq3n"]
+cutoff_hz = 900.0
+
+[resource]
+bus/0/effect/0/effect = SubResource("AudioEffectHardLimiter_sprqy")
+bus/0/effect/0/enabled = true
+bus/1/name = &"Music"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0
+bus/1/send = &"Master"
+bus/2/name = &"SFX"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = 0.0
+bus/2/send = &"Master"
+bus/2/effect/0/effect = SubResource("AudioEffectLowPassFilter_ntcx0")
+bus/2/effect/0/enabled = false
+bus/3/name = &"Wind"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = 0.0
+bus/3/send = &"SFX"
+bus/3/effect/0/effect = SubResource("AudioEffectHighPassFilter_lgks4")
+bus/3/effect/0/enabled = true
+bus/3/effect/1/effect = SubResource("AudioEffectLowPassFilter_w770p")
+bus/3/effect/1/enabled = true
+bus/3/effect/2/effect = SubResource("AudioEffectPanner_scnct")
+bus/3/effect/2/enabled = true
+bus/4/name = &"Body"
+bus/4/solo = false
+bus/4/mute = false
+bus/4/bypass_fx = false
+bus/4/volume_db = 0.0
+bus/4/send = &"SFX"
+bus/5/name = &"Calls"
+bus/5/solo = false
+bus/5/mute = false
+bus/5/bypass_fx = false
+bus/5/volume_db = 0.0
+bus/5/send = &"SFX"
+bus/6/name = &"Danger"
+bus/6/solo = false
+bus/6/mute = false
+bus/6/bypass_fx = false
+bus/6/volume_db = 0.0
+bus/6/send = &"SFX"
+bus/7/name = &"Ambience"
+bus/7/solo = false
+bus/7/mute = false
+bus/7/bypass_fx = false
+bus/7/volume_db = 0.0
+bus/7/send = &"Master"
+bus/7/effect/0/effect = SubResource("AudioEffectLowPassFilter_ylq3n")
+bus/7/effect/0/enabled = false
+bus/8/name = &"UI"
+bus/8/solo = false
+bus/8/mute = false
+bus/8/bypass_fx = false
+bus/8/volume_db = 0.0
+bus/8/send = &"Master"

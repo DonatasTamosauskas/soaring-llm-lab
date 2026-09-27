@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/probes/world/world_r4eng_perf.gd" id="1"]
+
+[node name="WorldR4EngPerf" type="Node3D"]
+script = ExtResource("1")

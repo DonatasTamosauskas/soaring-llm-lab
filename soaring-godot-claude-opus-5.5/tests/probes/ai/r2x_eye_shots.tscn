@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/probes/ai/r2x_eye_shots.gd" id="1_r2x"]
+
+[node name="R2xEyeShots" type="Node3D"]
+script = ExtResource("1_r2x")

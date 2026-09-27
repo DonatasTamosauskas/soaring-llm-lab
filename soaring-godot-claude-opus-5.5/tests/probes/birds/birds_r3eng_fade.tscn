@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/probes/birds/birds_r3eng_fade.gd" id="1"]
+
+[node name="BirdsR3EngFade" type="Node"]
+script = ExtResource("1")

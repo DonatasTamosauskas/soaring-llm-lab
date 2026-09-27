@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ai/ecosystem.gd" id="1_eco"]
+
+[node name="Ecosystem" type="Node3D" groups=["ecosystem"]]
+script = ExtResource("1_eco")

@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/probes/birds/birds_r3_close.gd" id="1_r3c"]
+
+[node name="BirdsR3Close" type="Node"]
+script = ExtResource("1_r3c")

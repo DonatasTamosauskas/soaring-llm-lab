@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/vr/vr_rig_extras.gd" id="1_extras"]
+[ext_resource type="Script" path="res://scripts/vr/vr_calibration.gd" id="2_cal"]
+[ext_resource type="Script" path="res://scripts/vr/world_scale_driver.gd" id="3_ws"]
+[ext_resource type="Script" path="res://scripts/vr/fp_wings.gd" id="4_wings"]
+[ext_resource type="Script" path="res://scripts/vr/comfort_vignette.gd" id="5_vig"]
+
+[node name="VRRigExtras" type="Node3D"]
+process_mode = 3
+script = ExtResource("1_extras")
+
+[node name="Calibration" type="Node" parent="."]
+script = ExtResource("2_cal")
+
+[node name="WorldScale" type="Node" parent="."]
+script = ExtResource("3_ws")
+
+[node name="Wings" type="MultiMeshInstance3D" parent="."]
+script = ExtResource("4_wings")
+
+[node name="Vignette" type="MeshInstance3D" parent="."]
+script = ExtResource("5_vig")

@@ -1,0 +1,848 @@
+extends TestCase
+## Verifier probe (round 4, flight, EXPERIENCE & REQUIREMENTS lens).
+## Player situations the area's suite and the round-1..3 probes do not fly:
+##  1. Resting on a perch: the player lowers the arms to the sides (folded
+##     wings, the posture the birds area animates for a perched bird). DESIGN:
+##     "fly slowly into a perch to cling; flap to launch".
+##  2. Watching prey / a predator while flapping: the gaze held 80 deg to the
+##     side, or 60 deg down, during strokes. DESIGN: "you can look around
+##     freely while flying straight". PB-07 / WI-04 only look while gliding
+##     (or for 1.5 s).
+##  3. Uneven human flapping (one arm 25 % smaller, 60 ms late): does the bird
+##     pull to one side?
+##  4. A big bird launching from a LOW perch (1.5 spans above the ground).
+##  5. Perceived speed / turn radius through world_scale (report only).
+## Output: artifacts/flight/verify/r4exp/experience_probe.txt
+
+const FX := preload("res://tests/unit/flight/pb_fixture.gd")
+const DEG := PI / 180.0
+const DT := 1.0 / 72.0
+
+var fx: FX
+var _lines := PackedStringArray()
+
+
+func _log(s: String) -> void:
+	_lines.append(s)
+	print("[flight-verify] ", s)
+
+
+func after_each() -> void:
+	if fx != null:
+		fx.teardown()
+		fx = null
+	await get_tree().process_frame
+
+
+func after_all() -> void:
+	var path := Paths.artifacts("flight").path_join("verify/r4exp/experience_probe.txt")
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f:
+		f.store_string("\n".join(_lines) + "\n")
+
+
+func _new_fx(sp: StringName, world_setup: Callable = Callable()) -> FX:
+	fx = FX.new(self)
+	await fx.setup(sp, world_setup)
+	return fx
+
+
+static func _hdg_deg(p: PlayerBird) -> float:
+	return rad_to_deg(p.model.heading())
+
+
+# --- 1. Resting on a perch -------------------------------------------------------
+
+## Arms from the airplane pose down to the sides over `lower_s`, then held.
+## `style`: "sides" (arms hanging straight), "sides_bent" (hanging, elbows
+## a little bent), "chest" (the explicit tuck gesture: hands to the chest).
+func _rest_on_perch(sp: StringName, style: String, lower_s: float) -> Dictionary:
+	var f := await _new_fx(sp, func(w: Variant) -> void:
+		w.add_perch(Vector3(0, 20, 0), Vector3.FORWARD, 10.0, 0.03, 2.0))
+	var p := f.player
+	p.perch_on(f.world.get_perches()[0])
+	f.run(1.0)
+	var st := {"left_perch_t": -1.0, "onsets": 0, "tucked_t": -1.0, "min_ext": 1.0}
+	var t0 := f.ticks
+	f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+		b.set_airplane()
+		var k := clampf((t - 1.0 - 0.2) / lower_s, 0.0, 1.0)  # starts 0.2 s into the phase
+		k = k * k * (3.0 - 2.0 * k)
+		for a in b.arms:
+			match style:
+				"sides":
+					a.dihedral = -80.0 * DEG * k
+				"sides_bent":
+					a.dihedral = -75.0 * DEG * k
+					a.elbow = 25.0 * DEG * k
+				"chest":
+					a.elbow = 150.0 * DEG * k
+	f.on_tick = func(tick: int, fix: Variant) -> void:
+		var tt := (tick - t0) * DT
+		var w: WingState = fix.player.wing_state()
+		if w.onset_l or w.onset_r:
+			st["onsets"] += 1
+		if w.tucked and st["tucked_t"] < 0.0:
+			st["tucked_t"] = tt
+		st["min_ext"] = minf(st["min_ext"], w.mean_extension())
+		if st["left_perch_t"] < 0.0 and fix.player.mode != PlayerBird.Mode.PERCHED:
+			st["left_perch_t"] = tt
+	f.run(1.0 + 0.2 + lower_s + 5.0)
+	st["end_mode"] = p.mode_name()
+	st["drop_m"] = 20.0 - p.model.position.y
+	return st
+
+
+func test_r4x_rest_on_perch_arms_down() -> void:
+	# A perched player who lets the arms hang (wings folded) must stay on the
+	# branch; only a stroke launches. The explicit "hands to chest" tuck is
+	# the spec's drop-launch gesture and is logged for contrast.
+	for sp in [&"sparrow", &"pigeon", &"eagle"]:
+		for style in ["sides", "sides_bent"]:
+			for lower_s in [0.8, 2.0]:
+				var r := await _rest_on_perch(sp, style, lower_s)
+				_log("[perch rest] %s arms %s lowered over %.1f s: min ext %.2f, tucked at %.2f s, onsets %d, left perch at %.2f s, end mode %s, dropped %.2f m" % [
+					sp, style, lower_s, r["min_ext"], r["tucked_t"], r["onsets"], r["left_perch_t"], r["end_mode"], r["drop_m"]])
+				eq(r["end_mode"], "perched", "%s: arms lowered to the sides (%s, %.1f s) keeps the bird on the perch" % [sp, style, lower_s])
+				fx.teardown()
+				fx = null
+		var c := await _rest_on_perch(sp, "chest", 0.8)
+		_log("[perch rest] %s hands to chest (explicit tuck) over 0.8 s: tucked at %.2f s, left perch at %.2f s, end mode %s, dropped %.2f m" % [
+			sp, c["tucked_t"], c["left_perch_t"], c["end_mode"], c["drop_m"]])
+		fx.teardown()
+		fx = null
+
+
+# --- 2. Gaze held to the side / down while flapping --------------------------------
+
+func _gaze_flap(sp: StringName, yaw_deg: float, pitch_deg: float, hz: float, amp: float, secs: float) -> Dictionary:
+	var f := await _new_fx(sp)
+	var p := f.player
+	p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+	f.run(0.5)
+	var st := {"max_body_yaw": 0.0, "max_bank": 0.0, "max_roll_cmd": 0.0}
+	f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+		b.set_airplane()
+		ScriptedPoseSource.flap(b, t, amp, hz)
+		var k := clampf((t - 0.5) / 0.6, 0.0, 1.0)
+		b.head_yaw = yaw_deg * DEG * k
+		b.head_pitch = pitch_deg * DEG * k
+	var h0 := _hdg_deg(p)
+	f.on_tick = func(_tick: int, fix: Variant) -> void:
+		var w: WingState = fix.player.wing_state()
+		st["max_body_yaw"] = maxf(st["max_body_yaw"], absf(rad_to_deg(w.body_yaw)))
+		st["max_bank"] = maxf(st["max_bank"], absf(rad_to_deg(fix.player.model.phi)))
+		st["max_roll_cmd"] = maxf(st["max_roll_cmd"], absf(w.roll))
+	f.run(secs)
+	st["dh"] = wrapf(_hdg_deg(p) - h0, -180.0, 180.0)
+	st["climb"] = p.model.position.y - 400.0
+	fx.teardown()
+	fx = null
+	return st
+
+
+func test_r4x_gaze_while_flapping() -> void:
+	var secs := 9.0
+	for sp in [&"sparrow", &"pigeon", &"eagle"]:
+		for stroke in [[1.0, 45.0], [2.0, 45.0]]:
+			var base := await _gaze_flap(sp, 0.0, 0.0, stroke[0], stroke[1], secs)
+			for look in [[80.0, 0.0], [-80.0, 0.0], [0.0, -60.0], [70.0, -45.0]]:
+				var r := await _gaze_flap(sp, look[0], look[1], stroke[0], stroke[1], secs)
+				var extra: float = wrapf(float(r["dh"]) - float(base["dh"]), -180.0, 180.0)
+				_log("[gaze+flap] %s %.0f Hz %.0f deg, head yaw %.0f pitch %.0f for %.0f s: heading %+.1f deg (straight-ahead gaze %+.1f), extra %+.1f deg, body yaw max %.1f deg, bank max %.1f deg (gaze ahead %.1f), roll cmd max %.2f" % [
+					sp, stroke[0], stroke[1], look[0], look[1], secs, r["dh"], base["dh"], extra, r["max_body_yaw"], r["max_bank"], base["max_bank"], r["max_roll_cmd"]])
+				lt(absf(extra), 5.0, "%s %.0f Hz: gaze (%.0f, %.0f) held while flapping turns the bird < 5 deg in %.0f s" % [sp, stroke[0], look[0], look[1], secs])
+				lt(float(r["max_body_yaw"]), 3.0, "%s %.0f Hz: gaze (%.0f, %.0f): body frame stays on the wings (< 3 deg)" % [sp, stroke[0], look[0], look[1]])
+
+
+# --- 3. Uneven flapping --------------------------------------------------------------
+
+func _uneven(sp: StringName, amp_r: float, lag: float, secs: float) -> Dictionary:
+	var f := await _new_fx(sp)
+	var p := f.player
+	p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+	f.run(0.5)
+	var st := {"max_bank": 0.0, "max_rate": 0.0}
+	f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+		b.set_airplane()
+		ScriptedPoseSource.flap(b, t, 45.0, 1.0, -1)
+		ScriptedPoseSource.flap(b, maxf(t - lag, 0.0), amp_r, 1.0, 1)
+	var h0 := _hdg_deg(p)
+	f.on_tick = func(_tick: int, fix: Variant) -> void:
+		st["max_bank"] = maxf(st["max_bank"], absf(rad_to_deg(fix.player.model.phi)))
+		st["max_rate"] = maxf(st["max_rate"], absf(rad_to_deg(fix.player.rig_yaw_rate)))
+	f.run(secs)
+	st["dh"] = wrapf(_hdg_deg(p) - h0, -180.0, 180.0)
+	st["body_steer"] = p.body_steer
+	f.assert_comfort(self, "%s uneven flapping" % sp)
+	fx.teardown()
+	fx = null
+	return st
+
+
+func test_r4x_uneven_human_flapping() -> void:
+	var secs := 10.0
+	for sp in [&"sparrow", &"pigeon", &"eagle"]:
+		var base := await _uneven(sp, 45.0, 0.0, secs)
+		for c in [[34.0, 0.0], [45.0, 0.06], [34.0, 0.06]]:
+			var r := await _uneven(sp, c[0], c[1], secs)
+			var extra: float = wrapf(float(r["dh"]) - float(base["dh"]), -180.0, 180.0)
+			_log("[uneven flap] %s right arm %.0f deg (left 45), %.0f ms late, %.0f s: heading %+.1f deg (even %+.1f), bank max %.1f deg, rig rate max %.1f deg/s, body steer %s" % [
+				sp, c[0], c[1] * 1000.0, secs, r["dh"], base["dh"], r["max_bank"], r["max_rate"], str(r["body_steer"])])
+			lt(absf(extra), 15.0, "%s: uneven flapping (right %.0f deg, %.0f ms late) pulls < 15 deg in %.0f s" % [sp, c[0], c[1] * 1000.0, secs])
+
+
+# --- 4. Big bird launching from a low perch -----------------------------------------
+
+func test_r4x_big_bird_low_perch_launch() -> void:
+	for sp in [&"pigeon", &"hawk", &"eagle"]:
+		var span := SizeRules.wingspan_for_mass(FlightParams.species_mass(sp))
+		var hp := 1.5 * span
+		var f := await _new_fx(sp, func(w: Variant) -> void:
+			w.add_perch(Vector3(0, hp, 0), Vector3.FORWARD, 10.0, 0.05, 2.0))
+		var p := f.player
+		p.perch_on(f.world.get_perches()[0])
+		f.run(0.8)
+		var st := {"min_agl": INF, "grounded": false, "stuns": 0, "t_fly": -1.0}
+		var t0 := f.ticks
+		f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			ScriptedPoseSource.flap(b, t + 0.5, 45.0, 1.3)
+		f.on_tick = func(tick: int, fix: Variant) -> void:
+			var pl: PlayerBird = fix.player
+			if st["t_fly"] < 0.0 and pl.mode == PlayerBird.Mode.FLYING:
+				st["t_fly"] = (tick - t0) * DT
+			if st["t_fly"] >= 0.0:
+				st["min_agl"] = minf(st["min_agl"], pl.model.position.y - pl.model.params.r_body)
+			if pl.mode == PlayerBird.Mode.GROUNDED:
+				st["grounded"] = true
+		f.run(10.0)
+		var end_agl := p.model.position.y - p.model.params.r_body
+		_log("[low perch launch] %s perch %.2f m (1.5 spans): launched at %.2f s, min AGL %.2f m (%.2f spans), grounded %s, stuns %d, end AGL %.1f m (%.1f spans), end mode %s, V %.1f m/s" % [
+			sp, hp, st["t_fly"], st["min_agl"], st["min_agl"] / span, str(st["grounded"]), p.contacts["stun"], end_agl, end_agl / span, p.mode_name(), p.model.airspeed()])
+		gt(float(st["t_fly"]), -0.5, "%s: strokes launch from the low perch" % sp)
+		check(not st["grounded"], "%s: a stroke launch from 1.5 spans never lands the bird on the ground" % sp)
+		eq(p.contacts["stun"], 0, "%s: no stun on the low-perch launch" % sp)
+		gt(end_agl, hp, "%s: 10 s of steady strokes after the launch end above the perch" % sp)
+		fx.teardown()
+		fx = null
+
+
+# --- 5. Perceived speed and turn radius (report) --------------------------------------
+
+func test_r4x_perceived_envelope_report() -> void:
+	var cal := WingCalibration.new()
+	for sp in [&"sparrow", &"starling", &"pigeon", &"crow", &"gull", &"hawk", &"eagle"]:
+		var m := FlightParams.species_mass(sp)
+		var env := FlightModel.envelope(m)
+		var span := SizeRules.wingspan_for_mass(m)
+		var ws := clampf(span / (cal.arm_span + 0.20), 0.05, 5.0)
+		var v: float = env["cruise"]
+		var r_turn: float = v * v / (FlightMath.G * tan(float(env["phi_max"])))
+		_log("[perceived] %s: world_scale %.3f, cruise %.1f m/s -> perceived %.1f m/s (%.1f spans/s), full-bank turn radius %.1f m -> perceived %.1f m, V_max %.1f -> perceived %.1f m/s" % [
+			sp, ws, v, v / ws, v / span, r_turn, r_turn / ws, float(env["max_speed"]), float(env["max_speed"]) / ws])
+	check(true, "report only")
+
+
+# --- 1b. The rest-pose space on a perch (report + the straight-arm cases) ----------
+
+func test_r4x_rest_pose_grid() -> void:
+	# Which relaxed "arms down" postures eject a perched bird? dihedral =
+	# upper-arm elevation (-90 = hanging straight), elbow = forearm bent
+	# forward (holding the controllers in front of the hips).
+	for sp in [&"pigeon"]:
+		var ejected := 0
+		var total := 0
+		for dih in [-60.0, -70.0, -80.0, -90.0]:
+			var row := PackedStringArray()
+			for elb in [0.0, 15.0, 30.0, 45.0, 90.0]:
+				var f := await _new_fx(sp, func(w: Variant) -> void:
+					w.add_perch(Vector3(0, 20, 0), Vector3.FORWARD, 10.0, 0.03, 2.0))
+				var p := f.player
+				p.perch_on(f.world.get_perches()[0])
+				f.run(1.0)
+				var d: float = dih
+				var e: float = elb
+				f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+					b.set_airplane()
+					var k := clampf((t - 1.2) / 1.2, 0.0, 1.0)
+					k = k * k * (3.0 - 2.0 * k)
+					for a in b.arms:
+						a.dihedral = d * DEG * k
+						a.elbow = e * DEG * k
+				var st := {"min_ext": 1.0}
+				f.on_tick = func(_tick: int, fix: Variant) -> void:
+					st["min_ext"] = minf(st["min_ext"], fix.player.wing_state().mean_extension())
+				f.run(1.2 + 1.2 + 4.0)
+				var left := p.mode != PlayerBird.Mode.PERCHED
+				total += 1
+				if left:
+					ejected += 1
+				row.append("elbow %2.0f: %s (ext %.2f)" % [elb, "DROPS" if left else "stays", st["min_ext"]])
+				fx.teardown()
+				fx = null
+			_log("[rest grid] %s upper arm %.0f deg | %s" % [sp, dih, " | ".join(row)])
+		_log("[rest grid] %s: %d of %d relaxed arms-down postures drop the bird off its perch" % [sp, ejected, total])
+		lt(float(ejected), 0.5, "%s: no relaxed arms-down posture drops the bird off the perch (%d of %d do)" % [sp, ejected, total])
+
+
+# --- 3b. View yaw wobble from uneven strokes -----------------------------------------
+
+## Peak-to-peak of the rig yaw minus its centred 1 s moving average (deg):
+## the per-wingbeat view rotation with the slow drift removed.
+static func _wobble(yaws: PackedFloat64Array) -> float:
+	var n := 36
+	var lo := INF
+	var hi := -INF
+	for i in range(n, yaws.size() - n):
+		var m := 0.0
+		for k in range(-n, n + 1):
+			m += yaws[i + k]
+		m /= 2 * n + 1
+		lo = minf(lo, yaws[i] - m)
+		hi = maxf(hi, yaws[i] - m)
+	return hi - lo
+
+
+func test_r4x_uneven_stroke_view_wobble() -> void:
+	for sp in [&"sparrow", &"pigeon", &"eagle"]:
+		for c in [[45.0, 0.0], [40.5, 0.0], [34.0, 0.0], [45.0, 0.03], [45.0, 0.06]]:
+			var f := await _new_fx(sp)
+			var p := f.player
+			p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+			f.run(0.5)
+			var amp_r: float = c[0]
+			var lag: float = c[1]
+			f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+				b.set_airplane()
+				ScriptedPoseSource.flap(b, t, 45.0, 1.0, -1)
+				ScriptedPoseSource.flap(b, maxf(t - lag, 0.0), amp_r, 1.0, 1)
+			var yaws := PackedFloat64Array()
+			var st := {"max_rate": 0.0, "max_acc": 0.0, "unwrap": 0.0, "prev": 0.0, "n": 0}
+			f.on_tick = func(tick: int, fix: Variant) -> void:
+				var y := rad_to_deg(fix.player.rig_yaw)
+				if st["n"] > 0:
+					st["unwrap"] += wrapf(y - st["prev"], -180.0, 180.0)
+				st["prev"] = y
+				st["n"] += 1
+				if tick * DT > 3.0:
+					yaws.append(st["unwrap"])
+					st["max_rate"] = maxf(st["max_rate"], absf(rad_to_deg(fix.player.rig_yaw_rate)))
+					st["max_acc"] = maxf(st["max_acc"], absf(rad_to_deg(fix.player.rig_yaw_accel)))
+			f.run(10.0)
+			var wob := _wobble(yaws)
+			_log("[stroke wobble] %s right %.1f deg (left 45), %.0f ms late: view yaw wobble %.1f deg p-p per wingbeat, rig rate max %.1f deg/s, accel max %.0f deg/s2" % [
+				sp, amp_r, lag * 1000.0, wob, st["max_rate"], st["max_acc"]])
+			if amp_r >= 40.0 and lag <= 0.031:
+				# 10 % amplitude or 30 ms timing: ordinary human symmetry.
+				lt(wob, 4.0, "%s: near-even strokes (right %.1f deg, %.0f ms late) wobble the view < 4 deg p-p" % [sp, amp_r, lag * 1000.0])
+			fx.teardown()
+			fx = null
+
+
+func test_r4x_wobble_extra_report() -> void:
+	# Context for the wobble: the sparrow's own brisk stroke (2 Hz, 30 deg),
+	# the mean drift of a 10 % asymmetry, and a deliberate one-wing flap.
+	for c in [[&"sparrow", 2.0, 30.0, 27.0, 0.0], [&"sparrow", 2.0, 30.0, 30.0, 0.03],
+			[&"sparrow", 1.0, 45.0, 40.5, 0.0], [&"pigeon", 1.0, 45.0, 40.5, 0.0],
+			[&"sparrow", 1.0, 45.0, 0.0, 0.0]]:
+		var f := await _new_fx(c[0])
+		var p := f.player
+		p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+		f.run(0.5)
+		var hz: float = c[1]
+		var amp_l: float = c[2]
+		var amp_r: float = c[3]
+		var lag: float = c[4]
+		f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			ScriptedPoseSource.flap(b, t, amp_l, hz, -1)
+			if amp_r > 0.0:
+				ScriptedPoseSource.flap(b, maxf(t - lag, 0.0), amp_r, hz, 1)
+		var yaws := PackedFloat64Array()
+		var st := {"max_rate": 0.0, "unwrap": 0.0, "prev": 0.0, "n": 0}
+		f.on_tick = func(tick: int, fix: Variant) -> void:
+			var y := rad_to_deg(fix.player.rig_yaw)
+			if st["n"] > 0:
+				st["unwrap"] += wrapf(y - st["prev"], -180.0, 180.0)
+			st["prev"] = y
+			st["n"] += 1
+			if tick * DT > 3.0:
+				yaws.append(st["unwrap"])
+				st["max_rate"] = maxf(st["max_rate"], absf(rad_to_deg(fix.player.rig_yaw_rate)))
+		f.run(10.0)
+		var drift := (yaws[yaws.size() - 1] - yaws[0]) / ((yaws.size() - 1) * DT)
+		_log("[wobble ctx] %s %.0f Hz left %.0f right %.0f deg, %.0f ms late: wobble %.1f deg p-p, mean drift %.1f deg/s, rig rate max %.1f deg/s" % [
+			c[0], hz, amp_l, amp_r, lag * 1000.0, _wobble(yaws), drift, st["max_rate"]])
+		fx.teardown()
+		fx = null
+	check(true, "report only")
+
+
+func test_r4x_one_wing_stroke_trace_report() -> void:
+	# One left reference stroke from cruise (FM-18's gesture through the pose
+	# chain), then airplane arms: where does the heading end up?
+	for sp in [&"sparrow", &"pigeon", &"eagle"]:
+		var f := await _new_fx(sp)
+		var p := f.player
+		p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+		f.run(0.5)
+		f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			if t < 1.25:
+				ScriptedPoseSource.flap(b, t + 0.25, 45.0, 1.0, -1)
+		var h0 := _hdg_deg(p)
+		var marks := PackedStringArray()
+		var st := {"peak": 0.0, "bank": 0.0}
+		f.on_tick = func(tick: int, fix: Variant) -> void:
+			var tt := tick * DT
+			var dh := wrapf(_hdg_deg(fix.player) - h0, -180.0, 180.0)
+			if absf(dh) > absf(st["peak"]):
+				st["peak"] = dh
+			st["bank"] = maxf(st["bank"], absf(rad_to_deg(fix.player.model.phi)))
+		var ts := [0.5, 1.0, 1.5, 2.0, 3.0, 5.0]
+		var t_prev := 0.0
+		for tm in ts:
+			f.run(tm - t_prev)
+			t_prev = tm
+			marks.append("%.1fs %+.1f" % [tm, wrapf(_hdg_deg(p) - h0, -180.0, 180.0)])
+		_log("[one-wing stroke] %s: heading change %s (peak %+.1f deg), bank max %.1f deg" % [sp, " | ".join(marks), st["peak"], st["bank"]])
+		fx.teardown()
+		fx = null
+	check(true, "report only")
+
+
+func test_r4x_one_wing_continuous_trace_report() -> void:
+	for sp in [&"sparrow", &"pigeon"]:
+		var f := await _new_fx(sp)
+		var p := f.player
+		p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+		f.run(0.5)
+		f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			ScriptedPoseSource.flap(b, t + 0.25, 45.0, 1.0, -1)
+		var h0 := _hdg_deg(p)
+		var marks := PackedStringArray()
+		var onsets := {"l": 0, "r": 0}
+		f.on_tick = func(_tick: int, fix: Variant) -> void:
+			var w: WingState = fix.player.wing_state()
+			if w.onset_l:
+				onsets["l"] += 1
+			if w.onset_r:
+				onsets["r"] += 1
+		for i in 10:
+			f.run(1.0)
+			marks.append("%+.0f/%.0f" % [wrapf(_hdg_deg(p) - h0, -180.0, 180.0), rad_to_deg(p.model.phi)])
+		_log("[one-wing continuous] %s 1 Hz left only: heading/bank each second %s; onsets L %d R %d; body steer share %.2f" % [sp, " ".join(marks), onsets["l"], onsets["r"], p.telemetry()["body_steer_share"]])
+		fx.teardown()
+		fx = null
+	check(true, "report only")
+
+
+func test_r4x_one_wing_direction_report() -> void:
+	# Which way does the bird go? Heading 0 flies -Z; +X is the bird's RIGHT.
+	# Left-wing-only strokes: the spec (FM-18, desktop Q/E) says the bird
+	# rolls and yaws AWAY from the stroking wing, i.e. to the right (+X).
+	for sp in [&"sparrow", &"pigeon", &"eagle"]:
+		for n_strokes in [1, 10]:
+			var f := await _new_fx(sp)
+			var p := f.player
+			p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+			f.run(0.5)
+			var nn: int = n_strokes
+			f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+				b.set_airplane()
+				if t < float(nn) + 0.25:
+					ScriptedPoseSource.flap(b, t + 0.25, 45.0, 1.0, -1)
+			var x0 := p.model.position.x
+			var h0 := _hdg_deg(p)
+			var st := {"bank_sum": 0.0, "n": 0}
+			f.on_tick = func(_tick: int, fix: Variant) -> void:
+				st["bank_sum"] += rad_to_deg(fix.player.model.phi)
+				st["n"] += 1
+			f.run(float(n_strokes) + 2.0)
+			var right_dir := Basis(Vector3.UP, deg_to_rad(h0)) * Vector3.RIGHT
+			var lateral := (p.model.position - Vector3(x0, p.model.position.y, p.model.position.z)).x
+			_log("[one-wing direction] %s %d left stroke(s): lateral displacement %+.2f m (+ = right, away from the stroking wing), heading change %+.1f deg, mean bank %+.1f deg (roll input +1 banks %+.0f deg), right axis %s" % [
+				sp, n_strokes, lateral, wrapf(_hdg_deg(p) - h0, -180.0, 180.0), st["bank_sum"] / maxf(st["n"], 1), rad_to_deg(p.model.params.phi_max), str(right_dir.snapped(Vector3.ONE * 0.01))])
+			fx.teardown()
+			fx = null
+	# Reference: a right-bank command (roll +0.5 by wrists) - which way?
+	var f2 := await _new_fx(&"pigeon")
+	var p2 := f2.player
+	p2.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+	f2.run(0.5)
+	f2.driver = f2.synth(0.0, 0.5)
+	var h2 := _hdg_deg(p2)
+	f2.run(3.0)
+	_log("[one-wing direction] pigeon roll command +0.5 for 3 s: x %+.2f m, heading change %+.1f deg, bank %+.1f deg" % [p2.model.position.x, wrapf(_hdg_deg(p2) - h2, -180.0, 180.0), rad_to_deg(p2.model.phi)])
+	check(true, "report only")
+
+
+func test_r4x_one_wing_diag_report() -> void:
+	var f := await _new_fx(&"pigeon")
+	var p := f.player
+	p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+	f.run(0.5)
+	f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+		b.set_airplane()
+		ScriptedPoseSource.flap(b, t + 0.25, 45.0, 1.0, -1)
+	var acc := {"roll": 0.0, "by": 0.0, "dpsi": 0.0, "phi": 0.0, "pl": 0.0, "pr": 0.0, "fdx": 0.0, "n": 0}
+	f.on_tick = func(_tick: int, fix: Variant) -> void:
+		var w: WingState = fix.player.wing_state()
+		var m: FlightModel = fix.player.model
+		acc["roll"] += fix.player.telemetry()["roll_input"]
+		acc["by"] += rad_to_deg(w.body_yaw)
+		acc["dpsi"] += rad_to_deg(m.dpsi)
+		acc["phi"] += rad_to_deg(m.phi)
+		acc["pl"] += w.flap_l
+		acc["pr"] += w.flap_r
+		acc["fdx"] += w.flap_dir_l.x
+		acc["n"] += 1
+	var lines := PackedStringArray()
+	var chi_prev := rad_to_deg(p.model.chi)
+	for i in 8:
+		for k in acc:
+			acc[k] = 0.0 if k != "n" else 0
+		f.run(1.0)
+		var n: float = maxf(acc["n"], 1)
+		var chi := rad_to_deg(p.model.chi)
+		lines.append("s%d roll_in %+.3f body_yaw %+.2f sideslip %+.2f bank %+.1f flap L %.2f R %.2f flap_dir_l.x %+.3f chi rate %+.1f" % [
+			i + 1, acc["roll"] / n, acc["by"] / n, acc["dpsi"] / n, acc["phi"] / n, acc["pl"] / n, acc["pr"] / n, acc["fdx"] / n, wrapf(chi - chi_prev, -180.0, 180.0)])
+		chi_prev = chi
+	for l in lines:
+		_log("[one-wing diag] pigeon " + l)
+	check(true, "report only")
+
+
+func test_r4x_one_wing_mirror_report() -> void:
+	# Mirror check: right-wing-only strokes should give the mirror image of
+	# left-wing-only strokes (heading change of opposite sign).
+	for sp in [&"pigeon", &"eagle"]:
+		var res := {}
+		for side in [-1, 1]:
+			var f := await _new_fx(sp)
+			var p := f.player
+			p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+			f.run(0.5)
+			var s: int = side
+			f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+				b.set_airplane()
+				if t < 10.25:
+					ScriptedPoseSource.flap(b, t + 0.25, 45.0, 1.0, s)
+			var h0 := _hdg_deg(p)
+			var st := {"bank": 0.0, "n": 0, "slip": 0.0, "vmin": INF}
+			f.on_tick = func(_tick: int, fix: Variant) -> void:
+				st["bank"] += rad_to_deg(fix.player.model.phi)
+				st["slip"] = maxf(st["slip"], absf(rad_to_deg(fix.player.model.dpsi)))
+				st["vmin"] = minf(st["vmin"], fix.player.model.airspeed())
+				st["n"] += 1
+			f.run(10.0)
+			res[side] = [wrapf(_hdg_deg(p) - h0, -180.0, 180.0), st["bank"] / maxf(st["n"], 1), st["slip"], st["vmin"] / p.model.params.v_min]
+			fx.teardown()
+			fx = null
+		_log("[one-wing mirror] %s 10 strokes: LEFT wing -> heading %+.1f deg, mean bank %+.1f deg, max sideslip %.1f deg, min V %.2f V_min | RIGHT wing -> heading %+.1f deg, mean bank %+.1f deg, max sideslip %.1f deg, min V %.2f V_min" % [
+			sp, res[-1][0], res[-1][1], res[-1][2], res[-1][3], res[1][0], res[1][1], res[1][2], res[1][3]])
+		# FM-18 / desktop Q-E: a one-wing flap turns the bird AWAY from the stroking wing.
+		lt(float(res[-1][0]), 0.0, "%s: left-wing strokes turn the bird right (away), 10 s" % sp)
+		gt(float(res[1][0]), 0.0, "%s: right-wing strokes turn the bird left (away), 10 s" % sp)
+		# Coordination: the mean bank and the turn have the same sense (a right
+		# bank turns right = negative heading change here).
+		check(signf(float(res[-1][1])) != signf(float(res[-1][0])) or absf(float(res[-1][0])) < 3.0,
+			"%s: left-wing strokes: bank %+.1f deg and turn %+.1f deg have the same sense (coordinated)" % [sp, res[-1][1], res[-1][0]])
+
+
+func test_r4x_one_wing_model_level_report() -> void:
+	# The same gesture at model level (WingState.set_commands one_wing = -1):
+	# is the sustained turn toward the stroking wing in FlightModel itself?
+	for sp in [&"sparrow", &"pigeon", &"eagle"]:
+		var m := FlightModel.new(FlightParams.species_mass(sp))
+		m.trim(Vector3(0, 500, 0), 0.0, 0.0)
+		var ws := WingState.new()
+		var env := FlightEnv.new()
+		var h0 := rad_to_deg(m.heading())
+		var sums := {"lift_lat": 0.0, "flap_lat": 0.0, "bank": 0.0, "n": 0}
+		var tt := 0.0
+		for i in int(10.0 / DT):
+			ws.set_commands(0.0, 0.0, 1.0, 1.0, tt, 1.0, -1, NAN, m.params.x)
+			m.step(ws, env, DT)
+			tt += DT
+			var rh := Basis(Vector3.UP, m.chi) * Vector3.RIGHT
+			sums["lift_lat"] += m.f_lift.dot(rh) / (m.params.mass * FlightMath.G)
+			sums["flap_lat"] += m.f_flap.dot(rh) / (m.params.mass * FlightMath.G)
+			sums["bank"] += rad_to_deg(m.phi)
+			sums["n"] += 1
+		var n: float = sums["n"]
+		_log("[one-wing model] %s left-only reference strokes 10 s (model level): heading %+.1f deg, mean bank %+.1f deg, mean lateral force: lift %+.3f g, flap %+.3f g (+ = right)" % [
+			sp, wrapf(rad_to_deg(m.heading()) - h0, -180.0, 180.0), sums["bank"] / n, sums["lift_lat"] / n, sums["flap_lat"] / n])
+	check(true, "report only")
+
+
+func test_r4x_one_wing_chain_forces_report() -> void:
+	for sp in [&"pigeon"]:
+		var f := await _new_fx(sp)
+		var p := f.player
+		p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+		f.run(0.5)
+		f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			ScriptedPoseSource.flap(b, t + 0.25, 45.0, 1.0, -1)
+		var sums := {"lift_lat": 0.0, "flap_lat": 0.0, "side": 0.0, "bank": 0.0, "up_l": 0.0, "fl": 0.0, "dirz": 0.0, "n": 0, "vy": 0.0, "acc_lat": 0.0}
+		var h0 := _hdg_deg(p)
+		f.on_tick = func(_tick: int, fix: Variant) -> void:
+			var m: FlightModel = fix.player.model
+			var w: WingState = fix.player.wing_state()
+			var rh := Basis(Vector3.UP, m.chi) * Vector3.RIGHT
+			sums["lift_lat"] += m.f_lift.dot(rh) / (m.params.mass * FlightMath.G)
+			sums["flap_lat"] += m.f_flap.dot(rh) / (m.params.mass * FlightMath.G)
+			sums["acc_lat"] += m.last_accel().dot(rh) / FlightMath.G
+			sums["bank"] += rad_to_deg(m.phi)
+			sums["up_l"] += w.up_l
+			sums["fl"] += w.flap_l
+			sums["dirz"] += w.flap_dir_l.z
+			sums["n"] += 1
+		f.run(8.0)
+		var n: float = sums["n"]
+		_log("[one-wing chain] %s left-arm strokes 8 s via PlayerBird: heading %+.1f deg, mean bank %+.1f deg, lateral: lift %+.3f g, flap %+.3f g, total accel %+.3f g; mean flap_l %.2f up_l %.2f flap_dir_l.z %+.2f" % [
+			sp, wrapf(_hdg_deg(p) - h0, -180.0, 180.0), sums["bank"] / n, sums["lift_lat"] / n, sums["flap_lat"] / n, sums["acc_lat"] / n, sums["fl"] / n, sums["up_l"] / n, sums["dirz"] / n])
+		fx.teardown()
+		fx = null
+	check(true, "report only")
+
+
+func test_r4x_one_wing_cycle_dump_report() -> void:
+	var f := await _new_fx(&"pigeon")
+	var p := f.player
+	p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+	f.run(0.5)
+	f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+		b.set_airplane()
+		ScriptedPoseSource.flap(b, t + 0.25, 45.0, 1.0, -1)
+	f.run(5.0)
+	var rows := PackedStringArray(["t,elev_l_deg,flap_l,up_l,bank_deg,flap_lat_g,flap_up_g,lift_lat_g,chi_deg"])
+	var t0 := f.ticks
+	f.on_tick = func(tick: int, fix: Variant) -> void:
+		var m: FlightModel = fix.player.model
+		var w: WingState = fix.player.wing_state()
+		var rh := Basis(Vector3.UP, m.chi) * Vector3.RIGHT
+		var mg := m.params.mass * FlightMath.G
+		rows.append("%.3f,%.1f,%.3f,%.3f,%.2f,%.3f,%.3f,%.3f,%.2f" % [(tick - t0) * DT, rad_to_deg(fix.body.arms[0].dihedral), w.flap_l, w.up_l,
+			rad_to_deg(m.phi), m.f_flap.dot(rh) / mg, m.f_flap.y / mg, m.f_lift.dot(rh) / mg, rad_to_deg(m.chi)])
+	f.run(2.0)
+	var path := Paths.artifacts("flight").path_join("verify/r4exp/one_wing_cycle_pigeon.csv")
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var fa := FileAccess.open(path, FileAccess.WRITE)
+	fa.store_string("\n".join(rows) + "\n")
+	_log("[one-wing cycle] pigeon: 2 s of steady left-arm strokes dumped to verify/r4exp/one_wing_cycle_pigeon.csv")
+	check(true, "report only")
+
+
+func test_r4x_respawn_on_perch_with_relaxed_arms() -> void:
+	# GameLoop respawns a caught player "at a safe perch with brief
+	# protection" (DESIGN). The player has just watched the caught screen;
+	# arms hang relaxed. The bird must still be on that perch 5 s later.
+	for sp in [&"sparrow", &"pigeon"]:
+		var f := await _new_fx(sp, func(w: Variant) -> void:
+			w.add_perch(Vector3(0, 15, 0), Vector3.FORWARD, 10.0, 0.03, 2.0))
+		var p := f.player
+		f.driver = func(_tick: int, _t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			for a in b.arms:
+				a.dihedral = -85.0 * DEG
+				a.elbow = 20.0 * DEG
+		f.run(0.5)
+		var grip := f.world.get_perches()[0].position
+		var eye := grip + Vector3.UP * p.model.params.r_body
+		p.respawn(Transform3D(Basis.IDENTITY, eye))
+		var st := {"perched_at_spawn": p.mode == PlayerBird.Mode.PERCHED, "left_t": -1.0}
+		var t0 := f.ticks
+		f.on_tick = func(tick: int, fix: Variant) -> void:
+			if st["left_t"] < 0.0 and fix.player.mode != PlayerBird.Mode.PERCHED:
+				st["left_t"] = (tick - t0) * DT
+		f.run(5.0)
+		_log("[respawn relaxed] %s respawned on a perch 15 m up, arms relaxed at the sides: perched at spawn %s, left the perch at %.2f s, after 5 s mode %s, height %.1f m" % [
+			sp, str(st["perched_at_spawn"]), st["left_t"], p.mode_name(), p.model.position.y])
+		check(st["perched_at_spawn"], "%s: respawn lands on the perch" % sp)
+		eq(p.mode_name(), "perched", "%s: a respawned player with relaxed arms stays on the safe perch" % sp)
+		fx.teardown()
+		fx = null
+
+
+func test_r4x_respawn_relaxed_diag_report() -> void:
+	var f := await _new_fx(&"pigeon", func(w: Variant) -> void:
+		w.add_perch(Vector3(0, 15, 0), Vector3.FORWARD, 10.0, 0.03, 2.0))
+	var p := f.player
+	f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+		b.set_airplane()
+		# arms relaxed, then (t > 3 s after spawn) spread and lowered again
+		var down := true
+		if t > 3.5 and t < 5.0:
+			down = false
+		for a in b.arms:
+			a.dihedral = -85.0 * DEG if down else 0.0
+			a.elbow = 20.0 * DEG if down else 0.0
+	f.run(0.5)
+	var grip := f.world.get_perches()[0].position
+	p.respawn(Transform3D(Basis.IDENTITY, grip + Vector3.UP * p.model.params.r_body))
+	var marks := PackedStringArray()
+	var t0 := f.ticks
+	f.on_tick = func(tick: int, fix: Variant) -> void:
+		if (tick - t0) % 36 == 0:
+			var w: WingState = fix.player.wing_state()
+			marks.append("%.1fs %s ext %.2f tucked %s" % [(tick - t0) * DT, fix.player.mode_name(), w.mean_extension(), str(w.tucked)])
+	f.run(7.0)
+	_log("[respawn diag] pigeon: " + " | ".join(marks))
+	check(true, "report only")
+
+
+func test_r4x_arms_down_reading_depends_on_history_report() -> void:
+	# The same relaxed pose (upper arms -85 deg, elbows 20 deg): read by a
+	# WingInput that starts in it, and by one that reaches it from the
+	# airplane pose.
+	const WR := preload("res://tests/unit/flight/wing_rig.gd")
+	for start_down in [true, false]:
+		var sd: bool = start_down
+		var r := WR.new(func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			var down := sd or t > 1.0
+			if down:
+				for a in b.arms:
+					a.dihedral = -85.0 * DEG
+					a.elbow = 20.0 * DEG)
+		r.run(3.0)
+		var w := r.ws
+		_log("[arms-down reading] start %s: ext %.2f/%.2f tucked %s, reach %.2f/%.2f, elevation %.0f/%.0f deg, has_spread %s, shoulders y %.2f, hands y %.2f/%.2f, head y %.2f" % [
+			"in the pose" if sd else "from airplane arms", w.ext_l, w.ext_r, str(w.tucked), r.wi.reach[0], r.wi.reach[1],
+			rad_to_deg(r.wi.elevation[0]), rad_to_deg(r.wi.elevation[1]), str(r.wi.has_spread), r.wi.shoulders[0].y,
+			r.wi.hands[0].origin.y, r.wi.hands[1].origin.y, r.wi.head.origin.y])
+	check(true, "report only")
+
+
+# --- Evidence plot ---------------------------------------------------------------------
+
+func _chain_one_wing_track(sp: StringName, secs: float) -> Array:
+	var f := await _new_fx(sp)
+	var p := f.player
+	p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+	f.run(0.5)
+	f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+		b.set_airplane()
+		ScriptedPoseSource.flap(b, t + 0.25, 45.0, 1.0, -1)
+	var xs := PackedFloat64Array()
+	var zs := PackedFloat64Array()
+	var o := p.model.position
+	f.on_tick = func(_tick: int, fix: Variant) -> void:
+		xs.append(fix.player.model.position.x - o.x)
+		zs.append(-(fix.player.model.position.z - o.z))
+	f.run(secs)
+	fx.teardown()
+	fx = null
+	return [xs, zs]
+
+
+func test_r4x_zz_evidence_plot() -> void:
+	var pl := FlightPlot.new(1600, 1000, "Round 4 (experience): one-arm strokes, uneven strokes and resting on a perch")
+	var w := 1600
+	var cw := (w - 3 * 90) / 2
+	var r1 := Rect2i(90, 175, cw, 320)
+	var r2 := Rect2i(90 * 2 + cw, 175, cw, 320)
+	var r3 := Rect2i(90, 590, cw, 330)
+	var r4 := Rect2i(90 * 2 + cw, 590, cw, 330)
+	# 1. Top view: 10 s of left-wing-only strokes, model level vs through the arms.
+	var p1 := pl.panel(r1, "pigeon, 10 s of left-wing strokes (top view)", "x (m, + = right)", "fwd (m)")
+	var m := FlightModel.new(FlightParams.species_mass(&"pigeon"))
+	m.trim(Vector3(0, 500, 0), 0.0, 0.0)
+	var ws := WingState.new()
+	var env := FlightEnv.new()
+	var mx := PackedFloat64Array()
+	var mz := PackedFloat64Array()
+	var tt := 0.0
+	for i in int(10.0 / DT):
+		ws.set_commands(0.0, 0.0, 1.0, 1.0, tt, 1.0, -1, NAN, m.params.x)
+		m.step(ws, env, DT)
+		tt += DT
+		mx.append(m.position.x)
+		mz.append(-m.position.z)
+	p1.line(mx, mz, 0, "FlightModel (WingState): turns right, away")
+	var tr := await _chain_one_wing_track(&"pigeon", 10.0)
+	p1.line(tr[0], tr[1], 1, "PlayerBird (arm poses): turns LEFT, toward")
+	# 2. One stroke cycle through the arms: lateral flap force vs arm elevation.
+	var p2 := pl.panel(r2, "pigeon, one left-arm stroke via WingInput", "t (s)", "")
+	var ts := PackedFloat64Array()
+	var el := PackedFloat64Array()
+	var lat := PackedFloat64Array()
+	var bank := PackedFloat64Array()
+	var fa := FileAccess.open(Paths.artifacts("flight").path_join("verify/r4exp/one_wing_cycle_pigeon.csv"), FileAccess.READ)
+	if fa != null:
+		fa.get_line()
+		while not fa.eof_reached():
+			var ln := fa.get_line()
+			if ln.is_empty():
+				continue
+			var c := ln.split(",")
+			if float(c[0]) > 1.0:
+				break
+			ts.append(float(c[0]))
+			el.append(float(c[1]) / 100.0)
+			lat.append(float(c[5]))
+			bank.append(float(c[4]) / 100.0)
+	p2.line(ts, el, 2, "left arm elevation (deg/100)")
+	p2.line(ts, lat, 1, "flap force, lateral (g, + = right)")
+	p2.line(ts, bank, 0, "bank (deg/100, + = right)")
+	p2.hline(0.0, FlightPlot.AXIS)
+	# 3. Sparrow view yaw with near-even strokes.
+	var p3 := pl.panel(r3, "sparrow 1 Hz 45 deg strokes: view yaw", "t (s)", "deg")
+	var cases := [[45.0, 0.0, "even"], [40.5, 0.0, "right arm 10 % smaller"], [45.0, 0.03, "right arm 30 ms late"]]
+	for k in cases.size():
+		var f := await _new_fx(&"sparrow")
+		var p := f.player
+		p.start_flying(Vector3(0, 400, 0), 0.0, 0.0)
+		f.run(0.5)
+		var amp_r: float = cases[k][0]
+		var lag: float = cases[k][1]
+		f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			ScriptedPoseSource.flap(b, t, 45.0, 1.0, -1)
+			ScriptedPoseSource.flap(b, maxf(t - lag, 0.0), amp_r, 1.0, 1)
+		var y0 := rad_to_deg(p.rig_yaw)
+		var tx := PackedFloat64Array()
+		var yy := PackedFloat64Array()
+		var t0 := f.ticks
+		f.on_tick = func(tick: int, fix: Variant) -> void:
+			tx.append((tick - t0) * DT)
+			yy.append(wrapf(rad_to_deg(fix.player.rig_yaw) - y0, -180.0, 180.0))
+		f.run(6.0)
+		p3.line(tx, yy, k, cases[k][2])
+		fx.teardown()
+		fx = null
+	# 4. Perched pigeon lowers its arms to its sides.
+	var p4 := pl.panel(r4, "perched pigeon lowers its arms at t = 1.2 s", "t (s)", "height (m)")
+	for k in 2:
+		var dih := -80.0 if k == 0 else -70.0
+		var f := await _new_fx(&"pigeon", func(wd: Variant) -> void:
+			wd.add_perch(Vector3(0, 20, 0), Vector3.FORWARD, 10.0, 0.03, 2.0))
+		var p := f.player
+		p.perch_on(f.world.get_perches()[0])
+		f.run(1.0)
+		f.driver = func(_tick: int, t: float, b: HumanPoseModel) -> void:
+			b.set_airplane()
+			var q := clampf((t - 1.2) / 0.8, 0.0, 1.0)
+			q = q * q * (3.0 - 2.0 * q)
+			for a in b.arms:
+				a.dihedral = dih * DEG * q
+		var tx := PackedFloat64Array()
+		var hy := PackedFloat64Array()
+		var t0 := f.ticks
+		f.on_tick = func(tick: int, fix: Variant) -> void:
+			tx.append((tick - t0) * DT)
+			hy.append(fix.player.model.position.y)
+		f.run(6.0)
+		p4.line(tx, hy, k, "upper arms %.0f deg (hanging): %s" % [dih, "drops off" if k == 0 else "stays"])
+		fx.teardown()
+		fx = null
+	pl.note("Top left: the same left-wing-only reference strokes; FlightModel alone turns away from the stroking wing (FM-18), but through the arm poses the flap force follows the drooped wing's normal late in the downstroke (top right: up to 0.76 g sideways toward the stroking wing) and the pigeon turns toward it, banked the other way. Bottom left: a 10 % amplitude or 30 ms timing asymmetry swings the view 5-7 deg every wingbeat. Bottom right: resting the arms at the sides on a perch reads as a tuck and drops the bird 20 m.")
+	var out := Paths.artifacts("flight").path_join("verify/r4exp/r4x_experience.png")
+	pl.save(out)
+	_log("[plot] " + out)
+	check(FileAccess.file_exists(out), "evidence plot written")

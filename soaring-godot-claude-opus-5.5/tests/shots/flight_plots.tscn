@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/shots/flight_plots.gd" id="1_plots"]
+
+[node name="FlightPlots" type="Node"]
+script = ExtResource("1_plots")
