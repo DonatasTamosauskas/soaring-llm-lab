@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="24" result="Passed" total="24" passed="24" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.0464214">
+  <test-suite type="TestSuite" id="1000" name="Soaring" fullname="Soaring" runstate="Runnable" testcasecount="24" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.046421" total="24" passed="24" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1030" name="Soaring.Tests.dll" fullname="/Users/don/Projects/Soaring/soaring-unity-sol-6.1/Soaring/Library/ScriptAssemblies/Soaring.Tests.dll" runstate="Runnable" testcasecount="24" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.041053" total="24" passed="24" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="74251" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1031" name="Soaring" fullname="Soaring" runstate="Runnable" testcasecount="24" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.040277" total="24" passed="24" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1032" name="Tests" fullname="Soaring.Tests" runstate="Runnable" testcasecount="24" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.039616" total="24" passed="24" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="FlightTests" fullname="Soaring.Tests.FlightTests" classname="Soaring.Tests.FlightTests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.029382" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1007" name="BigIsFasterAndHeavier" fullname="Soaring.Tests.FlightTests.BigIsFasterAndHeavier" methodname="BigIsFasterAndHeavier" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="1769361936" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.009074" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="EatingHasSizeMargin" fullname="Soaring.Tests.FlightTests.EatingHasSizeMargin" methodname="EatingHasSizeMargin" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="1170359970" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000372" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="ExtensionBalloonsThenSlows" fullname="Soaring.Tests.FlightTests.ExtensionBalloonsThenSlows" methodname="ExtensionBalloonsThenSlows" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="1770929189" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000246" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="InvalidTrackingCannotMove" fullname="Soaring.Tests.FlightTests.InvalidTrackingCannotMove" methodname="InvalidTrackingCannotMove" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="64136815" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.003121" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="LargeFlapLiftsImmediately" fullname="Soaring.Tests.FlightTests.LargeFlapLiftsImmediately" methodname="LargeFlapLiftsImmediately" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="1974252311" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000169" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="RelaxedPoseCruisesWithoutArmExtension" fullname="Soaring.Tests.FlightTests.RelaxedPoseCruisesWithoutArmExtension" methodname="RelaxedPoseCruisesWithoutArmExtension" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="737515529" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000189" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="RepeatedFlapCannotExceedSpeedCaps" fullname="Soaring.Tests.FlightTests.RepeatedFlapCannotExceedSpeedCaps" methodname="RepeatedFlapCannotExceedSpeedCaps" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="739127898" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000881" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="ResetFlightStartsInHeadFacingDirection" fullname="Soaring.Tests.FlightTests.ResetFlightStartsInHeadFacingDirection" methodname="ResetFlightStartsInHeadFacingDirection" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="617562946" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.003358" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="TuckingAcceleratesAndDives" fullname="Soaring.Tests.FlightTests.TuckingAcceleratesAndDives" methodname="TuckingAcceleratesAndDives" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="950235602" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000251" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1013" name="TuningSanitizesBadInput" fullname="Soaring.Tests.FlightTests.TuningSanitizesBadInput" methodname="TuningSanitizesBadInput" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="1322800728" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000520" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="TurnDeadzoneAndCurve" fullname="Soaring.Tests.FlightTests.TurnDeadzoneAndCurve" methodname="TurnDeadzoneAndCurve" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="1198756409" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000356" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="UpdraftRaisesPlayerWithoutFlapping" fullname="Soaring.Tests.FlightTests.UpdraftRaisesPlayerWithoutFlapping" methodname="UpdraftRaisesPlayerWithoutFlapping" classname="Soaring.Tests.FlightTests" runstate="Runnable" seed="2034096411" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000131" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1014" name="MenuTests" fullname="Soaring.Tests.MenuTests" classname="Soaring.Tests.MenuTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.002559" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1016" name="ComfortPresetOffersSlowerSpeedAndWiderDeadzone" fullname="Soaring.Tests.MenuTests.ComfortPresetOffersSlowerSpeedAndWiderDeadzone" methodname="ComfortPresetOffersSlowerSpeedAndWiderDeadzone" classname="Soaring.Tests.MenuTests" runstate="Runnable" seed="926122081" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000314" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1015" name="PauseCanToggleBeforeRunWithoutStartingIt" fullname="Soaring.Tests.MenuTests.PauseCanToggleBeforeRunWithoutStartingIt" methodname="PauseCanToggleBeforeRunWithoutStartingIt" classname="Soaring.Tests.MenuTests" runstate="Runnable" seed="1286590501" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000326" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1017" name="ResetRestoresEditableParameters" fullname="Soaring.Tests.MenuTests.ResetRestoresEditableParameters" methodname="ResetRestoresEditableParameters" classname="Soaring.Tests.MenuTests" runstate="Runnable" seed="111477046" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000112" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1018" name="ProgressionTests" fullname="Soaring.Tests.ProgressionTests" classname="Soaring.Tests.ProgressionTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.002519" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1020" name="GrowthTargetsAreReachableAtModerateCatchRate" fullname="Soaring.Tests.ProgressionTests.GrowthTargetsAreReachableAtModerateCatchRate" methodname="GrowthTargetsAreReachableAtModerateCatchRate" classname="Soaring.Tests.ProgressionTests" runstate="Runnable" seed="124806715" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000646" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1019" name="SizeProgressionHasAdjustableEarlyAndLatePacing" fullname="Soaring.Tests.ProgressionTests.SizeProgressionHasAdjustableEarlyAndLatePacing" methodname="SizeProgressionHasAdjustableEarlyAndLatePacing" classname="Soaring.Tests.ProgressionTests" runstate="Runnable" seed="1229143120" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000091" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1021" name="StartingWithoutCalibrationIsBlocked" fullname="Soaring.Tests.ProgressionTests.StartingWithoutCalibrationIsBlocked" methodname="StartingWithoutCalibrationIsBlocked" classname="Soaring.Tests.ProgressionTests" runstate="Runnable" seed="1472035959" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000732" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1022" name="WorldTests" fullname="Soaring.Tests.WorldTests" classname="Soaring.Tests.WorldTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.003506" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="ParameterizedMethod" id="1026" name="ClosedArenaContainsOvershoot" fullname="Soaring.Tests.WorldTests.ClosedArenaContainsOvershoot" classname="Soaring.Tests.WorldTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.001725" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1023" name="ClosedArenaContainsOvershoot(0,0,0,1)" fullname="Soaring.Tests.WorldTests.ClosedArenaContainsOvershoot(0,0,0,1)" methodname="ClosedArenaContainsOvershoot" classname="Soaring.Tests.WorldTests" runstate="Runnable" seed="918877905" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000866" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1024" name="ClosedArenaContainsOvershoot(900,350,-900,5)" fullname="Soaring.Tests.WorldTests.ClosedArenaContainsOvershoot(900,350,-900,5)" methodname="ClosedArenaContainsOvershoot" classname="Soaring.Tests.WorldTests" runstate="Runnable" seed="1431566879" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000123" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1025" name="ClosedArenaContainsOvershoot(-250,-60,180,3)" fullname="Soaring.Tests.WorldTests.ClosedArenaContainsOvershoot(-250,-60,180,3)" methodname="ClosedArenaContainsOvershoot" classname="Soaring.Tests.WorldTests" runstate="Runnable" seed="1942622867" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000065" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1027" name="HighSpeedCatchDoesNotSkipBirdBetweenFrames" fullname="Soaring.Tests.WorldTests.HighSpeedCatchDoesNotSkipBirdBetweenFrames" methodname="HighSpeedCatchDoesNotSkipBirdBetweenFrames" classname="Soaring.Tests.WorldTests" runstate="Runnable" seed="215460473" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000307" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1029" name="RelativeMotionCatchesCrossingBird" fullname="Soaring.Tests.WorldTests.RelativeMotionCatchesCrossingBird" methodname="RelativeMotionCatchesCrossingBird" classname="Soaring.Tests.WorldTests" runstate="Runnable" seed="2110173954" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000090" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1028" name="StationarySegmentHasFiniteDistance" fullname="Soaring.Tests.WorldTests.StationarySegmentHasFiniteDistance" methodname="StationarySegmentHasFiniteDistance" classname="Soaring.Tests.WorldTests" runstate="Runnable" seed="442185299" result="Passed" start-time="2026-10-02 22:24:34Z" end-time="2026-10-02 22:24:34Z" duration="0.000072" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /Users/don/Library/Application Support/Soaring/Soaring/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

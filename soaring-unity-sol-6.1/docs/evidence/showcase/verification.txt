@@ -1,0 +1,6 @@
+Unity EditMode tests:24/24 pass
+Meta simulator capture:1800/1800 frames,4 contact catches,3 spatial crowns,won=true
+Final full MP4 decode:exit0,no errors
+Audio integrated loudness:-20.24 LUFS
+Audio true peak:-2.00 dBTP
+MP4 SHA256:0eab0f390f6baacb5c356283e7c668b2d4b0f6e005b530f27a3e2bee96c6aa62

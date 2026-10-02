@@ -51,3 +51,17 @@ Shared ownership and units: docs/ARCHITECTURE.md. Source/license attribution: TH
 The sanctuary uses layered faceted mountains, a winding brook, varied meadow and canopies, warm sandstone village towers with terracotta roofs, woven branch nests and carved mint/coral flight gates. Golden crowns remain the apex goal. Player wings have navy primary feathers, teal coverts and ivory tips; NPC birds have faces, breasts, tails and separated flight feathers. Shared scenery is combined into spatial material chunks, and each NPC retains two animated wing meshes.
 
 The world-space menus use rounded navy/cream cards, illustrated calibration poses, a six-card flight guide and live flight-lab gauges. The compact HUD shows the next growth checkpoint, airspeed, catches and hunter bearing. Catch feathers and bell notes reward contact; soft wind and wing rustles support flight. Settings include off/soft/full sound levels. Screenshot evidence and validation limits are recorded in docs/VERIFICATION.md.
+
+## Showcase video
+
+The local deliverable is `Videos/Soaring-showcase.mp4`: 60 seconds, 1920×1080 at 30 fps, H.264/AAC with captions, game effects and an original procedural score. Reproduce it with the native simulator build and one simulator client:
+
+```sh
+./scripts/unity.sh build-mac
+./scripts/run-simulator.sh --showcase "$PWD/Logs/showcase-capture"
+python3 scripts/edit-showcase.py
+```
+
+The editor requires Python with NumPy and ffmpeg; use `--ffmpeg` to select a different binary. On this host the bundled Python is `/Users/don/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3`. Capture frames and generated video files are excluded from Git. A manifest beside the MP4 records capture events, provenance and encoded format verification.
+
+The footage is rendered live by Unity under Meta XR Simulator with curated takes and scripted wing inputs through the real flight model. Contact catches and crown crossings use the game collision/goal systems; progression between takes is accelerated, and threats are staged with extended safety grace. A mono camera provides a clean showcase view. The video visibly discloses scripted controls and accelerated progression. It is presentation footage, not human flight-feel or physical Quest performance evidence. The capture harness is attached only with `--showcase`, and its temporary tuning changes are not saved.

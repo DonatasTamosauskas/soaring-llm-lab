@@ -1,0 +1,28 @@
+[Meta XR Simulator][00001.153552][W][V][arvr/projects/openxr_simulator/src/sim_xrapistack.cpp:359] Extension XR_METAX1_passthrough_camera_data is not supported for device type Meta Quest Pro
+[Meta XR Simulator][00001.153562][W][V][arvr/projects/openxr_simulator/src/sim_xrapistack.cpp:359] Extension XR_METAX1_spatial_entity_marker is not supported for device type Meta Quest Pro
+[Meta XR Simulator][00001.153571][W][V][arvr/projects/openxr_simulator/src/sim_xrapistack.cpp:359] Extension XR_META_spatial_entity_mesh is not supported for device type Meta Quest Pro
+[Meta XR Simulator][00001.153580][W][V][arvr/projects/openxr_simulator/src/sim_xrapistack.cpp:359] Extension XR_META_environment_depth is not supported for device type Meta Quest Pro
+[Meta XR Simulator][00001.153597][W][V][arvr/projects/openxr_simulator/src/sim_xrapistack.cpp:359] Extension XR_EXT_spatial_marker_tracking is not supported for device type Meta Quest Pro
+[Meta XR Simulator][00001.153609][W][V][arvr/projects/openxr_simulator/src/sim_xrapistack.cpp:359] Extension XR_META_dynamic_object_keyboard is not supported for device type Meta Quest Pro
+[Meta XR Simulator][00001.153614][W][V][arvr/projects/openxr_simulator/src/sim_xrapistack.cpp:359] Extension XR_META_dynamic_object_tracker is not supported for device type Meta Quest Pro
+[Meta XR Simulator][00001.163286][I][arvr/projects/openxr_simulator/src/sim_xrinstance.cpp:27] Simulated Device Profile: Meta Quest Pro
+[XR] [0x1f9dd2180] [00:20:47.794][Info   ] System Properties: Name="Meta Quest Pro", VendorId=10291
+QUEST_BOOTSTRAP_XR_RUNNING loader=OpenXRLoader runtime=Meta XR Simulator version=207.0.0
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Left
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Right
+SOARING_SHOWCASE_START 1920x1080 / 30fps / in-engine / scripted poses / curated NPC placement / accelerated progression
+SOARING_SHOWCASE_TAKE sanctuary
+SOARING_SHOWCASE_TAKE flight
+SOARING_SHOWCASE_TAKE chase
+SOARING_SHOWCASE_TAKE escape
+SOARING_SHOWCASE_TAKE windows
+SOARING_SHOWCASE_TAKE thermal
+SOARING_SHOWCASE_TAKE mid-growth
+SOARING_SHOWCASE_TAKE apex-growth
+SOARING_SHOWCASE_TAKE crown1
+SOARING_SHOWCASE_TAKE crown2
+SOARING_SHOWCASE_TAKE crown3
+SOARING_SHOWCASE_TAKE flightLab
+SOARING_SHOWCASE_TAKE outro
+SOARING_SHOWCASE_DONE frames=1800 contacts=4 crowns=3 won=True
+[XR] [0x1f9dd2180] [00:23:09.011][Info   ] System Properties: Name="Meta Quest Pro", VendorId=10291
