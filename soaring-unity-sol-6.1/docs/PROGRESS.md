@@ -30,3 +30,16 @@ Reviewed `../vr-unity-example` findings and adopted pinned native OpenXR/Meta pr
 - In-game developer menu now exposes 35 values; controls remain readable at every size, saved presets and comfort/haptic toggles persist. Camera maintains a flight-level horizon; growth scales tracked space smoothly around the head.
 - Review corrections: startup panel placement, heading-relative takeoff/food, desktop mouse/arrow interaction, solid-free NPC spawning, preset-aware NPC speed advantage, and blue neutral birds distinct from edible gold/coral predators.
 - Removed unused imported tutorial/sample scenes and controls; retained mobile URP, OpenXR loader workaround and native Quest build profile.
+
+## 4 · Polish and performance implementation verified (2 October 2026)
+- Final 24/24 automated tests pass; seven explicit simulator smoke assertions pass and verifier also requires the live Meta runtime plus left/right Quest Pro devices.
+- Isolated active-ecosystem benchmark: 45s,72Hz Quest Pro simulator, ten-second mean intervals13.89–13.97ms (about72fps), peak intervals14.22–27.78ms, about18.8–19.1k rendered triangles. Pool remained bounded with70/72 alive; NPC hunting/fleeing active. No screenshot or concurrent compiler load in measured run.
+- Mobile URP, shared/instanced low-poly meshes, static scenery batching, staggered NPC decisions and obstacle lookahead; no runtime NPC allocation during ordinary play. Comfort peripheral shading and level flight horizon, readable growth-scaled HUD/menu. Menu depth made independent of nearby wall occlusion.
+- Final native Mac build: zero errors/two upstream shader warnings; local signature verified. Final Quest APK: zero errors/eight upstream warnings, ARM64 IL2CPP/OpenXR, API32–36, Quest Pro/cambria manifest and APK v2 signature verified. `Builds/Soaring.apk` and `Builds/Soaring.app` are local build artifacts.
+- Reviewed medium issues fixed; known low issues and exact verification limits in `docs/VERIFICATION.md`. Physical Quest installation, human flight/comfort feedback, binocular size perception and sustained device performance remain pending because no headset is attached.
+
+## Commits
+1. `07f378a` Flight slice.
+2. `4e1a71b` World/ecosystem.
+3. `b6a618c` Loop/UI.
+4. `feat(soaring): finalize Quest builds and verified simulator performance` (this update).

@@ -1,0 +1,5 @@
+Unity6000.6.4f1
+Mac ARM64: build succeeded, errors0, warnings2; codesign deep strict verified
+Android ARM64: build succeeded, errors0, warnings8; APK v2 signature verified
+Android package com.soaring.sky / minAPI32 / targetAPI36 / cambria / VR launch
+APK SHA256 d0f36287d5dbdb745845f76cbdb058c76f8bb3e9c2be27a6e887121022bc3340

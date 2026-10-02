@@ -1,0 +1,11 @@
+Terminal observations from isolated simulator benchmark, 2 October 2026.
+Recorded from captured CLI output before the next player run replaced Logs/player.log.
+QUEST_BOOTSTRAP_XR_RUNNING loader=OpenXRLoader runtime=Meta XR Simulator version=207.0.0
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Left
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Right
+SOARING_BENCHMARK stationary camera / active full ecosystem / 45 seconds / no capture
+SOARING_TIMING meanMs=13.97 maxMs=27.78 frames=717 draws=0 triangles=19122 paused=False
+SOARING_TIMING meanMs=13.89 maxMs=14.22 frames=721 draws=0 triangles=18878 paused=False
+SOARING_TIMING meanMs=13.97 maxMs=27.78 frames=716 draws=0 triangles=18882 paused=False
+SOARING_TIMING meanMs=13.93 maxMs=27.78 frames=719 draws=0 triangles=18818 paused=False
+SOARING_BENCHMARK_DONE alive=70 ai=Hunt bird:22,Flee:26,Roam:21,Dormant:2,Hunt player:1,

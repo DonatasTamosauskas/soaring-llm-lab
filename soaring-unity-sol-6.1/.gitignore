@@ -12,3 +12,6 @@
 **/*.csproj
 **/*.sln
 **/*.slnx
+**/.utmp/
+**/[Mm]emoryCaptures/
+**/[Rr]ecordings/

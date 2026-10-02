@@ -12,6 +12,7 @@ public class FlightTests {
  [Test] public void TuckingAcceleratesAndDives(){var t=new FlightTuning();var f=new FlightModel();for(int i=0;i<300;i++)f.Step(new WingSample{Valid=true,Tuck=1},1,0,.02f,t);Assert.Greater(f.Velocity.z,t.cruiseSpeed*1.25f);Assert.Less(f.Velocity.y,-2);}
  [Test] public void EatingHasSizeMargin(){Assert.IsTrue(GameSession.CanEat(1,.8f));Assert.IsFalse(GameSession.CanEat(1,1));Assert.IsFalse(GameSession.CanEat(1,.95f));}
  [Test] public void RepeatedFlapCannotExceedSpeedCaps(){var t=new FlightTuning();var f=new FlightModel();for(int i=0;i<2000;i++)f.Step(new WingSample{Valid=true,LeftDown=8,RightDown=8},1,0,.02f,t);Assert.LessOrEqual(new Vector2(f.Velocity.x,f.Velocity.z).magnitude,t.maxSpeed+.01f);Assert.LessOrEqual(f.Velocity.y,t.maxClimb);}
+ [Test] public void ResetFlightStartsInHeadFacingDirection(){var rig=new GameObject("Facing bird");try{var p=rig.AddComponent<BirdPlayer>();var head=new GameObject("Tracked head").transform;head.SetParent(rig.transform,false);head.localRotation=Quaternion.Euler(0,90,0);p.Head=head;p.ResetFlight();Assert.AreEqual(90,p.model.Yaw,.01f);Assert.AreEqual(90,head.eulerAngles.y,.01f);p.model.Step(new WingSample{Valid=true},1,0,.02f,p.Tuning);Assert.Greater(p.Velocity.x,0);Assert.Less(Mathf.Abs(p.Velocity.z),.001f);}finally{Object.DestroyImmediate(rig);}}
  [Test] public void TuningSanitizesBadInput(){var t=new FlightTuning{turnDeadZone=float.NaN,maxSpeed=14,cruiseSpeed=30};t.Sanitize();Assert.IsFalse(float.IsNaN(t.turnDeadZone));Assert.GreaterOrEqual(t.maxSpeed,t.cruiseSpeed);}
 }
 }

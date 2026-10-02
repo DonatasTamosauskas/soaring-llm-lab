@@ -29,6 +29,7 @@ namespace Soaring
         RectTransform panel, hud, progressFill;
         Text hudStats, hudGoal, hudThreat, title, subtitle, footer, countdown;
         Font font;
+        Material readableUI;
         string page = "home";
         string note = "";
         int focus, tuningPage;
@@ -58,6 +59,7 @@ namespace Soaring
             if (built) return;
             built = true;
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            readableUI=new Material(Shader.Find("Soaring/UI Always Visible"));
             Player.HapticsEnabled = PlayerPrefs.GetInt("Soaring.Haptics", 1) != 0;
             Player.ComfortVignette = PlayerPrefs.GetInt("Soaring.Vignette", 1) != 0;
             viewCamera = Player.Head.GetComponent<Camera>();
@@ -100,6 +102,7 @@ namespace Soaring
         void OnDestroy()
         {
             if (Session != null) Session.Changed -= SessionChanged;
+            if(readableUI)Destroy(readableUI);
             if (ray && ray.sharedMaterial) Destroy(ray.sharedMaterial);
         }
 
@@ -499,6 +502,7 @@ namespace Soaring
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var result = go.GetComponent<Image>();
+            result.material=readableUI;
             result.color = color;
             result.raycastTarget = false;
             return result;
@@ -511,6 +515,7 @@ namespace Soaring
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var result = go.GetComponent<Text>();
+            result.material=readableUI;
             result.font = font;
             result.fontSize = fontSize;
             result.text = content;
