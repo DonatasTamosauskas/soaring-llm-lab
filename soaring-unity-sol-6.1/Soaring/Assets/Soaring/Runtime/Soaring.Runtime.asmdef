@@ -1,0 +1,1 @@
+{"name": "Soaring.Runtime", "references": ["Unity.InputSystem", "Unity.RenderPipelines.Universal.Runtime", "Unity.XR.Management", "Unity.XR.OpenXR", "Unity.ugui"], "autoReferenced": true}

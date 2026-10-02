@@ -1,0 +1,14 @@
+**/[Ll]ibrary/
+**/[Tt]emp/
+**/[Oo]bj/
+**/[Ll]ogs/
+**/[Uu]ser[Ss]ettings/
+**/[Bb]uilds/
+**/[Bb]uild/
+**/Assets/Resources/PerformanceTestRun*.json*
+**/.vs/
+**/.idea/
+**/.DS_Store
+**/*.csproj
+**/*.sln
+**/*.slnx
