@@ -1,0 +1,35 @@
+QUEST_BOOTSTRAP_XR_RUNNING loader=OpenXRLoader runtime=Meta XR Simulator version=207.0.0
+QUEST_BOOTSTRAP_DEVICE Head Tracking - OpenXR HeadMounted, TrackedDevice
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Left
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Right
+SOARING_READY birds=0 slice=False
+SOARING_ART renderers=251 sky=Soaring/Sanctuary Sky
+SOARING_CAPTURE 01-home
+SOARING_SMOKE synthetic pose calibration; live XR remains active
+SOARING_CAPTURE 02-tuning
+SOARING_CAPTURE 02b-how-to-fly
+SOARING_CAPTURE 02c-settings
+SOARING_CAPTURE 03-calibration
+SOARING_CAPTURE 03b-extension
+SOARING_CHECK calibratedStart=True
+SOARING_SMOKE calibrated=True playing=True paused=False birds=72
+SOARING_TIMING meanMs=22.00 maxMs=277.78 frames=250 draws=0 triangles=152288 paused=False
+SOARING_CAPTURE 04-flight
+SOARING_CHECK spawnClear=True
+SOARING_CHECK respawnVisible=True
+SOARING_CHECK catchGrowth=True
+SOARING_SMOKE catch=1 massIncreased=True
+SOARING_ECOSYSTEM alive=72 hunters=2 visibleBirdRenderers=434 ai=Roam:16,Flee:31,Hunt bird:23,Hunt player:2,
+SOARING_CAPTURE 05-growth
+SOARING_CHECK pauseStable=True
+SOARING_SMOKE pauseStable=True
+SOARING_CAPTURE 06-pause
+SOARING_CAPTURE 07-death
+SOARING_CHECK cleanRestart=True
+SOARING_SMOKE restart=True
+SOARING_SMOKE apexReachable=True catches=51
+SOARING_CAPTURE 08-apex-scale
+SOARING_CAPTURE 09-victory
+SOARING_CHECK spatialApexVictory=True
+SOARING_SMOKE victory=True
+SOARING_SMOKE_DONE passed=True

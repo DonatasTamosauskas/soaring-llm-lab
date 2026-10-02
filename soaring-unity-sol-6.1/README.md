@@ -6,7 +6,7 @@ A body-driven VR bird game for Meta Quest Pro, built with Unity 6.6. Flap to cli
 
 Unity project: **Soaring/**. Pinned editor **6000.6.4f1**. OpenXR, mobile URP and Meta Quest Android profile are included. The Mac simulator app and Quest APK are generated under **Builds/**, excluded from Git.
 
-To play the completed build, run `./scripts/run-simulator.sh`. The saved scene and final builds use the full ecosystem.
+To play the current build, run `./scripts/run-simulator.sh`. The saved scene and final builds use the full ecosystem.
 
 With Unity closed, to rebuild or deliberately revisit the slice:
 
@@ -29,7 +29,7 @@ For a physical Quest with Developer Mode enabled and paired adb: `adb install -r
 - Menu: point either controller at a button and press trigger; or use either stick up/down to focus, A/X to select. B/Y or Menu opens pause. Left/right stick adjusts tuning; hold right grip for finer steps. Golden birds are edible, coral birds can eat you, and blue birds are too close to your size to eat.
 - Calibration is required before flight. Sit or stand comfortably: upper arms down, forearms out. Select capture, then hold the pose through the three-second countdown. Next briefly extend both arms for the second capture. If the spans are too similar, retry extension.
 - Fast downstrokes give lift and forward power. Relaxed calibrated wings sustain a glide. Bring arms inward for speed; fully extend for a brief balloon followed by slower flight. Lower the right hand to turn right, left hand for left. Head gaze is free; the flight rig never pitches or rolls.
-- Cyan thermal columns lift without flapping. Coral hunters have a warning crown and HUD alert before they can catch you. Same-size birds cannot eat each other; catches require a 12% size margin.
+- Teal thermal wisps lift without flapping. Coral hunters have a warning crown and a HUD bearing/distance alert before they can catch you. Same-size birds cannot eat each other; catches require a 12% size margin.
 - Collisions slide and slow you; there is no impact death. The arena boundary contains flight at all sizes. Growth gradually scales tracked space around the head, making the world shrink without a camera jump.
 
 Desktop preview: `./scripts/run-simulator.sh --desktop`. Space flaps, A/D banks, E extends, Shift tucks, left/right arrows look during flight. Mouse or arrows/Enter operates menus. Hold E during the extension calibration countdown. This is a development fallback; VR uses tracked arms.
@@ -45,3 +45,9 @@ Run `./scripts/run-simulator.sh --benchmark` for a stationary-camera, active-eco
 Run `./scripts/verify-simulator.sh` for explicit synthetic calibration, real swept catch/spatial gate tests and screenshots; it exits nonzero on a failed check. Quit the previous player before launching it. Normal play never injects these test poses or accelerates growth.
 
 Shared ownership and units: docs/ARCHITECTURE.md. Source/license attribution: THIRD_PARTY_NOTICES.md. The setup was adapted from ../vr-unity-example; advanced Meta services/eye tracking are not required.
+
+## Presentation
+
+The sanctuary uses layered faceted mountains, a winding brook, varied meadow and canopies, warm sandstone village towers with terracotta roofs, woven branch nests and carved mint/coral flight gates. Golden crowns remain the apex goal. Player wings have navy primary feathers, teal coverts and ivory tips; NPC birds have faces, breasts, tails and separated flight feathers. Shared scenery is combined into spatial material chunks, and each NPC retains two animated wing meshes.
+
+The world-space menus use rounded navy/cream cards, illustrated calibration poses, a six-card flight guide and live flight-lab gauges. The compact HUD shows the next growth checkpoint, airspeed, catches and hunter bearing. Catch feathers and bell notes reward contact; soft wind and wing rustles support flight. Settings include off/soft/full sound levels. Screenshot evidence and validation limits are recorded in docs/VERIFICATION.md.

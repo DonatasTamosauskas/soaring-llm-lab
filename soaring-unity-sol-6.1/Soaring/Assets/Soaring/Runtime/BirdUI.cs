@@ -20,14 +20,22 @@ namespace Soaring
         public string CurrentPage => page;
         public bool CalibrationPending => calibrationCaptureAt > 0;
 
-        readonly Color ink = new Color(.055f, .105f, .16f, .97f);
-        readonly Color card = new Color(.12f, .21f, .29f, 1);
-        readonly Color cyan = new Color(.34f, .92f, .89f, 1);
-        readonly Color white = new Color(.92f, .97f, 1, 1);
+        readonly Color ink = new Color(.045f, .105f, .15f, .96f);
+        readonly Color card = new Color(.085f, .18f, .22f, 1);
+        readonly Color cyan = new Color(.40f, .84f, .76f, 1);
+        readonly Color white = new Color(.98f, .94f, .82f, 1);
+        readonly Color gold = new Color(.99f, .74f, .32f, 1);
+        readonly Color muted = new Color(.59f, .72f, .73f, 1);
         readonly List<Control> controls = new List<Control>();
         readonly List<FieldInfo> fields = new List<FieldInfo>();
         RectTransform panel, hud, progressFill;
-        Text hudStats, hudGoal, hudThreat, title, subtitle, footer, countdown;
+        Text hudStats, hudGrowthLabel, hudSpeed, hudCatchCount, catchToast, hudGoal, hudThreat, title, subtitle, footer, countdown;
+        Image threatCard, catchCard;
+        float catchAt = -10, displayedProgress;
+        Sprite roundedSprite;
+        Texture2D roundedTexture;
+        Sprite circleSprite;
+        Texture2D circleTexture;
         Font font;
         Material readableUI;
         string page = "home";
@@ -52,6 +60,11 @@ namespace Soaring
             public Action Select;
             public Action<float> Adjust;
             public Func<string> Caption;
+            public Image Accent;
+            public Text Chevron;
+            public RectTransform Gauge;
+            public Func<float> Fraction;
+            public bool Primary;
         }
 
         public void Build()
@@ -60,26 +73,50 @@ namespace Soaring
             built = true;
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             readableUI=new Material(Shader.Find("Soaring/UI Always Visible"));
+            CreateRoundedSprite();
             Player.HapticsEnabled = PlayerPrefs.GetInt("Soaring.Haptics", 1) != 0;
             Player.ComfortVignette = PlayerPrefs.GetInt("Soaring.Vignette", 1) != 0;
             viewCamera = Player.Head.GetComponent<Camera>();
             if (!viewCamera) viewCamera = Camera.main;
             panel = CreateCanvas("Soaring menu", new Vector2(960, 770), null);
-            ImageAt(panel, "Panel", new Vector2(0, 0), new Vector2(960, 770), ink);
-            ImageAt(panel, "Accent", new Vector2(0, 376), new Vector2(960, 8), cyan);
-            title = TextAt(panel, "Title", "", new Vector2(0, 310), new Vector2(850, 74), 47, white);
-            subtitle = TextAt(panel, "Subtitle", "", new Vector2(0, 245), new Vector2(850, 74), 22, new Color(.65f, .81f, .88f));
+            ImageAt(panel, "Frame shadow", new Vector2(0, -10), new Vector2(980, 782), new Color(.025f, .05f, .065f, .3f));
+            ImageAt(panel, "Gold rim", Vector2.zero, new Vector2(962, 772), new Color(.47f, .42f, .27f, .9f));
+            ImageAt(panel, "Panel", Vector2.zero, new Vector2(956, 766), ink);
+            ImageAt(panel, "Header line", new Vector2(0, 196), new Vector2(852, 1), new Color(.34f,.48f,.46f,.55f));
+            var brand = TextAt(panel, "Sanctuary", "S O A R I N G   /   SKY SANCTUARY", new Vector2(-170, 348), new Vector2(520, 25), 16, cyan);
+            brand.alignment = TextAnchor.MiddleLeft;
+            ImageAt(panel, "Quest badge", new Vector2(350, 348), new Vector2(142, 30), new Color(.22f,.26f,.23f));
+            TextAt(panel, "Quest label", "ARM-POWERED", new Vector2(350, 348), new Vector2(140, 28), 13, gold);
+            title = TextAt(panel, "Title", "", new Vector2(0, 288), new Vector2(850, 70), 42, white);
+            title.alignment = TextAnchor.MiddleLeft;
+            title.fontStyle = FontStyle.Bold;
+            subtitle = TextAt(panel, "Subtitle", "", new Vector2(0, 229), new Vector2(850, 52), 21, muted);
+            subtitle.alignment = TextAnchor.MiddleLeft;
             footer = TextAt(panel, "Input help", "Point + trigger  /  stick + A or X    •    Menu / B / Y to close", new Vector2(0, -352), new Vector2(890, 32), 18, new Color(.57f, .72f, .79f));
-            hud = CreateCanvas("Flight HUD", new Vector2(820, 142), Player.Head);
-            hud.localPosition = new Vector3(0, -.39f, 1.5f);
+            ImageAt(panel, "Footer line", new Vector2(0, -329), new Vector2(850, 1), new Color(.34f,.48f,.46f,.35f));
+            hud = CreateCanvas("Flight HUD", new Vector2(730, 92), Player.Head);
+            hud.localPosition = new Vector3(0, -.43f, 1.5f);
             hud.localRotation = Quaternion.identity;
-            ImageAt(hud, "HUD backdrop", Vector2.zero, new Vector2(820, 142), new Color(.035f, .09f, .13f, .76f));
-            hudStats = TextAt(hud, "Stats", "", new Vector2(0, 36), new Vector2(780, 34), 25, white);
-            hudGoal = TextAt(hud, "Goal", "", new Vector2(0, 0), new Vector2(780, 34), 21, cyan);
-            hudThreat = TextAt(hud, "Threat", "", new Vector2(0, -40), new Vector2(780, 28), 21, new Color(1, .7f, .35f));
-            ImageAt(hud, "Growth track", new Vector2(0, -67), new Vector2(820, 5), new Color(.22f, .35f, .4f));
-            progressFill = ImageAt(hud, "Growth", new Vector2(-410, -67), new Vector2(1, 5), cyan).rectTransform;
+            ImageAt(hud, "Size chip", new Vector2(-253, 12), new Vector2(218, 68), new Color(.035f,.105f,.145f,.88f));
+            ImageAt(hud, "Flight chip", new Vector2(0, 12), new Vector2(280, 68), new Color(.035f,.105f,.145f,.88f));
+            ImageAt(hud, "Catch chip", new Vector2(253, 12), new Vector2(218, 68), new Color(.035f,.105f,.145f,.88f));
+            hudStats = TextAt(hud, "Size", "", new Vector2(-253, 19), new Vector2(190, 36), 28, white);
+            hudSpeed = TextAt(hud, "Speed", "", new Vector2(0, 19), new Vector2(250, 36), 28, white);
+            hudCatchCount = TextAt(hud, "Catches", "", new Vector2(253, 19), new Vector2(190, 36), 28, gold);
+            hudGrowthLabel=TextAt(hud, "Size label", "TO 1.6×", new Vector2(-253, -4), new Vector2(190, 18), 12, muted);
+            TextAt(hud, "Speed label", "AIR SPEED", new Vector2(0, -4), new Vector2(250, 18), 12, muted);
+            TextAt(hud, "Catch label", "BIRDS CAUGHT", new Vector2(253, -4), new Vector2(190, 18), 12, muted);
+            ImageAt(hud,"Goal ribbon",new Vector2(0,-45),new Vector2(738,36),new Color(.035f,.105f,.145f,.64f));
+            hudGoal = TextAt(hud, "Goal", "", new Vector2(0, -45), new Vector2(714, 36), 20, white);
+            threatCard = ImageAt(hud, "Threat chip", new Vector2(0, 95), new Vector2(670, 48), new Color(.3f,.105f,.09f,.9f));
+            hudThreat = TextAt(threatCard.transform, "Threat", "", Vector2.zero, new Vector2(640, 38), 21, gold);
+            threatCard.gameObject.SetActive(false);
+            ImageAt(hud, "Growth track", new Vector2(-253, -17), new Vector2(176, 4), new Color(.22f, .35f, .4f));
+            progressFill = ImageAt(hud, "Growth", new Vector2(-341, -17), new Vector2(1, 4), cyan).rectTransform;
             progressFill.pivot = new Vector2(0, .5f);
+            catchCard = ImageAt(hud, "Catch celebration", new Vector2(0, 144), new Vector2(266, 46), new Color(.99f,.74f,.32f,0));
+            catchToast = TextAt(catchCard.transform, "Catch toast", "+1   •   CAUGHT", Vector2.zero, new Vector2(245, 40), 20, ink);
+            catchCard.gameObject.SetActive(false);
             pointer = ImageAt(panel, "Pointer", Vector2.zero, new Vector2(14, 14), cyan).rectTransform;
             pointer.gameObject.SetActive(false);
             var rayObject = new GameObject("Menu controller ray");
@@ -103,6 +140,10 @@ namespace Soaring
         {
             if (Session != null) Session.Changed -= SessionChanged;
             if(readableUI)Destroy(readableUI);
+            if(roundedSprite)Destroy(roundedSprite);
+            if(roundedTexture)Destroy(roundedTexture);
+            if(circleSprite)Destroy(circleSprite);
+            if(circleTexture)Destroy(circleTexture);
             if (ray && ray.sharedMaterial) Destroy(ray.sharedMaterial);
         }
 
@@ -111,8 +152,10 @@ namespace Soaring
             if (!built) return;
             if (Session.Catches > previousCatches)
             {
-                audioFeedback.Catch();
+                audioFeedback.Catch(Session.Catches, Session.Size);
                 Player.Haptic(.4f, .12f);
+                catchAt = Time.unscaledTime;
+                catchToast.text = "+" + (Session.Catches - previousCatches) + "   •   CAUGHT";
             }
             previousCatches = Session.Catches;
             if (Session.IsDead && !observedDead) { observedDead = true; Show("death"); audioFeedback.Death(); }
@@ -122,6 +165,7 @@ namespace Soaring
         void Update()
         {
             if (!built) return;
+            AnimateHud();
             if (firstUpdate) { firstUpdate = false; Show(page); }
             if (Time.unscaledTime >= nextHudUpdate) { nextHudUpdate = Time.unscaledTime + .12f; RefreshHud(); }
             if (!Player.DesktopMode && !Player.TrackingValid && Session.IsPlaying && !MenuOpen)
@@ -249,8 +293,13 @@ namespace Soaring
         {
             for (int i = 0; i < controls.Count; i++)
             {
-                controls[i].Background.color = i == focus ? new Color(.18f, .42f, .48f) : i == pointerHovered ? new Color(.18f, .32f, .39f) : card;
-                controls[i].Label.color = i == focus ? cyan : white;
+                var control = controls[i];
+                bool active = i == focus || i == pointerHovered;
+                control.Background.color = control.Primary ? (active ? new Color(.53f,.91f,.82f) : cyan) : active ? new Color(.13f,.31f,.34f) : card;
+                control.Label.color = control.Primary ? ink : white;
+                control.Accent.color = active ? gold : new Color(.24f,.40f,.40f,.7f);
+                control.Chevron.color = control.Primary ? ink : active ? gold : muted;
+                if (control.Gauge && control.Fraction != null) control.Gauge.sizeDelta = new Vector2(680 * control.Fraction(), 3);
             }
         }
 
@@ -291,22 +340,30 @@ namespace Soaring
             focus = 0;
             pointerHovered = -1;
             countdown = null;
+            title.fontSize = 42;
+            title.rectTransform.anchoredPosition = new Vector2(0, 288);
+            title.rectTransform.sizeDelta = new Vector2(850, 70);
+            subtitle.rectTransform.anchoredPosition = new Vector2(0, 229);
+            subtitle.rectTransform.sizeDelta = new Vector2(850, 52);
             subtitle.text = note;
             footer.text = Player.DesktopMode ? "Arrow keys to focus / tune  •  Enter selects  •  Mouse clicks  •  Escape menu" : "Point + trigger  /  stick + A or X    •    Menu / B / Y to close";
             switch (page)
             {
                 case "home":
-                    title.text = "SOARING";
-                    subtitle.text = "Your arms are wings. The sky is a food chain.";
-                    Body("Catch smaller birds. Escape the larger ones.\nGrow until the whole valley fits beneath your wings.", 147, 24);
-                    Button(Player.IsCalibrated ? "Take flight" : "Set up my wings", 40, () => { if (Player.IsCalibrated) StartFlight(); else Show("calibrateRelaxed"); });
-                    Button("How to fly", -40, () => Show("help"));
-                    Button("Settings", -120, () => Show("settings"));
-                    Button("Flight lab  •  developer tuning", -200, () => Show("tuning"));
-                    Body("Designed for standing or seated play. Keep your arms clear.", -283, 19);
+                    title.text = "Small wings. Big sky.";
+                    title.fontSize = 52;
+                    subtitle.text = "Fly with your arms. Rise through the food chain.";
+                    var intro = TextAt(panel, "Page Introduction", "Catch the smaller birds.\nBecome the biggest thing in the sky.", new Vector2(-169, 133), new Vector2(488, 64), 23, white);
+                    intro.alignment = TextAnchor.MiddleLeft;
+                    AddControl(Player.IsCalibrated ? "Take flight" : "Set up my wings", new Vector2(-169, 49), new Vector2(488, 68), () => { if (Player.IsCalibrated) StartFlight(); else Show("calibrateRelaxed"); }, 26);
+                    AddControl("How to fly", new Vector2(-169, -31), new Vector2(488, 64), () => Show("help"), 24);
+                    AddControl("Comfort & settings", new Vector2(-169, -107), new Vector2(488, 64), () => Show("settings"), 24);
+                    AddControl("Flight lab", new Vector2(-169, -183), new Vector2(488, 64), () => Show("tuning"), 24);
+                    HomeIllustration();
+                    Body("Standing or seated. Clear some space, then spread your wings.", -285, 19);
                     break;
                 case "pause":
-                    title.text = "A MOMENT IN THE SKY";
+                    title.text = "A moment in the sky";
                     subtitle.text = string.IsNullOrEmpty(note) ? "Take a breath. The valley is paused." : note;
                     Button("Resume flight", 120, Close);
                     Button("How to fly", 40, () => Show("help"));
@@ -315,56 +372,68 @@ namespace Soaring
                     Button("Restart run", -200, () => Show("restart"));
                     break;
                 case "restart":
-                    title.text = "A FRESH PAIR OF WINGS";
+                    title.text = "A fresh pair of wings";
                     subtitle.text = "Start again as a small bird. Keep your flight settings.";
                     Button("Restart run", 30, Restart);
                     Button("Keep flying", -60, Close);
                     break;
                 case "help":
-                    title.text = "FLY WITH YOUR BODY";
+                    title.text = "Make the sky your playground";
                     subtitle.text = "Big strokes. Relaxed glides. Your view stays level.";
-                    Body("1   Flap down hard for immediate lift and speed.\n2   Rest upper arms low, forearms out to glide.\n3   Spread both wings briefly to rise and slow down.\n4   Tuck your wings to dive and accelerate.\n5   Lower one wing to bank toward that side.\n6   Fly through rising air to climb without flapping.", 50, 23, 330);
-                    Body("Smaller birds = food. Larger birds = danger.\nWhen hunted: turn through a gap or flee through an updraft.", -161, 22, 72);
-                    if (Player.DesktopMode) Body("Desktop: A / D steer   •   Space flap   •   E spread wings", -233, 19);
+                    TutorialCard("01", "Flap to climb", "Strong downstrokes give lift\nand a burst of speed.", -215, 135);
+                    TutorialCard("02", "Rest to glide", "Upper arms low, forearms out.\nKeep your shoulders relaxed.", 215, 135);
+                    TutorialCard("03", "Spread to rise", "Extend briefly to balloon up.\nStay wide to slow down.", -215, 23);
+                    TutorialCard("04", "Tuck for speed", "Bring your wings closer\nto dive and accelerate.", 215, 23);
+                    TutorialCard("05", "Bank to turn", "Lower one wing to turn\ntoward that side.", -215, -89);
+                    TutorialCard("06", "Ride the thermals", "Teal rising air gives you\na climb without flapping.", 215, -89);
+                    LegendChip("GOLD  /  CATCH", -282, -185, gold);
+                    LegendChip("BLUE  /  PEER", 0, -185, new Color(.44f,.66f,.86f));
+                    LegendChip("CORAL  /  ESCAPE", 282, -185, new Color(.99f,.49f,.35f));
+                    Body(Player.DesktopMode ? "A / D steer   •   Space flap   •   E spread   •   Shift tuck" : "Hunter behind you? Bank through a gap or escape in rising air.", -242, 19, 36);
                     Button("Got it", -290, Back, 54);
                     break;
                 case "settings":
-                    title.text = "MAKE YOURSELF AT HOME";
+                    title.text = "Make yourself at home";
                     subtitle.text = "Comfort settings and your personal wing span.";
-                    Button("Haptics: " + (Player.HapticsEnabled ? "on" : "off"), 110, () => { Player.HapticsEnabled = !Player.HapticsEnabled; PlayerPrefs.SetInt("Soaring.Haptics", Player.HapticsEnabled ? 1 : 0); BuildPage(); });
-                    Button("Comfort vignette: " + (Player.ComfortVignette ? "on" : "off"), 30, () => { Player.ComfortVignette = !Player.ComfortVignette; PlayerPrefs.SetInt("Soaring.Vignette", Player.ComfortVignette ? 1 : 0); BuildPage(); });
-                    Button("Recalibrate my wings", -50, () => Show("calibrateRelaxed"));
-                    Button("Flight lab", -130, () => Show("tuning"));
-                    Button("Back", -210, Back);
+                    Button("Haptics: " + (Player.HapticsEnabled ? "on" : "off"), 130, () => { Player.HapticsEnabled = !Player.HapticsEnabled; PlayerPrefs.SetInt("Soaring.Haptics", Player.HapticsEnabled ? 1 : 0); BuildPage(); },58);
+                    Button("Comfort vignette: " + (Player.ComfortVignette ? "on" : "off"), 58, () => { Player.ComfortVignette = !Player.ComfortVignette; PlayerPrefs.SetInt("Soaring.Vignette", Player.ComfortVignette ? 1 : 0); BuildPage(); },58);
+                    Button("Sound: " + (audioFeedback.Volume<.01f?"off":audioFeedback.Volume<.5f?"soft":"full"), -14, () => { audioFeedback.SetVolume(audioFeedback.Volume<.01f?.4f:audioFeedback.Volume<.5f?.75f:0);BuildPage();},58);
+                    Button("Recalibrate my wings", -86, () => Show("calibrateRelaxed"),58);
+                    Button("Flight lab", -158, () => Show("tuning"),58);
+                    Button("Back", -249, Back,54);
                     break;
                 case "calibrateRelaxed":
                 case "calibrateExtended":
                     captureExtended = page == "calibrateExtended";
-                    title.text = captureExtended ? "2 / 2   SPREAD YOUR WINGS" : "1 / 2   YOUR RELAXED GLIDE";
+                    title.text = captureExtended ? "02   Spread your wings" : "01   Find your relaxed glide";
                     subtitle.text = "Select below, then hold the pose during the countdown.";
-                    Body(captureExtended ? "Extend both arms sideways, comfortably wide.\nKeep your head upright and shoulders relaxed.\nThis is a momentary power pose during flight." : "Let your upper arms rest by your sides.\nHold your forearms gently out like short wings.\nKeep your head upright in your usual playing posture.", 80, 25, 185);
+                    CalibrationIllustration(captureExtended);
+                    var pose = TextAt(panel, "Page Pose instructions", captureExtended ? "Extend both arms sideways,\ncomfortably wide.\n\nKeep your head upright.\nThis is your brief power pose." : "Rest upper arms by your sides.\nHold your forearms gently out.\n\nKeep your head upright\nin your usual playing posture.", new Vector2(142, 73), new Vector2(474, 184), 23, white);
+                    pose.alignment = TextAnchor.MiddleLeft;
                     Body(Player.DesktopMode && captureExtended ? "Desktop: hold E during the countdown to spread both wings.\nKeep holding E until the capture completes." : "After selecting, you have 3 seconds to settle into position.\nStay in the same seated or standing posture for both poses.", -61, 21, 80);
                     Button("I’m ready — capture in 3 seconds", -160, BeginCapture);
                     Button("Back", -250, Back);
                     break;
                 case "calibrated":
-                    title.text = "YOUR WINGS ARE READY";
+                    title.text = "Your wings are ready";
                     subtitle.text = "Relax to glide. Spread to rise. Flap to soar.";
                     Body("Start with a few strong downstrokes.\nThe small golden birds are easy food.\nYou can recalibrate or change flight feel at any time.", 61, 25, 140);
                     Button(Session.IsPlaying ? "Return to flight" : "Take flight", -100, () => { if (Session.IsPlaying) Close(); else StartFlight(); });
                     Button("How to fly", -190, () => Show("help"));
                     break;
                 case "death":
-                    title.text = "THE SKY CAUGHT YOU";
+                    title.text = "The sky caught you";
                     subtitle.text = Session.Status;
-                    Body(RunSummary() + "\nWatch for the orange hunter warning. Bank into a gap to escape.", 60, 24, 140);
+                    ResultCards();
+                    Body("A hunter’s warning is your cue to turn.\nSlip through a gap, dive away or find rising air.", -19, 23, 92);
                     Button("Fly again", -100, Restart);
                     Button("Adjust flight feel", -190, () => Show("tuning"));
                     break;
                 case "victory":
-                    title.text = "THE SKY IS YOURS";
+                    title.text = "The sky is yours";
                     subtitle.text = "Apex reached. The valley has become your playground.";
-                    Body(RunSummary() + "\nYou conquered the skyline circuit.", 60, 27, 140);
+                    ResultCards();
+                    Body("Crown circuit complete.\nFrom a small goldfinch to ruler of the sky.", -19, 25, 92);
                     Button("A new flight", -100, Restart);
                     Button("Flight lab", -190, () => Show("tuning"));
                     break;
@@ -412,7 +481,7 @@ namespace Soaring
             const int perPage = 5;
             int totalPages = Mathf.Max(1, Mathf.CeilToInt(fields.Count / (float)perPage));
             tuningPage = Mathf.Clamp(tuningPage, 0, totalPages - 1);
-            title.text = "FLIGHT LAB";
+            title.text = "Your flight, your way";
             subtitle.text = $"Live tuning   •   {tuningPage + 1} / {totalPages}   •   click left / right to adjust";
             footer.text = Player.DesktopMode ? "← / → adjust  •  Shift = fine control  •  Enter selects  •  Escape menu" : "Stick adjusts  •  Grip = fine control  •  Point + trigger  •  Menu to close";
             for (int i = tuningPage * perPage; i < Mathf.Min(fields.Count, (tuningPage + 1) * perPage); i++)
@@ -434,6 +503,10 @@ namespace Soaring
                 var control = Button(caption(), 152 - (i % perPage) * 60, () => { adjust(1); RefreshCaptions(); }, 52);
                 control.Adjust = adjust;
                 control.Caption = caption;
+                ImageAt(control.Rect, "Gauge track", new Vector2(0, -20), new Vector2(680, 3), new Color(.22f,.35f,.36f));
+                control.Gauge = ImageAt(control.Rect, "Gauge", new Vector2(-340, -20), new Vector2(1, 3), cyan).rectTransform;
+                control.Gauge.pivot = new Vector2(0,.5f);
+                control.Fraction = () => Mathf.InverseLerp(range.min, range.max, (float)field.GetValue(Player.Tuning));
             }
             SmallButton("‹ Previous", -270, -169, () => { tuningPage = (tuningPage - 1 + totalPages) % totalPages; BuildPage(); });
             SmallButton("Next ›", 0, -169, () => { tuningPage = (tuningPage + 1) % totalPages; BuildPage(); });
@@ -449,7 +522,7 @@ namespace Soaring
             foreach (var control in controls) Destroy(control.Rect.gameObject);
             controls.Clear();
             focus = 0;
-            title.text = "CHOOSE YOUR FLIGHT FEEL";
+            title.text = "Choose your flight feel";
             subtitle.text = "A starting point. Fine-tune any value in the flight lab.";
             foreach (var preset in new[] { "Comfort", "Arcade", "Heavy" })
             {
@@ -466,14 +539,142 @@ namespace Soaring
         void RefreshHud()
         {
             if (!hudStats) return;
-            hudStats.text = $"SIZE  {Session.Size:0.0}×       SPEED  {Player.Speed:0} m/s       CATCHES  {Session.Catches}";
+            hudStats.text = $"{Session.Size:0.0}×";
+            hudSpeed.text = $"{Player.Speed:0} <size=17>m/s</size>";
+            hudCatchCount.text = Session.Catches.ToString();
             float apex = ApexSize();
-            float progress = Mathf.InverseLerp(1, apex, Session.Size);
-            progressFill.sizeDelta = new Vector2(820 * progress, 5);
+            GrowthStage(out _,out float nextSize);
+            hudGrowthLabel.text=Session.Size>=apex?"APEX":"TO "+nextSize.ToString("0.0")+"×";
             hudGoal.text = Session.Size >= apex ? $"APEX • {ApexGuidance()} • Crowns {Session.ApexRings}/{Mathf.RoundToInt(Player.Tuning.apexRingGoal)}" : Session.Size < 1.7f ? "Find the small golden birds. Flap down to climb." : "Chase smaller silhouettes. Bigger birds hunt you.";
-            hudThreat.text = Session.World != null && !string.IsNullOrEmpty(Session.World.ThreatText) ? Session.World.ThreatText : "";
+            hudThreat.text = ThreatGuidance();
             if (!Player.TrackingValid && !Player.DesktopMode) hudThreat.text = "Controller tracking lost";
             hudThreat.color = Session.World != null && Session.World.ThreatIntensity > .5f ? new Color(1, .38f, .24f) : new Color(1, .74f, .35f);
+            threatCard.gameObject.SetActive(!string.IsNullOrEmpty(hudThreat.text));
+        }
+        string ThreatGuidance()
+        {
+            if(Session.World==null||string.IsNullOrEmpty(Session.World.ThreatText))return "";
+            NpcBird closest=null;float best=float.PositiveInfinity;
+            foreach(var bird in Session.World.Birds)
+            {
+                if(!bird.Alive||!bird.IsHuntingPlayer)continue;
+                float distance=(bird.Position-Player.Position).sqrMagnitude;
+                if(distance<best){best=distance;closest=bird;}
+            }
+            if(!closest)return Session.World.ThreatText;
+            Vector3 delta=closest.Position-Player.Position;
+            float angle=Vector3.SignedAngle(Vector3.ProjectOnPlane(Player.Head.forward,Vector3.up),Vector3.ProjectOnPlane(delta,Vector3.up),Vector3.up);
+            string bearing=Mathf.Abs(angle)<25?"AHEAD":Mathf.Abs(angle)>145?"BEHIND":angle>0?"RIGHT":"LEFT";
+            return $"HUNTER {bearing}  /  {Mathf.RoundToInt(Mathf.Sqrt(best))}m   •   Bank away or climb";
+        }
+        void AnimateHud()
+        {
+            GrowthStage(out float stageStart,out float stageEnd);
+            float target=Session.Size>=ApexSize()?1:Mathf.InverseLerp(stageStart,stageEnd,Session.Size);
+            displayedProgress = Mathf.Lerp(displayedProgress, target, 1 - Mathf.Exp(-Time.unscaledDeltaTime * 6));
+            if(progressFill) progressFill.sizeDelta = new Vector2(176 * displayedProgress, 4);
+            float age = Time.unscaledTime - catchAt;
+            bool showCatch = age < 1.1f && !MenuOpen;
+            if(catchCard)
+            {
+                catchCard.gameObject.SetActive(showCatch);
+                if(showCatch)
+                {
+                    float alpha = Mathf.Clamp01((1.1f - age) * 4);
+                    catchCard.color = new Color(gold.r,gold.g,gold.b,.95f * alpha);
+                    catchToast.color = new Color(ink.r,ink.g,ink.b,alpha);
+                    catchCard.rectTransform.anchoredPosition = new Vector2(0, 161 + 18 * age);
+                    catchCard.rectTransform.localScale = Vector3.one * (1 + .08f * Mathf.Exp(-age * 6));
+                }
+            }
+            if(threatCard && threatCard.gameObject.activeSelf) threatCard.color = new Color(.3f,.105f,.09f,.85f + .1f * Mathf.Sin(Time.unscaledTime * 5));
+            if(audioFeedback) audioFeedback.Flight(Player.Speed, Player.model.Flapped, Session.IsPlaying && !Session.IsPaused && !Session.IsDead && !Session.HasWon);
+        }
+        void GrowthStage(out float start,out float end)
+        {
+            float first=Mathf.Min(1.6f,ApexSize()),second=Mathf.Min(2.8f,ApexSize());
+            if(Session.Size<first){start=1;end=first;}
+            else if(Session.Size<second){start=first;end=second;}
+            else {start=second;end=ApexSize();}
+        }
+
+        void HomeIllustration()
+        {
+            var sheet = ImageAt(panel, "Page Wing guide", new Vector2(292,-34), new Vector2(256, 402), new Color(.105f,.22f,.25f));
+            var sun = ImageAt(sheet.transform, "Sun", new Vector2(0,104), new Vector2(112,112), new Color(.99f,.74f,.32f,.12f));
+            sun.sprite = circleSprite; sun.type = Image.Type.Simple;
+            WingEmblem(sheet.transform, new Vector2(0,103), 1);
+            TextAt(sheet.transform, "Wing guide heading", "BORN TO SOAR", new Vector2(0,37), new Vector2(228,30), 17, gold).fontStyle = FontStyle.Bold;
+            TextAt(sheet.transform, "Wing guide steps", "FLAP\nFeel the lift\n\nGLIDE\nFind your rhythm\n\nGROW\nChange your world", new Vector2(0,-83), new Vector2(226,207), 20, white);
+        }
+        void WingEmblem(Transform parent, Vector2 center, float scale)
+        {
+            for(int sign=-1;sign<=1;sign+=2)
+                for(int i=0;i<4;i++)
+                {
+                    var feather=ImageAt(parent,"Feather",center+new Vector2(sign*(21+i*12),12-i*9)*scale,new Vector2((68-i*8)*scale,11*scale),i==0?gold:white);
+                    feather.rectTransform.localRotation=Quaternion.Euler(0,0,sign*(21+i*9));
+                }
+            var body=ImageAt(parent,"Crest body",center+new Vector2(0,-7)*scale,new Vector2(12,31)*scale,gold);
+            body.rectTransform.localRotation=Quaternion.Euler(0,0,0);
+        }
+        void TutorialCard(string number,string heading,string copy,float x,float y)
+        {
+            var tile=ImageAt(panel,"Page Lesson "+number,new Vector2(x,y),new Vector2(408,102),card);
+            var badge=ImageAt(tile.transform,"Step badge",new Vector2(-164,26),new Vector2(42,30),new Color(.15f,.31f,.32f));
+            TextAt(badge.transform,"Step",number,Vector2.zero,new Vector2(40,28),15,gold).fontStyle=FontStyle.Bold;
+            var name=TextAt(tile.transform,"Lesson",heading,new Vector2(23,26),new Vector2(306,32),21,white);name.alignment=TextAnchor.MiddleLeft;name.fontStyle=FontStyle.Bold;
+            var detail=TextAt(tile.transform,"Lesson description",copy,new Vector2(0,-19),new Vector2(366,52),18,muted);detail.alignment=TextAnchor.MiddleLeft;
+        }
+        void LegendChip(string text,float x,float y,Color color)
+        {
+            var chip=ImageAt(panel,"Page Bird legend",new Vector2(x,y),new Vector2(267,40),new Color(color.r,color.g,color.b,.12f));
+            TextAt(chip.transform,"Legend",text,Vector2.zero,new Vector2(253,32),15,color).fontStyle=FontStyle.Bold;
+        }
+        void CalibrationIllustration(bool extended)
+        {
+            var tile=ImageAt(panel,"Page Pose diagram",new Vector2(-270,73),new Vector2(268,184),card);
+            var head=ImageAt(tile.transform,"Head",new Vector2(0,44),new Vector2(30,30),white);head.sprite=circleSprite;head.type=Image.Type.Simple;
+            ImageAt(tile.transform,"Body",new Vector2(0,-2),new Vector2(20,49),white);
+            for(int side=-1;side<=1;side+=2)
+            {
+                var arm=ImageAt(tile.transform,"Upper arm",new Vector2(side*(extended?31:17),extended?12:-1),new Vector2(extended?48:13,extended?12:38),cyan);
+                var forearm=ImageAt(tile.transform,"Forearm",new Vector2(side*(extended?70:37),extended?12:-18),new Vector2(extended?43:36,12),gold);
+                if(!extended) forearm.rectTransform.localRotation=Quaternion.Euler(0,0,-side*12);
+            }
+            TextAt(tile.transform,"Pose caption",extended?"WIDE  /  POWER":"REST  /  GLIDE",new Vector2(0,-61),new Vector2(244,28),15,gold);
+        }
+        void ResultCards()
+        {
+            ResultCard("BIRDS CAUGHT",Session.Catches.ToString(),-282);
+            ResultCard("FINAL SIZE",Session.Size.ToString("0.0")+"×",0);
+            ResultCard("TIME IN THE SKY",$"{Mathf.FloorToInt(Session.Elapsed/60)}:{Mathf.FloorToInt(Session.Elapsed%60):00}",282);
+        }
+        void ResultCard(string label,string value,float x)
+        {
+            var tile=ImageAt(panel,"Page Flight result",new Vector2(x,115),new Vector2(263,116),card);
+            TextAt(tile.transform,"Result",value,new Vector2(0,17),new Vector2(240,62),42,gold).fontStyle=FontStyle.Bold;
+            TextAt(tile.transform,"Label",label,new Vector2(0,-31),new Vector2(240,24),14,muted);
+        }
+
+        void CreateRoundedSprite()
+        {
+            roundedTexture=ShapeTexture(16);
+            roundedSprite=Sprite.Create(roundedTexture,new Rect(0,0,64,64),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect,new Vector4(16,16,16,16));
+            circleTexture=ShapeTexture(32);
+            circleSprite=Sprite.Create(circleTexture,new Rect(0,0,64,64),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect);
+        }
+        static Texture2D ShapeTexture(float radius)
+        {
+            var texture=new Texture2D(64,64,TextureFormat.RGBA32,false){name="Soaring UI curves",filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};
+            var colors=new Color[4096];
+            for(int y=0;y<64;y++)for(int x=0;x<64;x++)
+            {
+                float dx=Mathf.Max(0,Mathf.Abs(x-31.5f)-(32-radius));
+                float dy=Mathf.Max(0,Mathf.Abs(y-31.5f)-(32-radius));
+                colors[y*64+x]=new Color(1,1,1,Mathf.Clamp01(radius+.4f-Mathf.Sqrt(dx*dx+dy*dy)));
+            }
+            texture.SetPixels(colors);texture.Apply(false,true);return texture;
         }
         string ApexGuidance(){Vector3 delta=Session.World.NextApexPosition-Player.Position;float angle=Vector3.SignedAngle(Vector3.ProjectOnPlane(Player.Head.forward,Vector3.up),Vector3.ProjectOnPlane(delta,Vector3.up),Vector3.up);string direction=Mathf.Abs(angle)<15?"AHEAD":Mathf.Abs(angle)>150?"BEHIND":angle>0?"RIGHT":"LEFT";return direction+" "+Mathf.RoundToInt(delta.magnitude)+"m / "+(delta.y>4?"climb "+Mathf.RoundToInt(delta.y)+"m":delta.y<-4?"descend "+Mathf.RoundToInt(-delta.y)+"m":"level");}
         float ApexSize()
@@ -503,6 +704,8 @@ namespace Soaring
             rect.sizeDelta = size;
             var result = go.GetComponent<Image>();
             result.material=readableUI;
+            result.sprite=roundedSprite;
+            result.type=Image.Type.Sliced;
             result.color = color;
             result.raycastTarget = false;
             return result;
@@ -532,8 +735,13 @@ namespace Soaring
         Control AddControl(string text, Vector2 position, Vector2 size, Action select, int fontSize)
         {
             var background = ImageAt(panel, "Control " + text, position, size, card);
-            var label = TextAt(background.transform, "Label", text, Vector2.zero, size - new Vector2(24, 4), fontSize, white);
-            var control = new Control { Rect = background.rectTransform, Background = background, Label = label, Select = select };
+            bool small=size.x<300;
+            var label = TextAt(background.transform, "Label", text, new Vector2(small?0:-9,0), size - new Vector2(small?24:80, 8), fontSize, white);
+            label.alignment=small?TextAnchor.MiddleCenter:TextAnchor.MiddleLeft;
+            var accent=ImageAt(background.transform,"Focus accent",new Vector2(-size.x*.5f+3,0),new Vector2(3,size.y-25),cyan);
+            var chevron=TextAt(background.transform,"Action",small?"":"›",new Vector2(size.x*.5f-26,0),new Vector2(26,36),29,muted);
+            bool primary=controls.Count==0&&page!="tuning"&&page!="settings"&&page!="presets";
+            var control = new Control { Rect = background.rectTransform, Background = background, Label = label, Select = select, Accent=accent, Chevron=chevron, Primary=primary };
             controls.Add(control);
             return control;
         }

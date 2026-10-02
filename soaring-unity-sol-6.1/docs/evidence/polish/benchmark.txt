@@ -1,0 +1,9 @@
+Final build: compiler/tests idle, no screenshot capture, 45-second stationary camera with active 72-bird ecosystem.
+QUEST_BOOTSTRAP_XR_RUNNING loader=OpenXRLoader runtime=Meta XR Simulator version=207.0.0
+SOARING_ART renderers=251 sky=Soaring/Sanctuary Sky
+SOARING_BENCHMARK stationary camera / active full ecosystem / 45 seconds / no capture
+SOARING_TIMING meanMs=14.01 maxMs=27.78 frames=715 draws=0 triangles=163700 paused=False
+SOARING_TIMING meanMs=14.03 maxMs=27.82 frames=714 draws=0 triangles=319480 paused=False
+SOARING_TIMING meanMs=13.91 maxMs=28.26 frames=720 draws=0 triangles=0 paused=False
+SOARING_TIMING meanMs=13.97 maxMs=27.78 frames=717 draws=0 triangles=149228 paused=False
+SOARING_BENCHMARK_DONE alive=72 ai=Hunt bird:22,Flee:27,Roam:23,

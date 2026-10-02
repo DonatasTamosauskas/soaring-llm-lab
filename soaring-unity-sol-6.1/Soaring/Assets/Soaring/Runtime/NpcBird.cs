@@ -23,14 +23,16 @@ namespace Soaring
         float thinkTimer,respawnTimer,phase,turnRate;
         int identity;
         bool obstacleNearby;
-        static Mesh bodyMesh,wingMesh,beakMesh;
+        static Mesh bodyMesh,wingMesh,beakMesh,darkDetailsMesh,creamDetailsMesh;
 
         public void Initialize(BirdWorld owner,float size,Vector3 position,int index)
         {
             world=owner;identity=index;phase=index*1.79f;
             EnsureMeshes();
             bodyRenderer=Part("Faceted body",bodyMesh,owner.PreyMaterial,transform,Vector3.zero).GetComponent<MeshRenderer>();
-            Part("Pointed beak",beakMesh,owner.BeakMaterial,transform,new Vector3(0,0,.65f));
+            Part("Pointed beak",beakMesh,owner.BeakMaterial,transform,new Vector3(0,.12f,.69f));
+            Part("Eyes and fanned tail",darkDetailsMesh,owner.WingMaterial,transform,Vector3.zero);
+            Part("Ivory breast and eye highlights",creamDetailsMesh,owner.BirdCreamMaterial,transform,Vector3.zero);
             leftWing=Part("Left wing",wingMesh,owner.WingMaterial,transform,new Vector3(-.14f,0,0)).transform;leftWing.localScale=new Vector3(-1,1,1);
             rightWing=Part("Right wing",wingMesh,owner.WingMaterial,transform,new Vector3(.14f,0,0)).transform;
             warning=Part("Hunter crown",beakMesh,owner.WarningMaterial,transform,new Vector3(0,.9f,0));warning.transform.localRotation=Quaternion.Euler(-90,0,0);warning.transform.localScale=Vector3.one*.9f;warning.SetActive(false);
@@ -172,9 +174,30 @@ namespace Soaring
         static void EnsureMeshes()
         {
             if(bodyMesh)return;
-            bodyMesh=Faceted("Bird body",new[]{new Vector3(0,.30f,0),new Vector3(0,-.25f,0),new Vector3(-.28f,0,0),new Vector3(.28f,0,0),new Vector3(0,0,.67f),new Vector3(0,0,-.70f)},new[]{0,4,3,0,2,4,0,5,2,0,3,5,1,3,4,1,4,2,1,2,5,1,5,3});
-            wingMesh=Faceted("Swept wing",new[]{Vector3.zero,new Vector3(1.45f,-.06f,-.13f),new Vector3(.92f,-.02f,-.55f),new Vector3(.15f,.04f,-.40f),new Vector3(.6f,.12f,-.22f)},new[]{0,4,1,1,4,2,2,4,3,3,4,0,1,2,0,2,3,0});
+            var bodyVertices=new List<Vector3>();var bodyFaces=new List<int>();
+            Ellipsoid(bodyVertices,bodyFaces,new Vector3(0,0,-.08f),new Vector3(.52f,.52f,1.13f));
+            Ellipsoid(bodyVertices,bodyFaces,new Vector3(0,.21f,.48f),new Vector3(.47f,.47f,.48f));
+            bodyMesh=Faceted("Rounded bird body and head",bodyVertices.ToArray(),bodyFaces.ToArray());
+            var darkVertices=new List<Vector3>();var darkFaces=new List<int>();
+            for(int side=-1;side<=1;side+=2)Ellipsoid(darkVertices,darkFaces,new Vector3(side*.224f,.26f,.58f),new Vector3(.10f,.13f,.12f));
+            for(int i=-1;i<=1;i++){int n=darkVertices.Count;darkVertices.AddRange(new[]{new Vector3(i*.045f,0,-.48f),new Vector3(i*.19f-.07f,-.06f,-1.0f),new Vector3(i*.19f+.07f,-.06f,-1.0f),new Vector3(i*.06f,.07f,-.5f)});darkFaces.AddRange(new[]{n,n+1,n+2,n,n+2,n+3,n+2,n+1,n,n+3,n+2,n});}
+            darkDetailsMesh=Faceted("Bright eyes and three tail feathers",darkVertices.ToArray(),darkFaces.ToArray());
+            var creamVertices=new List<Vector3>();var creamFaces=new List<int>();
+            Ellipsoid(creamVertices,creamFaces,new Vector3(0,-.13f,.13f),new Vector3(.38f,.3f,.71f));
+            for(int side=-1;side<=1;side+=2)Ellipsoid(creamVertices,creamFaces,new Vector3(side*.265f,.284f,.59f),new Vector3(.035f,.035f,.035f));
+            creamDetailsMesh=Faceted("Ivory breast and eye shine",creamVertices.ToArray(),creamFaces.ToArray());
+            var wingVertices=new List<Vector3>();var wingFaces=new List<int>();
+            wingVertices.AddRange(new[]{Vector3.zero,new Vector3(.75f,.05f,.04f),new Vector3(.95f,-.03f,-.44f),new Vector3(.1f,-.02f,-.46f),new Vector3(.40f,.16f,-.13f)});
+            wingFaces.AddRange(new[]{0,4,1,1,4,2,2,4,3,3,4,0,0,1,2,0,2,3});
+            for(int i=0;i<6;i++){float f=i/5f;int n=wingVertices.Count;float rootX=.54f+f*.22f,rootZ=.04f-f*.41f,tipX=1.5f-f*.20f,tipZ=-.10f-f*.47f;wingVertices.AddRange(new[]{new Vector3(rootX,0,rootZ+.04f),new Vector3(tipX,-.045f,tipZ+.045f),new Vector3(tipX+.02f,-.035f,tipZ-.055f),new Vector3(rootX,-.015f,rootZ-.095f),new Vector3((rootX+tipX)*.5f,.065f,(rootZ+tipZ)*.5f)});wingFaces.AddRange(new[]{n,n+4,n+1,n+1,n+4,n+2,n+2,n+4,n+3,n+3,n+4,n,n,n+1,n+2,n,n+2,n+3});}
+            wingMesh=Faceted("Six sculpted flight feathers",wingVertices.ToArray(),wingFaces.ToArray());
             beakMesh=Faceted("Beak tetrahedron",new[]{new Vector3(-.11f,0,0),new Vector3(.11f,0,0),new Vector3(0,.15f,0),new Vector3(0,0,.3f)},new[]{0,2,1,0,1,3,1,2,3,2,0,3});
+        }
+        static void Ellipsoid(List<Vector3> vertices,List<int> faces,Vector3 center,Vector3 scale)
+        {
+            const int rows=5,columns=10;int offset=vertices.Count;
+            for(int y=0;y<=rows;y++)for(int i=0;i<columns;i++){float a=i*Mathf.PI*2/columns,b=y*Mathf.PI/rows;vertices.Add(center+Vector3.Scale(new Vector3(Mathf.Sin(b)*Mathf.Cos(a),Mathf.Cos(b),Mathf.Sin(b)*Mathf.Sin(a)),scale*.5f));}
+            for(int y=0;y<rows;y++)for(int i=0;i<columns;i++){int a=offset+y*columns+i,b=offset+y*columns+(i+1)%columns,c=offset+(y+1)*columns+i,d=offset+(y+1)*columns+(i+1)%columns;faces.AddRange(new[]{a,b,c,b,d,c});}
         }
         static Mesh Faceted(string name,Vector3[] source,int[] faces)
         {

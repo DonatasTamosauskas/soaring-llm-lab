@@ -1,0 +1,12 @@
+Quest APK
+Succeeded
+Errors: 0
+Warnings: 6
+SHA256 c9aefad4547683c89908713d4ad652687fab70f4afbc8ef1bc399a4659ba200c
+APK Signature Scheme v2 verified with bundled OpenJDK/apksigner.
+
+Native simulator app
+Succeeded
+Errors: 0
+Warnings: 4
+Ad-hoc signature verified with codesign --verify --deep --strict.

@@ -42,4 +42,16 @@ Reviewed `../vr-unity-example` findings and adopted pinned native OpenXR/Meta pr
 1. `07f378a` Flight slice.
 2. `4e1a71b` World/ecosystem.
 3. `b6a618c` Loop/UI.
-4. `feat(soaring): finalize Quest builds and verified simulator performance` (this update).
+4. `4f50e2b` Initial build and simulator performance verification.
+
+## Visual polish reopened after review
+The initial milestone-four review established functionality and performance, but its visual acceptance was too weak. The player's screenshot feedback exposed a medium presentation issue: primitive scenery, flat depth, thin noisy gates and an oversized undifferentiated HUD. Passing those earlier checks does not establish the requested level of polish.
+
+The corrective pass uses a cohesive warm sanctuary palette, sculpted terrain and ridge silhouettes, layered tree crowns, inhabited architecture with genuine fly-through openings, recognizable bird silhouettes, a graduated sky and a restrained HUD/menu hierarchy. Acceptance requires fresh simulator captures of home, calibration, tuning and active flight; readable controls without overlap; preserved loop assertions and unit tests; and an isolated full-ecosystem performance run after compilation. Physical flight feel and comfort still require human headset feedback.
+
+### Corrective pass verified
+- Rebuilt the world and bird silhouettes, sky/lighting, feathered player hands, menus/HUD and sound. Two fresh visual passes corrected horizon gaps, foreground wing occlusion and goal contrast. Home, tutorial, settings, tuning, both calibration poses, flight, pause, death, apex and victory captures are in `docs/evidence/polish/`.
+- Final source:24/24 tests pass; all seven simulator loop assertions pass with live Meta XR Simulator207.0 Quest Pro controllers. No runtime exceptions or shader errors logged. Manual visual review of the captures found no remaining medium presentation defect; physical play acceptance is still pending.
+- Revised native app and Quest APK both build with zero errors (4 and6 upstream warnings respectively); native/ad-hoc and APKv2 signatures verify. Artifact checksum/build evidence is saved alongside captures.
+- Compiler-idle45-second benchmark: ten-second mean intervals13.91–14.03ms (~71–72fps), peaks27.78–28.26ms,72/72 NPCs alive with hunt/flee states. Draw and intermittent triangle counters are not used as measured device budgets. Scene batching keeps the renderer upper bound below800.
+- Commit: `feat(soaring): rebuild sanctuary art and VR presentation` (this update).
