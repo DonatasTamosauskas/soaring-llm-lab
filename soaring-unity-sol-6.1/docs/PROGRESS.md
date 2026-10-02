@@ -23,3 +23,10 @@ Reviewed `../vr-unity-example` findings and adopted pinned native OpenXR/Meta pr
 - Full Quest Pro simulator smoke: 72 birds; catch increased mass; pause froze position/time; death, restart and apex victory APIs passed. `docs/evidence/ecosystem/` screenshots inspected. Smoke calibration and apex acceleration are explicitly synthetic verification, not human pacing evidence.
 - Expanded tests 20/20 pass, including tucked acceleration/dive, size-gated eating, uncalibrated start rejection and growth targets under a stated synthetic catch rate.
 - Tucking now accelerates beyond relaxed glide. Early growth boost/late growth factor and apex navigation added.
+
+## 3 · Core loop and UI verified (2 October 2026)
+- 23/23 automated tests pass. Menu calibration guards/presets/defaults and progression checks added. At the declared synthetic rate (one 60%-size catch each 15s), defaults reach 1.2× within 2min, 2.2× within 5–8min, and 4.6× within 20–30min. Human pacing remains unmeasured.
+- Native Quest Pro smoke checks: catch increases mass, pause freezes flight and run clock, death screen, clean restart, apex accessible, ordered spatial crossings of the three crown gates yield victory. Captures `docs/evidence/loop/` inspected, including apex navigation and death/victory panels.
+- In-game developer menu now exposes 35 values; controls remain readable at every size, saved presets and comfort/haptic toggles persist. Camera maintains a flight-level horizon; growth scales tracked space smoothly around the head.
+- Review corrections: startup panel placement, heading-relative takeoff/food, desktop mouse/arrow interaction, solid-free NPC spawning, preset-aware NPC speed advantage, and blue neutral birds distinct from edible gold/coral predators.
+- Removed unused imported tutorial/sample scenes and controls; retained mobile URP, OpenXR loader workaround and native Quest build profile.

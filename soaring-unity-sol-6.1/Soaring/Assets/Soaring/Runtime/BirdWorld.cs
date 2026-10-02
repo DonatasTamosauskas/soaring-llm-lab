@@ -14,9 +14,14 @@ namespace Soaring
         public float ThreatIntensity { get; private set; }
         public int GatePasses { get; private set; }
         public int Population => Birds.Count;
+        public Vector3 SpawnForward { get; private set; } = Vector3.forward;
+        public Vector3 SpawnRight => Vector3.Cross(Vector3.up,SpawnForward);
+        public Vector3 SliceCenter => spawnOrigin+SpawnForward*20;
+        Vector3 spawnOrigin;
         public int ActivePopulation { get { int n = 0; foreach (var bird in Birds) if (bird.Alive) n++; return n; } }
         public Material PreyMaterial { get; private set; }
         public Material PredatorMaterial { get; private set; }
+        public Material NeutralMaterial { get; private set; }
         public Material WingMaterial { get; private set; }
         public Material BeakMaterial { get; private set; }
         public Material WarningMaterial { get; private set; }
@@ -54,6 +59,7 @@ namespace Soaring
             var crown = Mat("Apex gold", new Color(1f,.83f,.28f), true);
             PreyMaterial = Mat("Goldfinch", new Color(1f,.77f,.24f));
             PredatorMaterial = Mat("Kestrel", new Color(.75f,.31f,.30f));
+            NeutralMaterial = Mat("Peer bird", new Color(.48f,.64f,.76f));
             WingMaterial = Mat("Flight feathers", new Color(.12f,.23f,.31f));
             BeakMaterial = Mat("Beak", new Color(1f,.48f,.18f));
             WarningMaterial = Mat("Hunt warning", new Color(1f,.22f,.10f), true);
@@ -120,17 +126,21 @@ namespace Soaring
         public void ResetPopulation()
         {
             if(!built) Build();
+            Physics.SyncTransforms();
             foreach(var bird in Birds) if(bird) Destroy(bird.gameObject);
             Birds.Clear(); random=new System.Random(49173); ThreatText=""; ThreatIntensity=0; grace=GameSession.Instance && GameSession.Instance.Player && GameSession.Instance.Player.Tuning != null ? GameSession.Instance.Player.Tuning.safetySeconds : 7; replenishTimer=0; apexIndex=0; GatePasses=0;
             var session=GameSession.Instance;
             previousPlayer=session && session.Player?session.Player.Position:new Vector3(0,24,0);
+            spawnOrigin=previousPlayer;
+            SpawnForward=session && session.Player && session.Player.Head?Vector3.ProjectOnPlane(session.Player.Head.forward,Vector3.up).normalized:Vector3.forward;
+            if(SpawnForward.sqrMagnitude<.1f)SpawnForward=Vector3.forward;
             int count=SliceMode?1:72;
             for(int i=0;i<count;i++)
             {
                 float size=i<44?Rand(.38f,.78f):i<60?Rand(1.18f,2.15f):Rand(2.3f,5.6f);
                 Vector3 position=RandomAirPosition();
-                if(i<14) position=previousPlayer+new Vector3(Rand(-20,20),Rand(-6,7),Rand(12,65));
-                if(i==0) { size=.55f; position=previousPlayer+new Vector3(0,0,13); }
+                if(i<14) position=previousPlayer+SpawnRight*Rand(-20,20)+Vector3.up*Rand(-6,7)+SpawnForward*Rand(12,65);
+                if(i==0) { size=.55f; position=previousPlayer+SpawnForward*13; }
                 var go=new GameObject(i==0?"First goldfinch":"Bird "+i); go.transform.SetParent(population);
                 var bird=go.AddComponent<NpcBird>(); bird.Initialize(this,size,Constrain(position,1),i); Birds.Add(bird);
             }
@@ -202,6 +212,21 @@ namespace Soaring
         void RefreshApexMarkers() { for(int i=0;i<apexMarkers.Count;i++) apexMarkers[i].SetActive(i==apexIndex % 3); }
         public Vector3 NextApexPosition { get { int i=ApexGateIndex(apexIndex % 3);return i>=0?gates[i].Position:Vector3.zero; } }
         public Vector3 RandomAirPosition() { float a=Rand(0,Mathf.PI*2),r=Mathf.Sqrt(Rand(0,1))*ArenaRadius*.78f;return new Vector3(Mathf.Cos(a)*r,Rand(16,114),Mathf.Sin(a)*r); }
+        /// <summary>Spawn centers are clear of solid scenery, including at larger sizes.</summary>
+        public Vector3 FindClearAirPosition(Vector3 preferred,float radius)
+        {
+            radius=Mathf.Max(.15f,radius);
+            var candidate=Constrain(preferred,radius);
+            if(!Physics.CheckSphere(candidate,radius,~0,QueryTriggerInteraction.Ignore))return candidate;
+            for(int i=0;i<28;i++)
+            {
+                // Nearby retries preserve the food placement; random retries cover crowded groves.
+                candidate=Constrain(i<12?preferred+new Vector3(Rand(-16,16),Rand(-9,18),Rand(-16,16)):RandomAirPosition(),radius);
+                if(!Physics.CheckSphere(candidate,radius,~0,QueryTriggerInteraction.Ignore))return candidate;
+            }
+            // The open upper central sky is free of all generated static scenery.
+            return new Vector3(0,Ceiling-radius-2,0);
+        }
         public Vector3 Constrain(Vector3 position,float radius)
         {
             float bound=Mathf.Max(8,ArenaRadius-radius-6); var planar=new Vector2(position.x,position.z);

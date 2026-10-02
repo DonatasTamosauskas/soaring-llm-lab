@@ -33,7 +33,7 @@ namespace Soaring
         string note = "";
         int focus, tuningPage;
         int pointerHovered = -1;
-        float calibrationCaptureAt, nextHudUpdate, nextStick, lastInput;
+        float calibrationCaptureAt, nextHudUpdate, nextStick;
         bool captureExtended, previousSelect, previousMenu, observedDead, observedWin;
         bool built;
         bool firstUpdate = true;
@@ -200,10 +200,7 @@ namespace Soaring
             if (Player.DesktopMode && Mouse.current != null && viewCamera)
             {
                 var mouse = Mouse.current;
-                if (mouse.delta.ReadValue().sqrMagnitude > .01f) lastInput = Time.unscaledTime;
-                if (Time.unscaledTime - lastInput < 2)
-                    hasPoint = RectTransformUtility.ScreenPointToLocalPointInRectangle(panel, mouse.position.ReadValue(), viewCamera, out local);
-                else local = Vector2.zero;
+                hasPoint = RectTransformUtility.ScreenPointToLocalPointInRectangle(panel, mouse.position.ReadValue(), viewCamera, out local);
                 ray.enabled = false;
             }
             else

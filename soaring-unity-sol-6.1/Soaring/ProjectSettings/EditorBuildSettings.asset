@@ -9,7 +9,6 @@ EditorBuildSettings:
     path: Assets/Soaring/Scenes/Sanctuary.unity
     guid: fbfb08b57af0244f3a070a66e9d77ef0
   m_configObjects:
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 5fcbed9bd2fd144649cba5a5cb6b2923, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: db01ed58fd42c4270a749f48c01e0eab, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 841896ebd68c443f3942266ea42f83b1, type: 2}

@@ -13,6 +13,7 @@ namespace Soaring
         public Vector3 PreviousPosition { get; private set; }
         public bool IsHuntingPlayer { get; private set; }
         public float HuntSeconds { get; private set; }
+        public string AIState { get; private set; } = "Roam";
         BirdWorld world;
         Transform leftWing,rightWing;
         MeshRenderer bodyRenderer;
@@ -37,20 +38,31 @@ namespace Soaring
         }
         public void Respawn(float size,Vector3 position)
         {
-            Size=size;Alive=true;IsHuntingPlayer=false;HuntSeconds=0;prey=null;respawnTimer=0;target=world.RandomAirPosition();thinkTimer=.1f+identity*.007f;turnRate=63/(1+Mathf.Max(0,size-1)*.6f);
+            Size=size;Alive=true;IsHuntingPlayer=false;HuntSeconds=0;prey=null;respawnTimer=0;target=world.RandomAirPosition();thinkTimer=0;turnRate=63/(1+Mathf.Max(0,size-1)*.6f);AIState="Roam";obstacleNearby=false;steer=Vector3.forward;
+            position=world.FindClearAirPosition(position,size*.35f);
             transform.position=position;PreviousPosition=position;transform.localScale=Vector3.one*size;
             var session=GameSession.Instance;
-            bodyRenderer.sharedMaterial=session && size>session.Size*1.12f?world.PredatorMaterial:world.PreyMaterial;
+            bodyRenderer.sharedMaterial=ClassificationMaterial(session);
             Velocity=Quaternion.Euler(0,identity*137.5f,0)*Vector3.forward*Cruise();
-            if(identity==0 || identity<14) Velocity=Vector3.forward*Cruise()*.72f;
+            if(identity==0 || identity<14) Velocity=world.SpawnForward*Cruise()*.72f;
             gameObject.SetActive(true);foreach(var renderer in GetComponentsInChildren<Renderer>())renderer.enabled=true;warning.SetActive(false);
         }
         public void Eaten(float delay)
         {
-            Alive=false;IsHuntingPlayer=false;HuntSeconds=0;respawnTimer=delay;
+            Alive=false;IsHuntingPlayer=false;HuntSeconds=0;respawnTimer=delay;AIState="Dormant";
             foreach(var renderer in GetComponentsInChildren<Renderer>())renderer.enabled=false;
         }
-        float Cruise() => Mathf.Min(13*Mathf.Sqrt(Size),20*(1+(Size-1)*.23f)*.78f);
+        Material ClassificationMaterial(GameSession session)
+        {
+            if(!session || GameSession.CanEat(session.Size,Size))return world.PreyMaterial;
+            return GameSession.CanEat(Size,session.Size)?world.PredatorMaterial:world.NeutralMaterial;
+        }
+        float Cruise()
+        {
+            var tuning=GameSession.Instance && GameSession.Instance.Player?GameSession.Instance.Player.Tuning:null;
+            float playerCruise=tuning!=null?tuning.cruiseSpeed*FlightModel.SizeSpeed(Mathf.Max(1,Size),tuning):20*(1+Mathf.Max(0,Size-1)*.23f);
+            return Mathf.Min(13*Mathf.Sqrt(Size),playerCruise*.78f);
+        }
         void Update()
         {
             var session=GameSession.Instance;
@@ -94,7 +106,7 @@ namespace Soaring
             float flap=Mathf.Sin(Time.time*(6/Mathf.Sqrt(Size))+phase)*27;
             leftWing.localRotation=Quaternion.Euler(0,0,-flap);rightWing.localRotation=Quaternion.Euler(0,0,flap);
             if(prey && prey.Alive && Vector3.Distance(Position,prey.Position)<(Size+prey.Size)*.53f)prey.Eaten(4);
-            var material=Size>session.Size*1.12f?world.PredatorMaterial:world.PreyMaterial;if(bodyRenderer.sharedMaterial!=material)bodyRenderer.sharedMaterial=material;
+            var material=ClassificationMaterial(session);if(bodyRenderer.sharedMaterial!=material)bodyRenderer.sharedMaterial=material;
         }
         void Think(GameSession session)
         {
@@ -124,27 +136,28 @@ namespace Soaring
             Vector3 desired;
             if(nearestThreat<45*45)
             {
-                desired=escape*2.3f+Vector3.up*.23f;
+                AIState="Flee";desired=escape*2.3f+Vector3.up*.23f;
                 IsHuntingPlayer=false;prey=null;
             }
             else if(IsHuntingPlayer)
             {
+                AIState="Hunt player";
                 float warning=player.Tuning != null ? Mathf.Max(3, player.Tuning.threatWarningSeconds) : 4;
                 // Telegraph from a safe standoff. Committed hunters only close after the warning.
                 var intercept=player.Position+Vector3.ClampMagnitude(player.Velocity*1.2f,20);
                 desired=(intercept-pos).normalized;
                 if(HuntSeconds<warning && playerDistance<24*24)desired=Vector3.Cross(desired,Vector3.up)+Vector3.up*.2f;
             }
-            else if(prey)desired=(prey.Position+prey.Velocity*.7f-pos).normalized;
+            else if(prey){AIState="Hunt bird";desired=(prey.Position+prey.Velocity*.7f-pos).normalized;}
             else
             {
-                if(Vector3.Distance(pos,target)<12)target=world.RandomAirPosition();
+                AIState="Roam";if(Vector3.Distance(pos,target)<12)target=world.RandomAirPosition();
                 desired=(target-pos).normalized;
             }
             if(world.SliceMode)
             {
                 // The first goldfinch circles slowly in a clear lane, easy to see and catch.
-                var center=new Vector3(0,24,20);target=center+new Vector3(Mathf.Sin(Time.time*.22f)*8,Mathf.Sin(Time.time*.31f)*2,Mathf.Cos(Time.time*.22f)*6);desired=(target-pos).normalized;
+                AIState="Slice";var center=world.SliceCenter;target=center+world.SpawnRight*(Mathf.Sin(Time.time*.22f)*8)+Vector3.up*(Mathf.Sin(Time.time*.31f)*2)+world.SpawnForward*(Mathf.Cos(Time.time*.22f)*6);desired=(target-pos).normalized;
                 if(nearestThreat<9*9)desired=escape*.4f+desired;
             }
             desired+=world.BoundarySteering(pos)+separation*.55f;

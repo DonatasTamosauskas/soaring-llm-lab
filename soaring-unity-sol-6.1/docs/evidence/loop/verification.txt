@@ -1,0 +1,43 @@
+QUEST_BOOTSTRAP_XR_RUNNING loader=OpenXRLoader runtime=Meta XR Simulator version=207.0.0
+QUEST_BOOTSTRAP_DEVICE Head Tracking - OpenXR HeadMounted, TrackedDevice
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Left
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Right
+SOARING_READY birds=0 slice=False
+SOARING_CAPTURE 01-home
+SOARING_SMOKE synthetic pose calibration; live XR remains active
+SOARING_CAPTURE 02-tuning
+SOARING_CAPTURE 03-calibration
+SOARING_SMOKE calibrated=True playing=True paused=False birds=72
+SOARING_CAPTURE 04-flight
+SOARING_SMOKE catch=1 massIncreased=True
+SOARING_TIMING meanMs=17.48 maxMs=222.23 frames=309
+SOARING_ECOSYSTEM alive=72 hunters=2 visibleBirdRenderers=290
+SOARING_CAPTURE 05-growth
+SOARING_SMOKE pauseStable=True
+SOARING_CAPTURE 06-pause
+SOARING_CAPTURE 07-death
+SOARING_SMOKE restart=True
+SOARING_SMOKE apexReachable=True catches=51
+SOARING_CAPTURE 08-apex-scale
+SOARING_CAPTURE 09-victory
+SOARING_SMOKE victory=True
+SOARING_SMOKE_DONE
+SOARING_TIMING meanMs=15.57 maxMs=194.45 frames=652
+SOARING_TIMING meanMs=13.91 maxMs=27.78 frames=720
+SOARING_TIMING meanMs=13.99 maxMs=27.78 frames=716
+SOARING_TIMING meanMs=13.89 maxMs=13.97 frames=721
+SOARING_TIMING meanMs=13.91 maxMs=27.78 frames=719
+SOARING_TIMING meanMs=13.89 maxMs=14.67 frames=720
+SOARING_TIMING meanMs=13.89 maxMs=13.96 frames=720
+SOARING_TIMING meanMs=13.91 maxMs=27.73 frames=720
+SOARING_TIMING meanMs=13.89 maxMs=15.60 frames=720
+SOARING_TIMING meanMs=13.91 maxMs=27.32 frames=720
+SOARING_TIMING meanMs=13.95 maxMs=27.78 frames=718
+SOARING_TIMING meanMs=13.89 maxMs=13.95 frames=721
+SOARING_TIMING meanMs=13.89 maxMs=14.62 frames=720
+SOARING_TIMING meanMs=13.93 maxMs=27.78 frames=718
+SOARING_TIMING meanMs=13.89 maxMs=15.44 frames=721
+SOARING_TIMING meanMs=13.93 maxMs=27.78 frames=719
+SOARING_TIMING meanMs=14.08 maxMs=28.54 frames=711
+SOARING_TIMING meanMs=14.43 maxMs=30.92 frames=693
+SOARING_TIMING meanMs=13.91 maxMs=27.79 frames=720
