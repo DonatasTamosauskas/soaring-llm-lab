@@ -1,0 +1,25 @@
+QUEST_BOOTSTRAP_XR_RUNNING loader=OpenXRLoader runtime=Meta XR Simulator version=207.0.0
+QUEST_BOOTSTRAP_DEVICE Head Tracking - OpenXR HeadMounted, TrackedDevice
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Left
+QUEST_BOOTSTRAP_DEVICE Meta Quest Pro Touch Controller OpenXR HeldInHand, TrackedDevice, Controller, Right
+SOARING_READY birds=0 slice=False
+SOARING_CAPTURE 01-home
+SOARING_SMOKE synthetic pose calibration; live XR remains active
+SOARING_CAPTURE 02-tuning
+SOARING_CAPTURE 03-calibration
+SOARING_SMOKE calibrated=True playing=True paused=False birds=72
+SOARING_CAPTURE 04-flight
+SOARING_SMOKE catch=1 massIncreased=True
+SOARING_TIMING meanMs=18.21 maxMs=430.56 frames=302
+SOARING_CAPTURE 05-growth
+SOARING_SMOKE pauseStable=True
+SOARING_CAPTURE 06-pause
+SOARING_CAPTURE 07-death
+SOARING_SMOKE restart=True
+SOARING_SMOKE apexReachable=True catches=44
+SOARING_CAPTURE 08-victory
+SOARING_SMOKE victory=True
+SOARING_SMOKE_DONE
+SOARING_TIMING meanMs=15.15 maxMs=208.34 frames=661
+SOARING_TIMING meanMs=13.93 maxMs=27.78 frames=719
+SOARING_TIMING meanMs=13.95 maxMs=27.78 frames=718

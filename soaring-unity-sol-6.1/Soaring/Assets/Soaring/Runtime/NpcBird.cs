@@ -43,7 +43,7 @@ namespace Soaring
             bodyRenderer.sharedMaterial=session && size>session.Size*1.12f?world.PredatorMaterial:world.PreyMaterial;
             Velocity=Quaternion.Euler(0,identity*137.5f,0)*Vector3.forward*Cruise();
             if(identity==0 || identity<14) Velocity=Vector3.forward*Cruise()*.72f;
-            gameObject.SetActive(true);warning.SetActive(false);
+            gameObject.SetActive(true);foreach(var renderer in GetComponentsInChildren<Renderer>())renderer.enabled=true;warning.SetActive(false);
         }
         public void Eaten(float delay)
         {

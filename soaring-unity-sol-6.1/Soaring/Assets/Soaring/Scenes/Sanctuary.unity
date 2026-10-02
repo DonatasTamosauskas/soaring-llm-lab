@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acfbf6d95de9f4499ba0e6aba0b81d57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Soaring.Runtime::Soaring.SoaringBootstrap
-  SliceMode: 1
+  SliceMode: 0
 --- !u!4 &872438292
 Transform:
   m_ObjectHideFlags: 0

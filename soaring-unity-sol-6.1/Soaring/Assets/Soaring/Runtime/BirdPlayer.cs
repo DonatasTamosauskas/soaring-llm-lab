@@ -39,8 +39,8 @@ public sealed class BirdPlayer:MonoBehaviour {
   if(!TrackingValid&&!DesktopMode&&session.IsPlaying&&!session.IsPaused){session.Pause(true);Debug.LogWarning("SOARING_TRACKING_LOST paused");}
   Vector3 left=LeftHand.localPosition-Head.localPosition,right=RightHand.localPosition-Head.localPosition;float dt=Time.deltaTime;
   if(!session.IsPlaying||session.IsPaused||session.IsDead||session.HasWon||!IsCalibrated||!TrackingValid){previousLeft=left;previousRight=right;previousValid=false;return;}
-  var sample=new WingSample{Valid=previousValid,LeftDown=previousValid?Mathf.Clamp((previousLeft.y-left.y)/Mathf.Max(.001f,dt),-8,8):0,RightDown=previousValid?Mathf.Clamp((previousRight.y-right.y)/Mathf.Max(.001f,dt),-8,8):0,Extension=Mathf.InverseLerp(RelaxedSpan,ExtendedSpan,Vector3.Distance(left,right)),Bank=(left.y-right.y)/.45f};
-  if(DesktopMode){sample.Valid=true;sample.LeftDown=sample.RightDown=Time.unscaledTime<desktopFlapUntil?1.5f:0;var k=Keyboard.current;sample.Bank=k!=null?((k.dKey.isPressed?1:0)-(k.aKey.isPressed?1:0)):0;}
+  var sample=new WingSample{Valid=previousValid,LeftDown=previousValid?Mathf.Clamp((previousLeft.y-left.y)/Mathf.Max(.001f,dt),-8,8):0,RightDown=previousValid?Mathf.Clamp((previousRight.y-right.y)/Mathf.Max(.001f,dt),-8,8):0,Extension=Mathf.InverseLerp(RelaxedSpan,ExtendedSpan,Vector3.Distance(left,right)),Tuck=1-Mathf.Clamp01(Vector3.Distance(left,right)/Mathf.Max(.15f,RelaxedSpan)),Bank=(left.y-right.y)/.45f};
+  if(DesktopMode){sample.Valid=true;sample.Tuck=Keyboard.current!=null&&Keyboard.current.leftShiftKey.isPressed?.8f:0;sample.LeftDown=sample.RightDown=Time.unscaledTime<desktopFlapUntil?1.5f:0;var k=Keyboard.current;sample.Bank=k!=null?((k.dKey.isPressed?1:0)-(k.aKey.isPressed?1:0)):0;}
   previousLeft=left;previousRight=right;previousValid=true;
   model.Step(sample,Size,session.World.UpdraftAt(Position),dt,Tuning);
   if(model.Flapped)Haptic(.2f,.035f);

@@ -272,6 +272,8 @@ namespace Soaring
 
         public void Close()
         {
+            if(Session.IsDead){Show("death");return;}
+            if(Session.HasWon){Show("victory");return;}
             if (!Player.IsCalibrated) { Show("calibrateRelaxed"); return; }
             if (!Player.DesktopMode && !Player.TrackingValid) { note = "Controllers are not tracked yet."; Show("pause"); return; }
             MenuOpen = false;
@@ -459,7 +461,7 @@ namespace Soaring
             Highlight();
         }
         void RefreshCaptions() { foreach (var control in controls) if (control.Caption != null) control.Label.text = control.Caption(); }
-        static string Pretty(string value) => Regex.Replace(value, "([a-z])([A-Z])", "$1 $2");
+        static string Pretty(string value) {var words=Regex.Replace(value, "([a-z])([A-Z])", "$1 $2");return char.ToUpperInvariant(words[0])+words.Substring(1);}
 
         void RefreshHud()
         {
@@ -468,11 +470,12 @@ namespace Soaring
             float apex = ApexSize();
             float progress = Mathf.InverseLerp(1, apex, Session.Size);
             progressFill.sizeDelta = new Vector2(820 * progress, 5);
-            hudGoal.text = Session.Size >= apex ? $"APEX   •   Skyline rings {Session.ApexRings}/{Mathf.RoundToInt(Player.Tuning.apexRingGoal)}" : Session.Size < 1.7f ? "Find the small golden birds. Flap down to climb." : "Chase smaller silhouettes. Bigger birds hunt you.";
+            hudGoal.text = Session.Size >= apex ? $"APEX • {ApexGuidance()} • Crowns {Session.ApexRings}/{Mathf.RoundToInt(Player.Tuning.apexRingGoal)}" : Session.Size < 1.7f ? "Find the small golden birds. Flap down to climb." : "Chase smaller silhouettes. Bigger birds hunt you.";
             hudThreat.text = Session.World != null && !string.IsNullOrEmpty(Session.World.ThreatText) ? Session.World.ThreatText : "";
             if (!Player.TrackingValid && !Player.DesktopMode) hudThreat.text = "Controller tracking lost";
             hudThreat.color = Session.World != null && Session.World.ThreatIntensity > .5f ? new Color(1, .38f, .24f) : new Color(1, .74f, .35f);
         }
+        string ApexGuidance(){Vector3 delta=Session.World.NextApexPosition-Player.Position;float angle=Vector3.SignedAngle(Vector3.ProjectOnPlane(Player.Head.forward,Vector3.up),Vector3.ProjectOnPlane(delta,Vector3.up),Vector3.up);string direction=Mathf.Abs(angle)<15?"AHEAD":Mathf.Abs(angle)>150?"BEHIND":angle>0?"RIGHT":"LEFT";return direction+" "+Mathf.RoundToInt(delta.magnitude)+"m / "+(delta.y>4?"climb "+Mathf.RoundToInt(delta.y)+"m":delta.y<-4?"descend "+Mathf.RoundToInt(-delta.y)+"m":"level");}
         float ApexSize()
         {
             return Mathf.Max(1.1f, Player.Tuning.apexSize);

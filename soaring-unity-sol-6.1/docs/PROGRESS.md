@@ -16,3 +16,10 @@ Reviewed `../vr-unity-example` findings and adopted pinned native OpenXR/Meta pr
 - Explicit synthetic calibration smoke: calibrated=true, playing=true, one bird; contact caught the bird and increased mass; pause held position/time. Captures in `docs/evidence/slice/` inspected for readability and scene rendering.
 - First slice includes flight lab on day one: 31 ranged parameters, presets/save/load/fine controls.
 - Simulator verifies integration. Physical headset flight feel and comfort remain a required human acceptance step.
+
+## 2 · World and ecosystem verified (2 October 2026)
+- Saved scene now enables full arena: 24 cedar trees with branches, 5 hollow towers, power lines, tight nest entrances, 5 skill gates, 3 updrafts and 3 ordered apex crowns; closed bounds at all growth sizes.
+- 72 NPCs, staggered decisions, player/peer hunting and fleeing, bounded recycled population, swept catch detection and nearby food replenishment. Recycled renderer visibility fixed during review.
+- Full Quest Pro simulator smoke: 72 birds; catch increased mass; pause froze position/time; death, restart and apex victory APIs passed. `docs/evidence/ecosystem/` screenshots inspected. Smoke calibration and apex acceleration are explicitly synthetic verification, not human pacing evidence.
+- Expanded tests 20/20 pass, including tucked acceleration/dive, size-gated eating, uncalibrated start rejection and growth targets under a stated synthetic catch rate.
+- Tucking now accelerates beyond relaxed glide. Early growth boost/late growth factor and apex navigation added.

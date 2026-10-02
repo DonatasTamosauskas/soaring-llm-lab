@@ -14,7 +14,8 @@ public sealed class GameSession:MonoBehaviour {
  public void Pause(bool paused){IsPaused=paused;Changed?.Invoke();}
  public void Restart(){StartRun();}
  public static bool CanEat(float hunter,float prey)=>hunter>prey*1.12f;
- public void Catch(float preySize){if(!IsPlaying||IsPaused||IsDead||HasWon||!CanEat(Size,preySize))return;Mass+=Mathf.Pow(preySize,3)*Player.Tuning.nutrition;Catches++;Status=Size>=Player.Tuning.apexSize?"APEX • fly through the golden crown gates":"Growing • find larger prey";Player.Haptic(.6f,.12f);Changed?.Invoke();}
+ public static float NutritionGain(float hunterSize,float preySize,FlightTuning t){float stage=hunterSize<1.6f?t.earlyGrowthBoost:hunterSize>=2.8f?t.lateGrowthFactor:1;return Mathf.Pow(preySize,3)*t.nutrition*stage;}
+ public void Catch(float preySize){if(!IsPlaying||IsPaused||IsDead||HasWon||!CanEat(Size,preySize))return;Mass+=NutritionGain(Size,preySize,Player.Tuning);Catches++;Status=Size>=Player.Tuning.apexSize?"APEX • fly through the golden crown gates":"Growing • find larger prey";Player.Haptic(.6f,.12f);Changed?.Invoke();}
  public void Kill(string reason){if(!IsPlaying||IsDead||HasWon||Elapsed<Player.Tuning.safetySeconds)return;IsDead=true;IsPaused=true;Status=reason;Player.Haptic(1,.3f);Changed?.Invoke();}
  public void ApexRing(){if(!IsPlaying||IsPaused||IsDead||HasWon||Size<Player.Tuning.apexSize)return;ApexRings++;Player.Haptic(.8f,.2f);if(ApexRings>=Mathf.RoundToInt(Player.Tuning.apexRingGoal)){HasWon=true;IsPaused=true;Status="CROWN OF THE SKY • you made it";}Changed?.Invoke();}
 }

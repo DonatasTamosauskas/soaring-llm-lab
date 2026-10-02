@@ -15,6 +15,8 @@ namespace Soaring {
  [Range(0,12)] public float extensionBalloon=5;
  [Range(.1f,3)] public float balloonDuration=.65f;
  [Range(0,.75f)] public float extensionDrag=.45f;
+ [Range(0,1)] public float tuckSpeedBoost=.35f;
+ [Range(0,10)] public float tuckDive=2.5f;
  [Range(10,160)] public float turnRate=90;
  [Range(.02f,.5f)] public float turnDeadZone=.14f;
  [Range(1,4)] public float turnExponent=1.8f;
@@ -27,6 +29,8 @@ namespace Soaring {
  [Range(0,2)] public float updraftStrength=1;
  [Range(0,1)] public float comfortStrength=.35f;
  [Range(.05f,1)] public float nutrition=.32f;
+ [Range(.5f,3)] public float earlyGrowthBoost=1.35f;
+ [Range(.2f,2)] public float lateGrowthFactor=.55f;
  [Range(1.2f,8)] public float apexSize=4.6f;
  [Range(1,8)] public float growthSmoothing=2;
  [Range(1,6)] public float apexRingGoal=3;
