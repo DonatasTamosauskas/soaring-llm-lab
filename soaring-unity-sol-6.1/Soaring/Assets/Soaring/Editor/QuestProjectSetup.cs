@@ -29,9 +29,9 @@ public static class QuestProjectSetup
     public static void Configure()
     {
         PlayerSettings.companyName = "Soaring";
-        PlayerSettings.productName = "Soaring";
+        PlayerSettings.productName = "Soaring Unity-Sol 6.1";
         PlayerSettings.colorSpace = ColorSpace.Linear;
-        PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.soaring.sky");
+        PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.soaring.unitysol61");
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel32;
@@ -224,7 +224,7 @@ public static class QuestProjectSetup
         {
             EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.Android;
             var report = BuildPipeline.BuildPlayer(new BuildPlayerWithProfileOptions { buildProfile = profile,
-                locationPathName = "../Builds/Soaring.apk", options = BuildOptions.Development });
+                locationPathName = "../Builds/Soaring-unity-sol-6.1.apk", options = BuildOptions.Development });
             CheckBuild(report, "Android");
         }
         finally { EditorUserBuildSettings.selectedBuildTargetGroup = previousGroup; }

@@ -17,12 +17,12 @@ With Unity closed, to rebuild or deliberately revisit the slice:
 ./scripts/run-simulator.sh        # Native app using installed Meta XR Simulator
 ./scripts/unity.sh full-world     # Enables complete 72-bird ecosystem in scene
 ./scripts/unity.sh build-mac
-./scripts/unity.sh build-android  # Builds/Soaring.apk
+./scripts/unity.sh build-android  # Builds/Soaring-unity-sol-6.1.apk
 ```
 
 Use `./scripts/unity.sh play` for Unity Editor Play in Meta XR Simulator. Only one simulator client should run. Select **Quest Pro** in the simulator Inputs device panel, then restart the player. The simulator runs the native Mac app; it does not execute the Android APK. The runtime marker `QUEST_BOOTSTRAP_XR_RUNNING` and both Quest Pro controller device lines establish XR connection, not a flat window alone.
 
-For a physical Quest with Developer Mode enabled and paired adb: `adb install -r Builds/Soaring.apk`. Application ID `com.soaring.sky`; development signing. No headset is required for the Mac simulator.
+For a physical Quest with Developer Mode enabled and paired adb: `adb install -r Builds/Soaring-unity-sol-6.1.apk`. Installed app name **Soaring Unity-Sol 6.1**, application ID `com.soaring.unitysol61`; development signing. No headset is required for the Mac simulator.
 
 ## Controls and calibration
 
