@@ -1,0 +1,83 @@
+{
+  "title": "Sol 6.1 · Unity",
+  "model": {
+    "id": "gpt-6.1-sol",
+    "name": "GPT-6.1 Sol",
+    "vendor": "OpenAI"
+  },
+  "harness": {
+    "name": "Codex",
+    "mode": "single agent"
+  },
+  "engine": {
+    "name": "Unity",
+    "version": "6000.6.4f1"
+  },
+  "prompt": "v2-unity",
+  "derived_from": null,
+  "started": "2026-10-02",
+  "status": "v1 with a polish pass, installed on a Quest Pro",
+  "summary": "Crown of the sky: flap to climb, fold to accelerate, spread to brake, bank by lowering a hand; golden prey and coral hunters, a 72-bird ecosystem and staged growth. Polished after your feedback, with an in-engine showcase video and an APK on the Quest Pro.",
+  "logs": {
+    "coverage": "complete",
+    "codex_cwds": [
+      "/Users/don/Projects/Soaring/soaring-unity-sol-6.1"
+    ]
+  },
+  "git_paths": [
+    "soaring-unity-sol-6.1"
+  ],
+  "milestones": [
+    {
+      "name": "Quest bootstrap example",
+      "at": "2026-10-02T20:37:00+02:00",
+      "source": "before the game brief (message 3); built references/unity-quest-bootstrap"
+    },
+    {
+      "name": "v1 delivered",
+      "at": "2026-10-02T23:38:00+02:00",
+      "headline": true,
+      "source": "before your polish feedback (message 4)"
+    },
+    {
+      "name": "polish pass",
+      "at": "2026-10-03T00:12:00+02:00",
+      "source": "before the showcase video request (message 5)"
+    }
+  ],
+  "code_exclude": [],
+  "media": [
+    {
+      "source": "project/Videos/Soaring-showcase.mp4",
+      "file": "showcase.mp4",
+      "caption": "Showcase video the agent captured and edited in-engine",
+      "poster_at": 3
+    },
+    {
+      "source": "project/docs/evidence/polish/01-home.png",
+      "file": "01-home.jpg",
+      "caption": "Home menu"
+    },
+    {
+      "source": "project/docs/evidence/polish/02b-how-to-fly.png",
+      "file": "02b-how-to-fly.jpg",
+      "caption": "How to fly"
+    },
+    {
+      "source": "project/docs/evidence/polish/04-flight.png",
+      "file": "04-flight.jpg",
+      "caption": "Flight"
+    },
+    {
+      "source": "project/docs/evidence/polish/05-growth.png",
+      "file": "05-growth.jpg",
+      "caption": "Growth"
+    },
+    {
+      "source": "project/docs/evidence/polish/08-apex-scale.png",
+      "file": "08-apex-scale.jpg",
+      "caption": "Apex bird scale"
+    }
+  ],
+  "notes": "The first thread built the Quest Bootstrap reference project, so the v1 phase includes it."
+}

@@ -1,0 +1,42 @@
+# v2 · Godot (rewritten from the Opus 5.5 retrospective)
+
+- Used by: no run yet
+- Source: the former prompt-claude-v2.md, which Opus 5.5 wrote when asked what it would change in v1.2 (runs/2026-09-25-godot-opus-5.5/human-messages.md, messages 11 and 12).
+
+---
+
+Build a VR game in Godot for Meta Quest: Gorilla Tag's body-driven movement meets agar.io's eat-or-be-eaten growth, as a bird. You fly with your arms, catch birds smaller than you, avoid bigger ones, and grow. As you grow, the world shrinks around you and your flight and goals change.
+
+## Feel (fun over realism)
+- **Flight is the core.** Flapping (the controllers) gives strong, immediate lift; Extending both wings works like angle of attack (extend: brief balloon, then slower; bringing wings closer: faster). Opposite hand lifts or one hand lower make a coordinated, banked turn.
+- Inspired by real aerodynamics, but **fun wins**. The player should feel fast and powerful, at least as fast and agile as NPC birds of the same size. Reaching high speed, accelerating and climbing should be easy; big flaps give big lift.
+- **Comfortable for minutes on end.** Gliding uses a relaxed pose (upper arms down, forearms out). Full extension is a momentary power move. Turning has a dead zone and a non-linear response. The camera never pitches or rolls from flight.
+- Updrafts lift you without flapping. Size changes handling: small is nimble, big is fast and heavy.
+
+## World and loop
+- Vast open air plus places that demand acrobatics: tree branches, power lines, open windows, tall buildings, nests with tight entrances, lots of opportunity for fly-through at high speed. Low-poly style. The arena is closed.
+- NPCs hunt smaller birds and flee bigger ones, including each other; the sky should feel alive in the player's view.
+- Plentiful easy food early. Being hunted happens regularly, is telegraphed and can be escaped. Growth shifts what is worth chasing.
+- Target pacing (adjustable): first growth within ~2 min, mid-size by ~5–8 min, apex by ~20–30 min, then an apex goal.
+- UI: menu, pause, restart, settings, a short how-to-fly, explicit prompted calibration, haptics. Include an **in-game developer/tuning menu** from day one for flight feel as getting the right flight feel without human feedback is almost impossible, therefore the developer menu needs to allow easy and broad experimentation of the flight feel nuances.
+
+## Approach
+- **Vertical slice first:** flight, a small arena and one catchable bird, installed on the Quest simulator.
+- Milestones, each with a few measurable acceptance criteria, a git commit and a short `docs/PROGRESS.md` update:
+  1. Flight slice on device.
+  2. World and NPC ecosystem.
+  3. Game loop and UI.
+  4. Polish and performance.
+- Use parallel work where areas are independent; keep one owner for anything that spans areas, like the core loop. Shared contracts go in a short architecture doc.
+- Verify with automated tests and screenshots wherever feasible, plus Meta XR Simulator runs.
+
+## Budget and stop rules
+- Do not chase perfection, but a high level of polish is expected. An area is done when its acceptance criteria pass and no critical, significant or medium issue remains; list the rest as known issues, but only if they are low severity.
+- Fix what a player would notice first.
+
+## Environment facts (macOS dev, Quest Pro target)
+- Godot 4.7.2 at `/opt/homebrew/bin/godot`, driven from the CLI. Pin `rendering_device/driver.macos="vulkan"`: the Meta XR Simulator is Vulkan-only. Use the Mobile renderer, MSAA 4x and `rendering/vrs/mode=2` so foveation works.
+- OpenXR vendors plugin ≥ 5.1.0 (3.1.2 breaks the Quest export). Install export templates that match the Godot version exactly. Android SDK and JDK 17 are set in the editor settings.
+- Meta XR Simulator: see `/Users/don/Projects/meta-demo`. The XR view reads back black, so capture with a mirror camera. Desktop screenshots need `--rendering-method forward_plus`: Mobile on MoltenVK shows fake magenta tiles. The simulator's controllers can be driven over its gRPC interface. Don't modify its settings files.
+- Parallel agents must not share one `.godot` cache; give each a sandbox copy and a private `user://`. Every background run needs a timeout.
+- Never scale the XR rig or its ancestors; grow with `XROrigin3D.world_scale`.

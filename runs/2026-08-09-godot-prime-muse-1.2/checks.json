@@ -1,0 +1,15 @@
+{
+  "checked": "2026-10-09T16:40:53+00:00",
+  "godot": "4.7.2.stable.official.ed1daf0bf",
+  "import": {
+    "ok": true,
+    "errors": 0,
+    "crashed_on_exit": false
+  },
+  "startup": {
+    "exit": 134,
+    "script_errors": 0,
+    "frames": 0
+  },
+  "captures": []
+}

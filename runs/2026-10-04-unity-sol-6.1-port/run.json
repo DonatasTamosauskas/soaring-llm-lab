@@ -1,0 +1,79 @@
+{
+  "title": "Sol 6.1 · Unity port of Opus 5.5",
+  "model": {
+    "id": "gpt-6.1-sol",
+    "name": "GPT-6.1 Sol",
+    "vendor": "OpenAI"
+  },
+  "harness": {
+    "name": "Codex",
+    "mode": "single agent"
+  },
+  "engine": {
+    "name": "Unity",
+    "version": "6000.6.4f1"
+  },
+  "prompt": "port-to-unity",
+  "derived_from": "2026-09-25-godot-opus-5.5",
+  "started": "2026-10-04",
+  "status": "port complete, compared with the original",
+  "summary": "A Unity 6.6 recreation of the Opus 5.5 Godot game, using its valley and species art. Then, on request, matched camera tours and paired screenshots of both engines, and an investigation of the Godot version's grey haze (fog).",
+  "logs": {
+    "coverage": "complete",
+    "codex_cwds": [
+      "/Users/don/Projects/Soaring/soaring-godot-claude-opus-5.5"
+    ]
+  },
+  "git_paths": [
+    "soaring-godot-claude-opus-5.5/unity"
+  ],
+  "milestones": [
+    {
+      "name": "port delivered",
+      "at": "2026-10-04T16:27:00+02:00",
+      "headline": true,
+      "source": "before you asked for comparisons (message 2)"
+    }
+  ],
+  "code_exclude": [],
+  "media": [
+    {
+      "source": "project/docs/comparison/raw/unity/menu.png",
+      "file": "menu.jpg",
+      "caption": "Main menu (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "project/docs/comparison/raw/unity/flight.png",
+      "file": "flight.jpg",
+      "caption": "First flight with a lesson card (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "project/docs/comparison/raw/unity/overview.png",
+      "file": "overview.jpg",
+      "caption": "The valley from above (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "project/docs/comparison/raw/unity/village.png",
+      "file": "village.jpg",
+      "caption": "Village (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "project/docs/comparison/raw/unity/lake.png",
+      "file": "lake.jpg",
+      "caption": "Lake (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "project/docs/comparison/unity-tour.mp4",
+      "file": "tour.mp4",
+      "caption": "20-second camera tour, same path as the Opus 5.5 tour",
+      "poster_at": 4
+    },
+    {
+      "source": "project/docs/comparison/side-by-side-tour.mp4",
+      "file": "side-by-side.mp4",
+      "caption": "Godot original and Unity port side by side",
+      "poster_at": 4
+    }
+  ],
+  "notes": ""
+}

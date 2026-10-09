@@ -1,0 +1,124 @@
+{
+  "generated": "2026-10-09T16:43:31Z",
+  "pricing_as_of": "2026-10-09",
+  "logs": {
+    "coverage": "partial",
+    "note": "The local transcript holds only 23 API calls over 8.5 hours, so most of the run's usage is missing.",
+    "tools": [
+      "Claude Code"
+    ],
+    "versions": [
+      "2.1.233",
+      "2.1.269"
+    ],
+    "efforts": [],
+    "settings": [
+      {
+        "at": "2026-09-11T22:21:44Z",
+        "text": "Set model to `Fable 5.1` and saved as your default for new sessions"
+      }
+    ],
+    "sessions": 3,
+    "threads": {
+      "main": 3,
+      "agent": 0
+    }
+  },
+  "phases": [
+    {
+      "name": "whole run",
+      "until": null,
+      "headline": false,
+      "api_calls": 23,
+      "tokens_by_model": {
+        "claude-fable-5-1": {
+          "input": 646,
+          "cache_write_5m": 0,
+          "cache_write_1h": 297160,
+          "cache_read": 2572338,
+          "output": 65455,
+          "reasoning": 0
+        }
+      },
+      "tokens": {
+        "input": 646,
+        "cache_write_5m": 0,
+        "cache_write_1h": 297160,
+        "cache_read": 2572338,
+        "output": 65455,
+        "reasoning": 0
+      },
+      "cost_usd": 9.87,
+      "cost_by_model": {
+        "claude-fable-5-1": 9.87
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-09-11T22:05:36Z",
+        "last_event": "2026-09-12T06:56:19Z",
+        "wall_clock_h": 8.85,
+        "active_h": 0.33,
+        "agent_h": 0.33,
+        "parallelism": 1.0
+      },
+      "human_messages": 1,
+      "interrupts": 0
+    }
+  ],
+  "code": {
+    "files_tracked": 69,
+    "bytes_tracked": 220806672,
+    "excluded": [
+      "addons/",
+      "android/",
+      ".godot/"
+    ],
+    "code": {
+      "game": {
+        "files": 10,
+        "loc": 676
+      },
+      "test": {
+        "files": 5,
+        "loc": 436
+      },
+      "tooling": {
+        "files": 0,
+        "loc": 0
+      }
+    },
+    "loc_by_language": {
+      "GDScript": 676
+    },
+    "tests_defined": 0,
+    "docs": {
+      "files": 3,
+      "lines": 231
+    },
+    "scene_data": {
+      "files": 3,
+      "bytes": 34515
+    },
+    "assets": {
+      "textures": {
+        "files": 1,
+        "bytes": 995
+      },
+      "models": {
+        "files": 0,
+        "bytes": 0
+      },
+      "audio": {
+        "files": 0,
+        "bytes": 0
+      },
+      "video": {
+        "files": 0,
+        "bytes": 0
+      }
+    }
+  },
+  "git": {
+    "commits": 0
+  }
+}

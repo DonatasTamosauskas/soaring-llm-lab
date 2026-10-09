@@ -1,0 +1,286 @@
+{
+  "generated": "2026-10-09T16:43:36Z",
+  "pricing_as_of": "2026-10-09",
+  "logs": {
+    "coverage": "complete",
+    "note": null,
+    "tools": [
+      "Codex"
+    ],
+    "versions": [
+      "0.159.0-alpha.12.1"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "settings": [],
+    "sessions": 2,
+    "threads": {
+      "main": 2,
+      "agent": 9
+    }
+  },
+  "phases": [
+    {
+      "name": "Quest bootstrap example",
+      "until": "2026-10-02T20:37:00+02:00",
+      "headline": false,
+      "api_calls": 153,
+      "tokens_by_model": {
+        "gpt-6.1-sol": {
+          "input": 348983,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 16672000,
+          "output": 42311,
+          "reasoning": 11217
+        },
+        "codex-auto-review": {
+          "input": 137413,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 1052416,
+          "output": 2926,
+          "reasoning": 1370
+        }
+      },
+      "tokens": {
+        "input": 486396,
+        "cache_write_5m": 0,
+        "cache_write_1h": 0,
+        "cache_read": 17724416,
+        "output": 45237,
+        "reasoning": 12587
+      },
+      "cost_usd": 3.2,
+      "cost_by_model": {
+        "gpt-6.1-sol": 2.79,
+        "codex-auto-review": 0.41
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-10-02T17:31:01Z",
+        "last_event": "2026-10-02T18:36:28Z",
+        "wall_clock_h": 1.09,
+        "active_h": 0.55,
+        "agent_h": 0.89,
+        "parallelism": 1.6
+      },
+      "human_messages": 2,
+      "interrupts": 0
+    },
+    {
+      "name": "v1 delivered",
+      "until": "2026-10-02T23:38:00+02:00",
+      "headline": true,
+      "api_calls": 346,
+      "tokens_by_model": {
+        "gpt-6.1-sol": {
+          "input": 767266,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 33452416,
+          "output": 146186,
+          "reasoning": 52791
+        },
+        "codex-auto-review": {
+          "input": 312581,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 2906624,
+          "output": 6241,
+          "reasoning": 2773
+        }
+      },
+      "tokens": {
+        "input": 1079847,
+        "cache_write_5m": 0,
+        "cache_write_1h": 0,
+        "cache_read": 36359040,
+        "output": 152427,
+        "reasoning": 55564
+      },
+      "cost_usd": 7.32,
+      "cost_by_model": {
+        "gpt-6.1-sol": 6.34,
+        "codex-auto-review": 0.98
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-10-02T17:31:01Z",
+        "last_event": "2026-10-02T21:15:54Z",
+        "wall_clock_h": 3.75,
+        "active_h": 1.15,
+        "agent_h": 2.22,
+        "parallelism": 1.94
+      },
+      "human_messages": 3,
+      "interrupts": 0
+    },
+    {
+      "name": "polish pass",
+      "until": "2026-10-03T00:12:00+02:00",
+      "headline": false,
+      "api_calls": 487,
+      "tokens_by_model": {
+        "gpt-6.1-sol": {
+          "input": 1025563,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 46304640,
+          "output": 212959,
+          "reasoning": 77793
+        },
+        "codex-auto-review": {
+          "input": 387636,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 3662080,
+          "output": 7673,
+          "reasoning": 3244
+        }
+      },
+      "tokens": {
+        "input": 1413199,
+        "cache_write_5m": 0,
+        "cache_write_1h": 0,
+        "cache_read": 49966720,
+        "output": 220632,
+        "reasoning": 81037
+      },
+      "cost_usd": 10.03,
+      "cost_by_model": {
+        "gpt-6.1-sol": 8.81,
+        "codex-auto-review": 1.22
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-10-02T17:31:01Z",
+        "last_event": "2026-10-02T21:56:18Z",
+        "wall_clock_h": 4.42,
+        "active_h": 1.43,
+        "agent_h": 3.22,
+        "parallelism": 2.24
+      },
+      "human_messages": 4,
+      "interrupts": 0
+    },
+    {
+      "name": "whole run",
+      "until": null,
+      "headline": false,
+      "api_calls": 575,
+      "tokens_by_model": {
+        "gpt-6.1-sol": {
+          "input": 1627240,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 54060160,
+          "output": 256044,
+          "reasoning": 97671
+        },
+        "codex-auto-review": {
+          "input": 518208,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 4250624,
+          "output": 8978,
+          "reasoning": 3797
+        }
+      },
+      "tokens": {
+        "input": 2145448,
+        "cache_write_5m": 0,
+        "cache_write_1h": 0,
+        "cache_read": 58310784,
+        "output": 265022,
+        "reasoning": 101468
+      },
+      "cost_usd": 12.77,
+      "cost_by_model": {
+        "gpt-6.1-sol": 11.22,
+        "codex-auto-review": 1.55
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-10-02T17:31:01Z",
+        "last_event": "2026-10-04T12:19:15Z",
+        "wall_clock_h": 42.8,
+        "active_h": 1.79,
+        "agent_h": 3.9,
+        "parallelism": 2.18
+      },
+      "human_messages": 8,
+      "interrupts": 1
+    }
+  ],
+  "code": {
+    "files_tracked": 230,
+    "bytes_tracked": 29750176,
+    "excluded": [
+      "Library/",
+      "Packages/",
+      "ProjectSettings/",
+      "UserSettings/",
+      "Assets/Samples/",
+      "Assets/VRTemplateAssets/",
+      "Assets/TextMesh Pro/",
+      "Assets/XR/",
+      "Assets/XRI/",
+      "Assets/CompositionLayers/",
+      "Assets/Oculus/",
+      "Assets/Plugins/"
+    ],
+    "code": {
+      "game": {
+        "files": 18,
+        "loc": 2220
+      },
+      "test": {
+        "files": 4,
+        "loc": 75
+      },
+      "tooling": {
+        "files": 7,
+        "loc": 634
+      }
+    },
+    "loc_by_language": {
+      "Shader": 76,
+      "C#": 2144
+    },
+    "tests_defined": 24,
+    "docs": {
+      "files": 5,
+      "lines": 142
+    },
+    "scene_data": {
+      "files": 15,
+      "bytes": 149745
+    },
+    "assets": {
+      "textures": {
+        "files": 45,
+        "bytes": 29068901
+      },
+      "models": {
+        "files": 0,
+        "bytes": 0
+      },
+      "audio": {
+        "files": 0,
+        "bytes": 0
+      },
+      "video": {
+        "files": 0,
+        "bytes": 0
+      }
+    }
+  },
+  "git": {
+    "commits": 7,
+    "first": "2026-10-02T22:52:27+02:00",
+    "last": "2026-10-04T14:05:28+02:00",
+    "span_h": 39.22
+  }
+}

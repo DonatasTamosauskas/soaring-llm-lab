@@ -19,3 +19,9 @@ build/
 
 # Whole-project zips made to move a build to another machine
 /*.zip
+
+# Archived agent logs (tools/lab archive): private and large, kept out of git
+/raw/
+
+# Python bytecode from tools/lab
+__pycache__/

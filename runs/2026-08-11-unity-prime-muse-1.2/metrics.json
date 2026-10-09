@@ -1,0 +1,83 @@
+{
+  "generated": "2026-10-09T16:43:31Z",
+  "pricing_as_of": "2026-10-09",
+  "logs": {
+    "coverage": "none",
+    "note": "No agent logs were kept for this run.",
+    "tools": [],
+    "versions": [],
+    "efforts": [],
+    "settings": [],
+    "sessions": 0,
+    "threads": {
+      "main": 0,
+      "agent": 0
+    }
+  },
+  "phases": [],
+  "code": {
+    "files_tracked": 1283,
+    "bytes_tracked": 94265596,
+    "excluded": [
+      "Library/",
+      "Packages/",
+      "ProjectSettings/",
+      "UserSettings/",
+      "Assets/Samples/",
+      "Assets/VRTemplateAssets/",
+      "Assets/TextMesh Pro/",
+      "Assets/XR/",
+      "Assets/XRI/",
+      "Assets/CompositionLayers/",
+      "Assets/Oculus/",
+      "Assets/Plugins/"
+    ],
+    "code": {
+      "game": {
+        "files": 12,
+        "loc": 1409
+      },
+      "test": {
+        "files": 0,
+        "loc": 0
+      },
+      "tooling": {
+        "files": 1,
+        "loc": 117
+      }
+    },
+    "loc_by_language": {
+      "C#": 1409
+    },
+    "tests_defined": 0,
+    "docs": {
+      "files": 0,
+      "lines": 0
+    },
+    "scene_data": {
+      "files": 11,
+      "bytes": 4339812
+    },
+    "assets": {
+      "textures": {
+        "files": 6,
+        "bytes": 6495708
+      },
+      "models": {
+        "files": 0,
+        "bytes": 0
+      },
+      "audio": {
+        "files": 0,
+        "bytes": 0
+      },
+      "video": {
+        "files": 0,
+        "bytes": 0
+      }
+    }
+  },
+  "git": {
+    "commits": 0
+  }
+}

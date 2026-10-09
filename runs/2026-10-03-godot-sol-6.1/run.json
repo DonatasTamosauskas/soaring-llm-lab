@@ -1,0 +1,72 @@
+{
+  "title": "Sol 6.1 · Godot",
+  "model": {
+    "id": "gpt-6.1-sol",
+    "name": "GPT-6.1 Sol",
+    "vendor": "OpenAI"
+  },
+  "harness": {
+    "name": "Codex",
+    "mode": "single agent"
+  },
+  "engine": {
+    "name": "Godot",
+    "version": "4.7.2"
+  },
+  "prompt": "v1.3-flight-ux",
+  "derived_from": null,
+  "started": "2026-10-03",
+  "status": "v1, installed on a Quest Pro",
+  "summary": "The Wild Sky: a flight sandbox with five size tiers, catching and evading in a low-poly valley with a town and nests. Verified in the Meta XR Simulator's Quest Pro profile, then installed on the Quest Pro.",
+  "logs": {
+    "coverage": "complete",
+    "codex_cwds": [
+      "/Users/don/Projects/Soaring/soaring-godot-sol-6.1"
+    ]
+  },
+  "git_paths": [
+    "soaring-godot-sol-6.1"
+  ],
+  "milestones": [
+    {
+      "name": "v1 delivered",
+      "at": "2026-10-04T14:04:00+02:00",
+      "headline": true,
+      "source": "before you asked to install it on the Quest Pro (message 2)"
+    }
+  ],
+  "code_exclude": [],
+  "media": [
+    {
+      "source": "project/artifacts/overview.png",
+      "file": "overview.jpg",
+      "caption": "Overview"
+    },
+    {
+      "source": "project/artifacts/flight.png",
+      "file": "flight.jpg",
+      "caption": "Flight"
+    },
+    {
+      "source": "project/artifacts/town.png",
+      "file": "town.jpg",
+      "caption": "Town"
+    },
+    {
+      "source": "project/artifacts/nest.png",
+      "file": "nest.jpg",
+      "caption": "Nest"
+    },
+    {
+      "source": "project/artifacts/xr-flight.png",
+      "file": "xr-flight.jpg",
+      "caption": "Flight in the simulator's headset view"
+    },
+    {
+      "source": "project/artifacts/xr-menu-spectator.png",
+      "file": "xr-menu-spectator.jpg",
+      "caption": "Menu, spectator view"
+    }
+  ],
+  "notes": ""
+}

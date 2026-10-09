@@ -1,0 +1,77 @@
+{
+  "generated": "2026-10-09T16:43:31Z",
+  "pricing_as_of": "2026-10-09",
+  "logs": {
+    "coverage": "none",
+    "note": "Claude Code deleted this run's transcripts after its default 30 days.",
+    "tools": [],
+    "versions": [],
+    "efforts": [],
+    "settings": [],
+    "sessions": 0,
+    "threads": {
+      "main": 0,
+      "agent": 0
+    }
+  },
+  "phases": [],
+  "code": {
+    "files_tracked": 175,
+    "bytes_tracked": 13061326,
+    "excluded": [
+      "addons/",
+      "android/",
+      ".godot/"
+    ],
+    "code": {
+      "game": {
+        "files": 43,
+        "loc": 13101
+      },
+      "test": {
+        "files": 31,
+        "loc": 7723
+      },
+      "tooling": {
+        "files": 1,
+        "loc": 70
+      }
+    },
+    "loc_by_language": {
+      "GDScript": 13101
+    },
+    "tests_defined": 0,
+    "docs": {
+      "files": 9,
+      "lines": 1410
+    },
+    "scene_data": {
+      "files": 4,
+      "bytes": 66101
+    },
+    "assets": {
+      "textures": {
+        "files": 1,
+        "bytes": 995
+      },
+      "models": {
+        "files": 0,
+        "bytes": 0
+      },
+      "audio": {
+        "files": 0,
+        "bytes": 0
+      },
+      "video": {
+        "files": 0,
+        "bytes": 0
+      }
+    }
+  },
+  "git": {
+    "commits": 11,
+    "first": "2026-08-12T17:44:51+02:00",
+    "last": "2026-08-14T16:33:07+02:00",
+    "span_h": 46.8
+  }
+}

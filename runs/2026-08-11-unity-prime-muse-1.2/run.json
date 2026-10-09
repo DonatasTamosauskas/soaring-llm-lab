@@ -1,0 +1,32 @@
+{
+  "title": "Prime Muse 1.2 · Unity",
+  "model": {
+    "id": "prime-muse-1.2",
+    "name": "Prime Muse 1.2",
+    "vendor": "unknown"
+  },
+  "harness": {
+    "name": "unknown",
+    "mode": "unknown"
+  },
+  "engine": {
+    "name": "Unity",
+    "version": "6000.5.7f1"
+  },
+  "prompt": "unity-mcp",
+  "derived_from": null,
+  "started": "2026-08-11",
+  "status": "flight prototype",
+  "summary": "Unity attempt driven through Unity MCP: wing-tracked flight controller, a procedurally built world, NPC birds with growth and a HUD. The world is set up by an editor script.",
+  "logs": {
+    "coverage": "none",
+    "note": "No agent logs were kept for this run."
+  },
+  "git_paths": [
+    "soaring-unity-prime-muse-1.2"
+  ],
+  "milestones": [],
+  "code_exclude": [],
+  "media": [],
+  "notes": "No screenshots exist yet and the Unity Library was cleared, so it needs a re-import before it can be captured."
+}

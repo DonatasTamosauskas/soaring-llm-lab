@@ -1,0 +1,177 @@
+{
+  "generated": "2026-10-09T16:43:36Z",
+  "pricing_as_of": "2026-10-09",
+  "logs": {
+    "coverage": "complete",
+    "note": null,
+    "tools": [
+      "Codex"
+    ],
+    "versions": [
+      "0.159.0-alpha.12.1"
+    ],
+    "efforts": [
+      "xhigh"
+    ],
+    "settings": [],
+    "sessions": 1,
+    "threads": {
+      "main": 1,
+      "agent": 9
+    }
+  },
+  "phases": [
+    {
+      "name": "v1 delivered",
+      "until": "2026-10-04T14:04:00+02:00",
+      "headline": true,
+      "api_calls": 473,
+      "tokens_by_model": {
+        "gpt-6.1-sol": {
+          "input": 1234764,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 41981824,
+          "output": 262316,
+          "reasoning": 101468
+        },
+        "codex-auto-review": {
+          "input": 443686,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 4165632,
+          "output": 8523,
+          "reasoning": 3036
+        }
+      },
+      "tokens": {
+        "input": 1678450,
+        "cache_write_5m": 0,
+        "cache_write_1h": 0,
+        "cache_read": 46147456,
+        "output": 270839,
+        "reasoning": 104504
+      },
+      "cost_usd": 10.68,
+      "cost_by_model": {
+        "gpt-6.1-sol": 9.29,
+        "codex-auto-review": 1.39
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-10-02T22:29:04Z",
+        "last_event": "2026-10-04T10:38:31Z",
+        "wall_clock_h": 36.16,
+        "active_h": 1.04,
+        "agent_h": 3.65,
+        "parallelism": 3.53
+      },
+      "human_messages": 1,
+      "interrupts": 0
+    },
+    {
+      "name": "whole run",
+      "until": null,
+      "headline": false,
+      "api_calls": 496,
+      "tokens_by_model": {
+        "gpt-6.1-sol": {
+          "input": 1405587,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 44359936,
+          "output": 272785,
+          "reasoning": 108452
+        },
+        "codex-auto-review": {
+          "input": 511102,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 4671232,
+          "output": 9322,
+          "reasoning": 3303
+        }
+      },
+      "tokens": {
+        "input": 1916689,
+        "cache_write_5m": 0,
+        "cache_write_1h": 0,
+        "cache_read": 49031168,
+        "output": 282107,
+        "reasoning": 111755
+      },
+      "cost_usd": 11.56,
+      "cost_by_model": {
+        "gpt-6.1-sol": 9.98,
+        "codex-auto-review": 1.58
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-10-02T22:29:04Z",
+        "last_event": "2026-10-04T12:10:04Z",
+        "wall_clock_h": 37.68,
+        "active_h": 1.13,
+        "agent_h": 3.81,
+        "parallelism": 3.37
+      },
+      "human_messages": 2,
+      "interrupts": 0
+    }
+  ],
+  "code": {
+    "files_tracked": 79,
+    "bytes_tracked": 43087987,
+    "excluded": [
+      "addons/",
+      "android/",
+      ".godot/"
+    ],
+    "code": {
+      "game": {
+        "files": 11,
+        "loc": 3076
+      },
+      "test": {
+        "files": 5,
+        "loc": 1070
+      },
+      "tooling": {
+        "files": 4,
+        "loc": 392
+      }
+    },
+    "loc_by_language": {
+      "GDScript": 3076
+    },
+    "tests_defined": 0,
+    "docs": {
+      "files": 3,
+      "lines": 128
+    },
+    "scene_data": {
+      "files": 3,
+      "bytes": 61763
+    },
+    "assets": {
+      "textures": {
+        "files": 13,
+        "bytes": 4087398
+      },
+      "models": {
+        "files": 0,
+        "bytes": 0
+      },
+      "audio": {
+        "files": 0,
+        "bytes": 0
+      },
+      "video": {
+        "files": 0,
+        "bytes": 0
+      }
+    }
+  },
+  "git": {
+    "commits": 0
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "generated": "2026-10-09T16:43:36Z",
+  "pricing_as_of": "2026-10-09",
+  "logs": {
+    "coverage": "complete",
+    "note": null,
+    "tools": [
+      "Codex"
+    ],
+    "versions": [
+      "0.159.0-alpha.12.1"
+    ],
+    "efforts": [
+      "xhigh"
+    ],
+    "settings": [],
+    "sessions": 1,
+    "threads": {
+      "main": 1,
+      "agent": 6
+    }
+  },
+  "phases": [
+    {
+      "name": "port delivered",
+      "until": "2026-10-04T16:27:00+02:00",
+      "headline": true,
+      "api_calls": 298,
+      "tokens_by_model": {
+        "gpt-6.1-sol": {
+          "input": 780764,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 37433344,
+          "output": 179740,
+          "reasoning": 87080
+        },
+        "codex-auto-review": {
+          "input": 283513,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 2016000,
+          "output": 4255,
+          "reasoning": 1544
+        }
+      },
+      "tokens": {
+        "input": 1064277,
+        "cache_write_5m": 0,
+        "cache_write_1h": 0,
+        "cache_read": 39449344,
+        "output": 183995,
+        "reasoning": 88624
+      },
+      "cost_usd": 7.91,
+      "cost_by_model": {
+        "gpt-6.1-sol": 7.1,
+        "codex-auto-review": 0.81
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-10-04T12:39:18Z",
+        "last_event": "2026-10-04T14:24:55Z",
+        "wall_clock_h": 1.76,
+        "active_h": 1.53,
+        "agent_h": 2.69,
+        "parallelism": 1.76
+      },
+      "human_messages": 1,
+      "interrupts": 0
+    },
+    {
+      "name": "whole run",
+      "until": null,
+      "headline": false,
+      "api_calls": 477,
+      "tokens_by_model": {
+        "gpt-6.1-sol": {
+          "input": 1607562,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 54743552,
+          "output": 301449,
+          "reasoning": 136811
+        },
+        "codex-auto-review": {
+          "input": 497480,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0,
+          "cache_read": 3719936,
+          "output": 7798,
+          "reasoning": 2862
+        }
+      },
+      "tokens": {
+        "input": 2105042,
+        "cache_write_5m": 0,
+        "cache_write_1h": 0,
+        "cache_read": 58463488,
+        "output": 309247,
+        "reasoning": 139673
+      },
+      "cost_usd": 13.14,
+      "cost_by_model": {
+        "gpt-6.1-sol": 11.7,
+        "codex-auto-review": 1.44
+      },
+      "unpriced_models": [],
+      "time": {
+        "first_event": "2026-10-04T12:39:18Z",
+        "last_event": "2026-10-05T09:49:06Z",
+        "wall_clock_h": 21.16,
+        "active_h": 2.7,
+        "agent_h": 4.44,
+        "parallelism": 1.64
+      },
+      "human_messages": 6,
+      "interrupts": 0
+    }
+  ],
+  "code": {
+    "files_tracked": 5006,
+    "bytes_tracked": 535183329,
+    "excluded": [
+      "Library/",
+      "Packages/",
+      "ProjectSettings/",
+      "UserSettings/",
+      "Assets/Samples/",
+      "Assets/VRTemplateAssets/",
+      "Assets/TextMesh Pro/",
+      "Assets/XR/",
+      "Assets/XRI/",
+      "Assets/CompositionLayers/",
+      "Assets/Oculus/",
+      "Assets/Plugins/"
+    ],
+    "code": {
+      "game": {
+        "files": 31,
+        "loc": 3613
+      },
+      "test": {
+        "files": 1,
+        "loc": 277
+      },
+      "tooling": {
+        "files": 26,
+        "loc": 1755
+      }
+    },
+    "loc_by_language": {
+      "C#": 3412,
+      "Shader": 201
+    },
+    "tests_defined": 21,
+    "docs": {
+      "files": 8,
+      "lines": 634
+    },
+    "scene_data": {
+      "files": 2273,
+      "bytes": 320339289
+    },
+    "assets": {
+      "textures": {
+        "files": 166,
+        "bytes": 102809772
+      },
+      "models": {
+        "files": 0,
+        "bytes": 0
+      },
+      "audio": {
+        "files": 34,
+        "bytes": 6059830
+      },
+      "video": {
+        "files": 6,
+        "bytes": 68338072
+      }
+    }
+  },
+  "git": {
+    "commits": 0
+  }
+}

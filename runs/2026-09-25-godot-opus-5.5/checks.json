@@ -1,0 +1,28 @@
+{
+  "checked": "2026-10-09T16:40:00+00:00",
+  "godot": "4.7.2.stable.official.ed1daf0bf",
+  "import": {
+    "ok": true,
+    "errors": 0,
+    "crashed_on_exit": false
+  },
+  "startup": {
+    "exit": 0,
+    "script_errors": 0,
+    "frames": 360
+  },
+  "captures": [
+    {
+      "file": "media/startup.mp4",
+      "caption": "First 12 s after launch: desktop window, XR off, no input"
+    },
+    {
+      "file": "media/startup-first.jpg",
+      "caption": "2 s after launch"
+    },
+    {
+      "file": "media/startup-end.jpg",
+      "caption": "12 s after launch"
+    }
+  ]
+}

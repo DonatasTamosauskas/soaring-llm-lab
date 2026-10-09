@@ -1,0 +1,14 @@
+# Commits that only moved, renamed or imported builds in this lab, not an agent's own work.
+# tools/lab skips them when counting a run's commits. Newer housekeeping commits carry a
+# "Lab-Housekeeping: <reason>" trailer instead of being listed here.
+a77450c  rename the projects after who built them
+9968d37  import the Prime Muse Unity build
+b959533  record prompts
+1868f56  fix a README path after the rename
+e4795ac  record prompts
+6844a2c  ignore rules
+fc3f899  record prompts
+f22f62a  import the Fable 5.1 build
+199f9e1  import the Sol 6.1 Godot build
+d7503ea  import the Quest Bootstrap reference
+fe5953e  import the Unity port of Opus 5.5

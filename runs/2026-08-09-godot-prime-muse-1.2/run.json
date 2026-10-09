@@ -1,0 +1,33 @@
+{
+  "title": "Prime Muse 1.2 · Godot",
+  "model": {
+    "id": "prime-muse-1.2",
+    "name": "Prime Muse 1.2",
+    "vendor": "unknown"
+  },
+  "harness": {
+    "name": "unknown",
+    "mode": "unknown"
+  },
+  "engine": {
+    "name": "Godot",
+    "version": "4.7.1"
+  },
+  "prompt": "prime-muse-godot",
+  "derived_from": null,
+  "started": "2026-08-09",
+  "status": "flight prototype",
+  "summary": "Flap, tilt and dive flight tuned in-engine, perches on branches, poles and wires, an NPC flock and growth by catching smaller birds. Godot 4.7.1 with Jolt physics; the agent reports it verified on a Quest Pro.",
+  "logs": {
+    "coverage": "none",
+    "note": "No agent logs were kept for this run."
+  },
+  "git_paths": [
+    "soaring",
+    "soaring-godot-prime-muse-1.2"
+  ],
+  "milestones": [],
+  "code_exclude": [],
+  "media": [],
+  "notes": "Its own README is the only record of how it was built; commits 0904a3c to 69aa505 are the agent's. The start-up capture has no frames: the desktop fallback still hands the main view to XR when OpenXR is present but not running (project/scripts/BirdPlayer.gd:85), so without a headset nothing is drawn."
+}

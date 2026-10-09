@@ -1,0 +1,78 @@
+{
+  "title": "Opus 5.5 · Godot",
+  "model": {
+    "id": "claude-opus-5-5",
+    "name": "Claude Opus 5.5",
+    "vendor": "Anthropic"
+  },
+  "harness": {
+    "name": "Claude Code",
+    "mode": "multi-agent workflows"
+  },
+  "engine": {
+    "name": "Godot",
+    "version": "4.7.2"
+  },
+  "prompt": "v1.2-combined",
+  "derived_from": null,
+  "started": "2026-09-25",
+  "status": "v1 playable, playtested on a Quest Pro",
+  "summary": "The whole brief: eight species from sparrow to eagle, a valley with village, forest, lake and canyon, an NPC food chain, lessons, menus, calibration and audio. Built by parallel area workflows with verification rounds; 14/14 simulator checks at about 72 fps on the Quest tier, then fixes from your first headset playtest. Became the golden build (github.com/DonatasTamosauskas/soaring).",
+  "logs": {
+    "coverage": "complete",
+    "claude_code_projects": [
+      "-Users-don-Projects-Soaring-soaring-godot-claude-opus-5-5"
+    ]
+  },
+  "git_paths": [
+    "soaring-godot-claude-opus-5.5"
+  ],
+  "milestones": [
+    {
+      "name": "v1 delivered",
+      "at": "2026-09-27T18:19:00+02:00",
+      "headline": true,
+      "source": "your message 10 asks to commit v1 and review the playtest notes"
+    },
+    {
+      "name": "playtest fixes",
+      "at": "2026-10-02T19:15:00+02:00",
+      "source": "last game work before your prompt retrospective (message 11)"
+    }
+  ],
+  "code_exclude": [],
+  "media": [
+    {
+      "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/menu.png",
+      "file": "menu.jpg",
+      "caption": "Main menu (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/flight.png",
+      "file": "flight.jpg",
+      "caption": "First flight with a lesson card (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/overview.png",
+      "file": "overview.jpg",
+      "caption": "The valley from above (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/village.png",
+      "file": "village.jpg",
+      "caption": "Village (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/lake.png",
+      "file": "lake.jpg",
+      "caption": "Lake (matched camera position, captured by Sol 6.1 for the port comparison)"
+    },
+    {
+      "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/godot-tour.mp4",
+      "file": "tour.mp4",
+      "caption": "20-second camera tour (recorded by Sol 6.1 for the port comparison)",
+      "poster_at": 4
+    }
+  ],
+  "notes": "After the game work you used the same session to write the v2 prompt (prompts/v2-godot.md); that part counts in the whole run only. Message 9 shows you ran it on a subscription that was 93% used up."
+}

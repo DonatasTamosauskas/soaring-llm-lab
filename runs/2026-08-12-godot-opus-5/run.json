@@ -1,0 +1,32 @@
+{
+  "title": "Opus 5 · Godot",
+  "model": {
+    "id": "claude-opus-5",
+    "name": "Claude Opus 5",
+    "vendor": "Anthropic"
+  },
+  "harness": {
+    "name": "Claude Code",
+    "mode": "single agent"
+  },
+  "engine": {
+    "name": "Godot",
+    "version": "4.7"
+  },
+  "prompt": "v1",
+  "derived_from": null,
+  "started": "2026-08-12",
+  "status": "v1, ran on a Quest Pro",
+  "summary": "A real lift/drag flight model (energy conserved within 2% in tests), a rank ladder from hunter to sovereign, arena world, ecosystem and UI. Ran on a Quest Pro, GPU-bound; a Quest visibility bug was parked mid-run.",
+  "logs": {
+    "coverage": "none",
+    "note": "Claude Code deleted this run's transcripts after its default 30 days."
+  },
+  "git_paths": [
+    "soaring-godot-claude-opus-5"
+  ],
+  "milestones": [],
+  "code_exclude": [],
+  "media": [],
+  "notes": "Mid-run you redirected it: park the visibility bug, then an ultracode pass over every area (see your messages)."
+}

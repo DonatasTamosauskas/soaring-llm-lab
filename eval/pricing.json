@@ -1,0 +1,29 @@
+{
+  "currency": "USD",
+  "unit": "per million tokens",
+  "as_of": "2026-10-09",
+  "note": "List prices for standard API use. A subscription (Claude Max, a ChatGPT plan) bills differently, so every cost in this lab is an API-equivalent estimate. Cache writes are 1.25x input for a 5-minute cache and 2x for a 1-hour cache.",
+  "models": {
+    "claude-opus-5-5": {
+      "input": 4.0, "cache_write_5m": 5.0, "cache_write_1h": 8.0, "cache_read": 0.2, "output": 20.0,
+      "source": "Anthropic API price list (claude-api reference, cached 2026-10-06)"
+    },
+    "claude-fable-5-1": {
+      "input": 10.0, "cache_write_5m": 12.5, "cache_write_1h": 20.0, "cache_read": 0.25, "output": 50.0,
+      "source": "Anthropic API price list (claude-api reference, cached 2026-10-06)"
+    },
+    "claude-opus-5": {
+      "input": 5.0, "cache_write_5m": 6.25, "cache_write_1h": 10.0, "cache_read": 0.5, "output": 25.0,
+      "source": "Anthropic API price list (claude-api reference, cached 2026-10-06); cache read at the standard 0.1x of input"
+    },
+    "gpt-6.1-sol": {
+      "input": 2.0, "cache_write_5m": 2.5, "cache_write_1h": 2.5, "cache_read": 0.1, "output": 10.0,
+      "source": "Third-party summaries of OpenAI's price list (eesel.ai, anotherwrapper.com, read 2026-10-09); check https://developers.openai.com/api/docs/pricing",
+      "note": "Prompts over 272K tokens are billed at a higher tier, which is not modelled, so Codex costs are a lower bound."
+    },
+    "codex-auto-review": {
+      "same_as": "gpt-6.1-sol",
+      "note": "Codex's automatic review threads. Their model's price is not published; priced as gpt-6.1-sol."
+    }
+  }
+}

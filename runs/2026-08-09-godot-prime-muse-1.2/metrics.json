@@ -1,0 +1,77 @@
+{
+  "generated": "2026-10-09T16:43:31Z",
+  "pricing_as_of": "2026-10-09",
+  "logs": {
+    "coverage": "none",
+    "note": "No agent logs were kept for this run.",
+    "tools": [],
+    "versions": [],
+    "efforts": [],
+    "settings": [],
+    "sessions": 0,
+    "threads": {
+      "main": 0,
+      "agent": 0
+    }
+  },
+  "phases": [],
+  "code": {
+    "files_tracked": 55,
+    "bytes_tracked": 220855939,
+    "excluded": [
+      "addons/",
+      "android/",
+      ".godot/"
+    ],
+    "code": {
+      "game": {
+        "files": 6,
+        "loc": 1536
+      },
+      "test": {
+        "files": 1,
+        "loc": 229
+      },
+      "tooling": {
+        "files": 0,
+        "loc": 0
+      }
+    },
+    "loc_by_language": {
+      "GDScript": 1536
+    },
+    "tests_defined": 0,
+    "docs": {
+      "files": 1,
+      "lines": 126
+    },
+    "scene_data": {
+      "files": 6,
+      "bytes": 69653
+    },
+    "assets": {
+      "textures": {
+        "files": 1,
+        "bytes": 995
+      },
+      "models": {
+        "files": 0,
+        "bytes": 0
+      },
+      "audio": {
+        "files": 0,
+        "bytes": 0
+      },
+      "video": {
+        "files": 0,
+        "bytes": 0
+      }
+    }
+  },
+  "git": {
+    "commits": 3,
+    "first": "2026-08-09T18:48:45+02:00",
+    "last": "2026-08-09T20:53:31+02:00",
+    "span_h": 2.08
+  }
+}

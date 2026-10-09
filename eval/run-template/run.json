@@ -1,0 +1,25 @@
+{
+  "title": "<Model> · <Engine>",
+  "model": {"id": "<API model id, as priced in eval/pricing.json>", "name": "<display name>", "vendor": "<vendor>"},
+  "harness": {"name": "<Claude Code | Codex | ...>", "mode": "<single agent | multi-agent workflows>"},
+  "engine": {"name": "<Godot | Unity>", "version": "<exact version>"},
+  "prompt": "<file name in prompts/, without .md>",
+  "derived_from": null,
+  "started": "<yyyy-mm-dd>",
+  "status": "<one line: how far it got>",
+  "summary": "<two or three sentences: what the build is>",
+  "logs": {
+    "coverage": "complete",
+    "claude_code_projects": ["<folder name under ~/.claude/projects for runs/<run>/project>"],
+    "codex_cwds": ["<absolute path of runs/<run>/project>"]
+  },
+  "git_paths": [],
+  "milestones": [
+    {"name": "v1 delivered", "at": "<ISO time just before your first request that is not part of the brief>", "headline": true, "source": "<why this time>"}
+  ],
+  "code_exclude": [],
+  "media": [
+    {"source": "project/<path to a screenshot or video>", "file": "<name>.jpg", "caption": "<what it shows>"}
+  ],
+  "notes": ""
+}

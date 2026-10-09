@@ -1,0 +1,35 @@
+{
+  "title": "Fable 5.1 · Godot",
+  "model": {
+    "id": "claude-fable-5-1",
+    "name": "Claude Fable 5.1",
+    "vendor": "Anthropic"
+  },
+  "harness": {
+    "name": "Claude Code",
+    "mode": "single agent"
+  },
+  "engine": {
+    "name": "Godot",
+    "version": "4.7.2"
+  },
+  "prompt": "v1.1",
+  "derived_from": null,
+  "started": "2026-09-12",
+  "status": "paused after session 1",
+  "summary": "XR bootstrap verified against the Meta XR Simulator and a tested flight core (lift/drag, stall, tuck, wingbeats, size scaling). Paused at your request after one 8.5-hour session, before the world and game loop.",
+  "logs": {
+    "coverage": "partial",
+    "claude_code_projects": [
+      "-Users-don-Projects-Soaring-soaring-godot-claude-fable-5-1"
+    ],
+    "note": "The local transcript holds only 23 API calls over 8.5 hours, so most of the run's usage is missing."
+  },
+  "git_paths": [
+    "soaring-godot-claude-fable-5.1"
+  ],
+  "milestones": [],
+  "code_exclude": [],
+  "media": [],
+  "notes": ""
+}
