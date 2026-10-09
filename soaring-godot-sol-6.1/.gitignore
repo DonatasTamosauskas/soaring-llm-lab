@@ -1,0 +1,7 @@
+.godot/
+android/
+*.apk
+*.pck
+*.zip
+artifacts/*.log
+artifacts/*.json
