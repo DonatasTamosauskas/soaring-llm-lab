@@ -17,7 +17,7 @@
   "derived_from": null,
   "started": "2026-09-12",
   "status": "paused after session 1",
-  "summary": "XR bootstrap verified against the Meta XR Simulator and a tested flight core (lift/drag, stall, tuck, wingbeats, size scaling). Paused at your request after one 8.5-hour session, before the world and game loop.",
+  "summary": "XR bootstrap verified against the Meta XR Simulator and a tested flight core (lift/drag, stall, tuck, wingbeats, size scaling). Paused on request after one 8.5-hour session, before the world and game loop.",
   "logs": {
     "coverage": "partial",
     "claude_code_projects": [

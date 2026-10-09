@@ -17,7 +17,7 @@
   "derived_from": null,
   "started": "2026-09-25",
   "status": "v1 playable, playtested on a Quest Pro",
-  "summary": "The whole brief: eight species from sparrow to eagle, a valley with village, forest, lake and canyon, an NPC food chain, lessons, menus, calibration and audio. Built by parallel area workflows with verification rounds; 14/14 simulator checks at about 72 fps on the Quest tier, then fixes from your first headset playtest. Became the golden build (github.com/DonatasTamosauskas/soaring).",
+  "summary": "The whole brief: eight species from sparrow to eagle, a valley with village, forest, lake and canyon, an NPC food chain, lessons, menus, calibration and audio. Built by parallel area workflows with verification rounds; 14/14 simulator checks at about 72 fps on the Quest tier, then fixes from the first headset playtest. Became the golden build (github.com/DonatasTamosauskas/soaring).",
   "logs": {
     "coverage": "complete",
     "claude_code_projects": [
@@ -41,31 +41,32 @@
     }
   ],
   "code_exclude": [],
+  "cover": "flight.jpg",
   "media": [
     {
       "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/menu.png",
       "file": "menu.jpg",
-      "caption": "Main menu (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "Main menu, from the camera positions Sol 6.1 used for the port comparison"
     },
     {
       "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/flight.png",
       "file": "flight.jpg",
-      "caption": "First flight with a lesson card (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "First flight with a lesson card"
     },
     {
       "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/overview.png",
       "file": "overview.jpg",
-      "caption": "The valley from above (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "The valley from above"
     },
     {
       "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/village.png",
       "file": "village.jpg",
-      "caption": "Village (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "Village"
     },
     {
       "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/raw/godot/lake.png",
       "file": "lake.jpg",
-      "caption": "Lake (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "Lake"
     },
     {
       "source": "../2026-10-04-unity-sol-6.1-port/project/docs/comparison/godot-tour.mp4",
@@ -74,5 +75,5 @@
       "poster_at": 4
     }
   ],
-  "notes": "After the game work you used the same session to write the v2 prompt (prompts/v2-godot.md); that part counts in the whole run only. Message 9 shows you ran it on a subscription that was 93% used up."
+  "notes": "After the game work the same session was used to write the v2 prompt (prompts/v2-godot.md); that part counts in the whole run only. Message 9 shows it ran on a subscription that was 93% used up."
 }

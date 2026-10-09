@@ -55,9 +55,9 @@ says so in the "Measured up to" column. A run without one is compared on its who
 - Runs without logs show the span from the agent's first to last commit, marked "(commits)": a
   rough lower bound.
 
-## Your involvement
+## Human involvement
 
-- **Your messages**: messages you typed. Claude Code marks them (`origin: human`); older entries
+- **Human messages**: messages you, the person running the experiment, typed. Claude Code marks them (`origin: human`); older entries
   are told apart from command output, notifications and tool results by their markers. In Codex,
   user-role entries the app injects (environment, open page, in-app browser state) are dropped and
   the text after a browser-state block is kept. Prompts between agents never count.

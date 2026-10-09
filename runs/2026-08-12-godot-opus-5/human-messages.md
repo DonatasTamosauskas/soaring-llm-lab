@@ -1,4 +1,4 @@
-# Your messages: Opus 5 · Godot
+# Human messages: Opus 5 · Godot
 
 Claude Code deleted this run's transcripts, so this is reconstructed from the former prompt-claude.md, where the brief (prompts/v1.md) was followed by this message given mid-run (commit b959533: it "parked the Quest visibility bug and set the ultracode pass over world, art, assets, game loop, enemy AI, UI and VR interaction"). Its exact time is not known; commit 21b03d0 (2026-08-12 23:54, "Park the Quest visibility bug and revert the speculative fixes") follows it.
 

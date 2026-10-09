@@ -36,31 +36,32 @@
     }
   ],
   "code_exclude": [],
+  "cover": "flight.jpg",
   "media": [
     {
       "source": "project/docs/comparison/raw/unity/menu.png",
       "file": "menu.jpg",
-      "caption": "Main menu (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "Main menu, from the same camera position as the Godot original"
     },
     {
       "source": "project/docs/comparison/raw/unity/flight.png",
       "file": "flight.jpg",
-      "caption": "First flight with a lesson card (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "First flight with a lesson card"
     },
     {
       "source": "project/docs/comparison/raw/unity/overview.png",
       "file": "overview.jpg",
-      "caption": "The valley from above (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "The valley from above"
     },
     {
       "source": "project/docs/comparison/raw/unity/village.png",
       "file": "village.jpg",
-      "caption": "Village (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "Village"
     },
     {
       "source": "project/docs/comparison/raw/unity/lake.png",
       "file": "lake.jpg",
-      "caption": "Lake (matched camera position, captured by Sol 6.1 for the port comparison)"
+      "caption": "Lake"
     },
     {
       "source": "project/docs/comparison/unity-tour.mp4",

@@ -11,6 +11,7 @@ on:
       - "runs/*/*.md"
       - "runs/*/media/**"
       - "prompts/**"
+      - "report/fonts/**"
       - "tools/lab/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -39,6 +40,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /tools/lab/
+            /report/fonts/
             /prompts/
             /runs/*/*.json
             /runs/*/*.md

@@ -26,3 +26,9 @@ build/
 # Python bytecode from tools/lab
 __pycache__/
 /_site/
+
+# impeccable (design skill, installed with `npx impeccable install --scope=project`): its engine
+# binary is fetched by the launcher on first use, and local settings hold this machine's hooks
+/.claude/skills/impeccable/scripts/bin/
+/.claude/settings.local.json
+/.impeccable/config.local.json

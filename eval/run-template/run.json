@@ -18,6 +18,7 @@
     {"name": "v1 delivered", "at": "<ISO time just before your first request that is not part of the brief>", "headline": true, "source": "<why this time>"}
   ],
   "code_exclude": [],
+  "cover": "<optional: the file under media/ that stands for this run in the report>",
   "media": [
     {"source": "project/<path to a screenshot or video>", "file": "<name>.jpg", "caption": "<what it shows>"}
   ],

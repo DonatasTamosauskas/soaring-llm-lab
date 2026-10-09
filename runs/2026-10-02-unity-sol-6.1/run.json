@@ -17,7 +17,7 @@
   "derived_from": null,
   "started": "2026-10-02",
   "status": "v1 with a polish pass, installed on a Quest Pro",
-  "summary": "Crown of the sky: flap to climb, fold to accelerate, spread to brake, bank by lowering a hand; golden prey and coral hunters, a 72-bird ecosystem and staged growth. Polished after your feedback, with an in-engine showcase video and an APK on the Quest Pro.",
+  "summary": "Crown of the sky: flap to climb, fold to accelerate, spread to brake, bank by lowering a hand; golden prey and coral hunters, a 72-bird ecosystem and staged growth. Polished after playtest feedback, with an in-engine showcase video and an APK on the Quest Pro.",
   "logs": {
     "coverage": "complete",
     "codex_cwds": [
@@ -46,6 +46,7 @@
     }
   ],
   "code_exclude": [],
+  "cover": "04-flight.jpg",
   "media": [
     {
       "source": "project/Videos/Soaring-showcase.mp4",
