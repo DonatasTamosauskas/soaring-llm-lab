@@ -46,6 +46,14 @@
     }
   ],
   "code_exclude": [],
+  "apk": {
+    "source": "project/Builds/Soaring-unity-sol-6.1.apk",
+    "package": "com.soaring.unitysol61",
+    "version": "0.1.0",
+    "label": "Soaring Unity-Sol 6.1",
+    "bytes": 52476787,
+    "built": "2026-10-04 14:04"
+  },
   "cover": "04-flight.jpg",
   "media": [
     {

@@ -8,6 +8,8 @@
     python3 tools/lab all [RUN ...]       archive, media, collect, then report
     python3 tools/lab site DIR            the report as a static site in DIR: index.html plus media
                                           (GitHub Pages builds it this way, .github/workflows/pages.yml)
+    python3 tools/lab apks [--dry-run] [RUN ...]   upload the runs' APKs (run.json "apk") to the
+                                          "apks" GitHub release; --dry-run prints the release notes
     python3 tools/lab new RUN             start runs/RUN/ from the template
 
 RUN is a folder name under runs/; without one, every run is processed.
@@ -19,6 +21,7 @@ import re
 import shutil
 import sys
 
+import apks
 import codestats
 import common
 import logs
@@ -86,6 +89,10 @@ def main(argv):
     if cmd == "report":
         print(f"report: {report.build()} runs")
         return
+    if cmd == "apks":
+        print("apks:")
+        dry = "--dry-run" in args
+        return apks.publish(common.run_ids([a for a in args if a != "--dry-run"]), dry_run=dry)
     if cmd == "site":
         if len(args) != 1:
             raise SystemExit("usage: python3 tools/lab site <output dir>")

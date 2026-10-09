@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 
+import apks
 import common
 import media
 
@@ -500,7 +501,7 @@ def dl(facts, cls):
     return f'<dl class="{cls}">' + "".join(f"<div><dt>{esc(k)}</dt><dd>{v}</dd></div>" for k, v in facts) + "</dl>"
 
 
-def facts_html(r):
+def facts_html(r, links):
     """(the key facts, the detail behind "Tokens, files and milestones")"""
     metrics, total, partial = r["metrics"], r["total"], r["coverage"] == "partial"
     logs, code, git = metrics.get("logs") or {}, metrics.get("code"), metrics.get("git") or {}
@@ -550,10 +551,18 @@ def facts_html(r):
         if git.get("commits"):
             files += f'; {plural(git["commits"], "commit")} by the agent'
         more.append(("Files", files))
-    imp = r["checks"].get("import")
+    apk = r["run"].get("apk") or {}
+    if apk.get("bytes") and links.repo:
+        named = f', shows as “{esc(apk["label"])}”' if apk.get("label") else ""
+        facts.append(("On a Quest", f'<a href="{esc(apks.asset_url(links.repo, r["id"]))}">Download the APK</a> '
+                                    f'({size(apk["bytes"])}{named}) · <a href="{esc(apks.release_url(links.repo))}">how to install</a>'))
+    checks = r["checks"]
+    imp = checks.get("import")
     if imp:
-        godot = "Godot " + r["checks"].get("godot", "").split(".stable")[0]
-        facts.append(("Automated check", f'{checks_html(r["checks"])}<span class="sub">imported and launched in {esc(godot)}</span>'))
+        engine = ("Godot " + checks["godot"].split(".stable")[0] if checks.get("godot")
+                  else "Unity " + checks["unity"] if checks.get("unity") else r["run"]["engine"]["name"])
+        upgraded = f", upgraded from {imp['upgraded_from']}" if imp.get("upgraded_from") else ""
+        facts.append(("Automated check", f'{checks_html(checks)}<span class="sub">imported and launched in {esc(engine)}{esc(upgraded)}</span>'))
     else:
         reason = "Unity builds need a re-import first" if r["run"]["engine"]["name"] == "Unity" else "no capture yet"
         facts.append(("Automated check", f'{checks_html(r["checks"])}<span class="sub">{esc(reason)}</span>'))
@@ -618,7 +627,7 @@ def entry_html(r, links, titles):
     if review_written(os.path.join(base, "review.md")):
         links_html.append(f'<a href="{esc(links.source(rel + "/review.md"))}">Playtest review</a>')
     links_html += [f'<a href="{esc(links.source(rel + "/run.json"))}">run.json</a>', '<a href="#glance">Back to the table</a>']
-    facts, more = facts_html(r)
+    facts, more = facts_html(r, links)
     settings_html = f'<p class="note">Settings changed during the run: {esc("; ".join(settings))}.</p>' if settings else ""
     inner = more + phases_html(r) + settings_html
     details = f'<details class="more"><summary>Tokens, files and milestones</summary>{inner}</details>' if inner else ""
@@ -702,6 +711,13 @@ def site_url(repo):
     return f"https://{owner.lower()}.github.io/{name}/"
 
 
+def install_html(installable, links):
+    if not installable or not links.repo:
+        return ""
+    return (f'<p class="table-note">{words(len(installable)).capitalize()} builds can be installed on a Meta Quest in developer '
+            f'mode: <a href="{esc(apks.release_url(links.repo))}">download the APKs</a>, each as its agent built it.</p>')
+
+
 def excluded_html(rows, links):
     return "".join(f'<p class="table-note">Not compared: <a href="{esc(links.source("runs/" + r["id"], folder=True))}">'
                    f'{esc(r["run"]["title"])}</a>. {esc(r["excluded"])}</p>' for r in rows if r["excluded"])
@@ -721,7 +737,9 @@ def render_html(rows, links):
                   f'<meta property="og:url" content="{esc(site_url(links.repo))}">'
                   + (f'<meta property="og:image" content="{esc(site_url(links.repo) + "runs/" + image[0] + "/" + image[1])}">'
                      '<meta name="twitter:card" content="summary_large_image">' if image else ""))
-    repo = f'<li><a href="{esc(links.repo)}">Source on GitHub</a></li>' if links.repo else ""
+    installable = [r for r in rows if (r["run"].get("apk") or {}).get("bytes")]
+    repo = (f'<li><a href="{esc(apks.release_url(links.repo))}">Install on a Quest</a></li>' if installable and links.repo else "") + \
+           (f'<li><a href="{esc(links.repo)}">Source on GitHub</a></li>' if links.repo else "")
     source = f' <a href="{esc(links.repo)}">Source, data and method on GitHub</a>.' if links.repo else ""
     method = esc(links.source("eval/METHOD.md"))
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -750,7 +768,7 @@ the brief. This is not a ranking: briefs, tools and steering differ, and no buil
 <p class="table-note">Costs are estimates at API list prices, not what a subscription billed. “≥” marks a lower bound: the
 log covers only part of the session, or the tool's pricing is not fully modelled (Codex). “No logs” means none survive.
 <a href="#method">How each number is measured</a>.</p>
-{excluded_html(every, links)}
+{install_html(installable, links)}{excluded_html(every, links)}
 </div></section>
 <section id="builds"><div class="wrap">
 <h2>The builds</h2>

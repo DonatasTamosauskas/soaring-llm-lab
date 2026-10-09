@@ -31,6 +31,10 @@ https://donatastamosauskas.github.io/soaring-llm-lab/. GitHub Pages rebuilds it 
 data on every push to `main` ([pages.yml](.github/workflows/pages.yml)); in a clone, open
 `report/index.html`.
 
+**Play them:** the builds that left an APK can be sideloaded on a Meta Quest in developer mode. The
+[APKs and install steps](https://github.com/DonatasTamosauskas/soaring-llm-lab/releases/tag/apks) are
+on one release, each exactly as its agent built it.
+
 ## Layout
 
 ```
@@ -64,7 +68,9 @@ raw/            archived agent logs (not in git: private and large)
    `"headline": true`, the moment before your first request that goes beyond the brief.
 5. Pick media in `run.json`, and a `cover` among them for the report, then
    `python3 tools/lab all`, and for Godot builds `tools/capture_godot.sh <run>`.
-6. Play it and fill in `review.md`.
+6. If the agent built an APK, name it in `run.json` (`"apk": {"source": "project/<path>.apk"}`)
+   and run `python3 tools/lab apks` to add it to the release.
+7. Play it and fill in `review.md`.
 
 ## Keeping it current
 

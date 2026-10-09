@@ -27,6 +27,14 @@
   ],
   "milestones": [],
   "code_exclude": [],
+  "apk": {
+    "source": "project/build/Soaring.apk",
+    "package": "com.soaring.opus5",
+    "version": "1.0",
+    "label": "Soaring",
+    "bytes": 85924497,
+    "built": "2026-08-14 16:31"
+  },
   "media": [],
   "notes": "Mid-run the human redirected it: park the visibility bug, then an ultracode pass over every area (see the human messages)."
 }

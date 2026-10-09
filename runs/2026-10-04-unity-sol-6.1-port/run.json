@@ -36,6 +36,14 @@
     }
   ],
   "code_exclude": [],
+  "apk": {
+    "source": "project/Builds/Soaring.apk",
+    "package": "com.soaring.unity",
+    "version": "1.0",
+    "label": "Soaring",
+    "bytes": 135013430,
+    "built": "2026-10-04 17:36"
+  },
   "cover": "flight.jpg",
   "media": [
     {

@@ -36,6 +36,14 @@
     }
   ],
   "code_exclude": [],
+  "apk": {
+    "source": "project/artifacts/soaring-godot-sol-quest.apk",
+    "package": "com.soaring.godotsol",
+    "version": "1.0.0",
+    "label": "Soaring godot-sol",
+    "bytes": 89871439,
+    "built": "2026-10-04 14:05"
+  },
   "cover": "flight.jpg",
   "media": [
     {

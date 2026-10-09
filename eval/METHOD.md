@@ -95,6 +95,8 @@ Measured on the files git tracks in `project/`, so ignored build output never co
   presents on launch, not gameplay. See [capture-protocol.md](capture-protocol.md).
 - **Chosen media**: screenshots and videos the agents made, listed in `run.json` and converted by
   `tools/lab media` to JPEG (≤1600 px wide) and H.264 MP4 (≤720 px high).
+- **APKs**: the APK each agent built, unchanged, is an asset of the `apks` GitHub release
+  (`tools/lab apks`); `run.json` records its package, app name, size and build time.
 
 ## Comparability: read before ranking
 
