@@ -104,7 +104,10 @@ Measured on the files git tracks in `project/`, so ignored build output never co
   single-agent Codex (Sol 6.1). Settings are recorded per run.
 - **Your steering differs**: count and read `human-messages.md`.
 - **Logs are missing** for Opus 5 (deleted by Claude Code after 30 days) and both Prime Muse runs
-  (never kept); Fable 5.1's local log covers only 23 API calls of an 8.5-hour session.
+  (never kept).
+- **Left out**: a run whose `run.json` has `"excluded": "<reason>"` stays in `runs/` but is not
+  compared; the reason shows under the tables. Fable 5.1 is left out: it was paused after one
+  session, before the world and game loop, and its local log covers only 23 API calls of 8.5 hours.
 - **Not yet verified**: Unity builds have no automated import check or start-up capture yet
   (their Library folders were cleared and need a re-import), and no build has a standard gameplay
   capture or a playtest score yet.

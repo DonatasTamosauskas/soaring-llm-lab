@@ -17,6 +17,7 @@
   "derived_from": null,
   "started": "2026-09-12",
   "status": "paused after session 1",
+  "excluded": "Paused after one 8.5-hour session, before the world and game loop, so it never became a playable build; only 23 API calls of its log survive.",
   "summary": "XR bootstrap verified against the Meta XR Simulator and a tested flight core (lift/drag, stall, tuck, wingbeats, size scaling). Paused on request after one 8.5-hour session, before the world and game loop.",
   "logs": {
     "coverage": "partial",
