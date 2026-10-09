@@ -111,11 +111,15 @@ def git_activity(run_id, run):
     """The agent's commits in this repo: those touching the run's current or earlier paths,
     minus housekeeping (listed in eval/housekeeping-commits.txt or marked with a trailer)."""
     paths = [os.path.join("runs", run_id, "project")] + run.get("git_paths", [])
-    log = common.git("log", f"--format=%H%x09%aI%x09%(trailers:key={HOUSEKEEPING_TRAILER},valueonly)", "--", *paths)
+    # One record per commit (\x1e-separated): the trailer value can span lines.
+    log = common.git("log", f"--format=%H%x1f%aI%x1f%(trailers:key={HOUSEKEEPING_TRAILER},valueonly)%x1e", "--", *paths)
     skip = _housekeeping()
     commits = []
-    for line in log.splitlines():
-        sha, when, trailer = (line.split("\t") + ["", ""])[:3]
+    for record in log.split("\x1e"):
+        fields = record.strip().split("\x1f")
+        if len(fields) < 2:
+            continue
+        sha, when, trailer = (fields + [""])[:3]
         if trailer.strip() or any(sha.startswith(s) for s in skip):
             continue
         commits.append(when)
