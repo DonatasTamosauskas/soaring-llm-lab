@@ -44,7 +44,10 @@ def collect(run_id):
         "code": codestats.measure(run_id, run),
         "git": codestats.git_activity(run_id, run),
     }
-    common.save_json(os.path.join(base, "metrics.json"), metrics)
+    path = os.path.join(base, "metrics.json")
+    previous = common.load_json(path, {})
+    if {k: v for k, v in previous.items() if k != "generated"} != {k: v for k, v in metrics.items() if k != "generated"}:
+        common.save_json(path, metrics)  # only on a real change, so git shows what moved
     total = phases[-1] if phases else None
     cost = f"${total['cost_usd']:,.2f}" if total and total["cost_usd"] is not None else "no logs"
     print(f"  {run_id}: {cost}, {metrics['code']['code']['game']['loc']:,} game LOC")
