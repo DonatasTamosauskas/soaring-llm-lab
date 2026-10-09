@@ -25,3 +25,4 @@ build/
 
 # Python bytecode from tools/lab
 __pycache__/
+/_site/

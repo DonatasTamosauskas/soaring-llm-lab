@@ -65,3 +65,13 @@ def local(t):
 
 def git(*args):
     return subprocess.run(["git", "-C", ROOT] + list(args), check=True, capture_output=True, text=True).stdout
+
+
+def repo_url():
+    """This repo's page on GitHub (https://github.com/<owner>/<name>), from the origin remote; None elsewhere."""
+    try:
+        origin = git("remote", "get-url", "origin").strip()
+    except subprocess.CalledProcessError:
+        return None
+    m = re.search(r"github\.com[:/]([^/\s]+/[^/\s]+?)(?:\.git)?/?$", origin)
+    return f"https://github.com/{m.group(1)}" if m else None

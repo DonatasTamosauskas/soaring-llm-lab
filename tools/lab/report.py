@@ -4,6 +4,7 @@ import glob
 import html
 import os
 import re
+import shutil
 
 import common
 import media
@@ -43,6 +44,23 @@ def size(b):
 
 def esc(s):
     return html.escape(str(s), quote=True)
+
+
+class Links:
+    """Where the report points: media next to the page (under media_prefix), source files on GitHub,
+    which renders them, or relative to report/ when the repo is not on GitHub."""
+
+    def __init__(self, media_prefix):
+        self.media_prefix = media_prefix
+        self.repo = common.repo_url()
+
+    def media(self, run_id, path):
+        return f"{self.media_prefix}runs/{run_id}/{path}"
+
+    def source(self, path, folder=False):
+        if self.repo:
+            return f"{self.repo}/{'tree' if folder else 'blob'}/main/{path}"
+        return f"../{path}" + ("/" if folder else "")
 
 
 # --- data ----------------------------------------------------------------------------------
@@ -269,9 +287,9 @@ def stat(value, label):
     return f'<div class="stat"><b>{esc(value)}</b><span>{esc(label)}</span></div>'
 
 
-def card_html(r, prompts):
+def card_html(r, links):
     run, total, code, metrics = r["run"], r["total"], r["metrics"].get("code") or {}, r["metrics"]
-    rel = f"../runs/{r['id']}"
+    rel = f"runs/{r['id']}"
     chips = [run["model"]["name"], harness_text(run),
              f"{run['engine']['name']} {run['engine'].get('version', '')}".strip(), f"started {run.get('started', '?')}"]
     logs = metrics.get("logs") or {}
@@ -334,10 +352,10 @@ def card_html(r, prompts):
     if items:
         figs = []
         for path, caption, kind in items:
-            src = f"{rel}/{path}"
+            src = links.media(r["id"], path)
             if kind == "video":
                 poster = media.poster_path(path)
-                poster_attr = f' poster="{esc(rel + "/" + poster)}"' if os.path.exists(os.path.join(common.run_dir(r["id"]), poster)) else ""
+                poster_attr = f' poster="{esc(links.media(r["id"], poster))}"' if os.path.exists(os.path.join(common.run_dir(r["id"]), poster)) else ""
                 figs.append(f'<figure><video controls preload="none"{poster_attr} src="{esc(src)}"></video><figcaption>{esc(caption)}</figcaption></figure>')
             else:
                 figs.append(f'<figure><a href="{esc(src)}"><img loading="lazy" src="{esc(src)}" alt="{esc(caption)}"></a><figcaption>{esc(caption)}</figcaption></figure>')
@@ -345,23 +363,24 @@ def card_html(r, prompts):
     else:
         gallery_html = '<div class="empty">No screenshots or video yet: see eval/capture-protocol.md.</div>'
 
-    links = [f'<a href="{rel}/project/">project</a>', f'<a href="{rel}/run.json">run.json</a>',
-             f'<a href="{rel}/review.md">your review</a>']
+    sources = [f'<a href="{esc(links.source(rel + "/project", folder=True))}">project</a>',
+               f'<a href="{esc(links.source(rel + "/run.json"))}">run.json</a>',
+               f'<a href="{esc(links.source(rel + "/review.md"))}">your review</a>']
     if os.path.exists(os.path.join(common.run_dir(r["id"]), "human-messages.md")):
-        links.append(f'<a href="{rel}/human-messages.md">your messages</a>')
+        sources.append(f'<a href="{esc(links.source(rel + "/human-messages.md"))}">your messages</a>')
     prompt = run.get("prompt")
     if prompt:
-        links.append(f'<a href="../prompts/{esc(prompt)}.md">prompt: {esc(prompt)}</a>')
+        sources.append(f'<a href="{esc(links.source(f"prompts/{prompt}.md"))}">prompt: {esc(prompt)}</a>')
     notes = "".join(f"<p class=note>{esc(n)}</p>" for n in ([run.get("notes")] if run.get("notes") else []) + ([logs.get("note")] if logs.get("note") else []))
     settings_html = f"<p class=note>Settings during the run: {esc('; '.join(settings))}</p>" if settings else ""
     return (f'<article class="card" id="{esc(r["id"])}"><header><h3>{esc(run["title"])}</h3>'
             f'<span class="note">{esc(run.get("status", ""))}</span></header>'
             f'<div class="chips">{chips_html}</div><p class="summary">{esc(run.get("summary", ""))}</p>'
             f'<div class="stats">{"".join(stats)}</div>{phase_html}{gallery_html}{settings_html}{notes}'
-            f'<div class="links">{" ".join(links)}</div></article>')
+            f'<div class="links">{" ".join(sources)}</div></article>')
 
 
-def prompts_html(rows):
+def prompts_html(rows, links):
     used = {}
     for r in rows:
         used.setdefault(r["run"].get("prompt"), []).append(r)
@@ -373,7 +392,7 @@ def prompts_html(rows):
         with open(path, encoding="utf-8") as f:
             first = next((l.strip("# \n") for l in f if l.strip()), name)
         runs = ", ".join(f'<a href="#{esc(r["id"])}">{esc(r["run"]["title"])}</a>' for r in used.get(name, [])) or "not used yet"
-        items.append(f'<tr><td><a href="../prompts/{esc(name)}.md">{esc(name)}</a></td><td>{esc(first)}</td><td>{runs}</td></tr>')
+        items.append(f'<tr><td><a href="{esc(links.source(f"prompts/{name}.md"))}">{esc(name)}</a></td><td>{esc(first)}</td><td>{runs}</td></tr>')
     return ('<div class="table-wrap"><table><thead><tr><th>Prompt</th><th>Title</th><th>Runs</th></tr></thead><tbody>'
             + "".join(items) + "</tbody></table></div>")
 
@@ -383,10 +402,10 @@ def latest_metrics(rows):
     return common.local(common.parse_ts(max(stamps))).strftime("%Y-%m-%d %H:%M") if stamps else "—"
 
 
-def write_html(rows):
-    os.makedirs(os.path.dirname(REPORT), exist_ok=True)
+def render_html(rows, links):
     known = [r for r in rows if r["cost"] is not None]
-    body = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+    source = f' Source, logs-derived data and method: <a href="{esc(links.repo)}">{esc(links.repo.split("github.com/")[-1])}</a>.' if links.repo else ""
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Soaring LLM Lab</title>
 <style>{CSS}</style></head><body><main>
 <h1>Soaring LLM Lab</h1>
@@ -396,16 +415,33 @@ def write_html(rows):
 {table_html(rows)}
 <p class="note">Click a column to sort. Costs are at API list prices (eval/pricing.json), not what a subscription bills; "≥" marks partial logs.
 Active time counts the periods when an agent thread was working (pauses over 10 minutes removed); agent time adds up parallel threads.
-Game code excludes tests, tooling, third-party addons and generated files. Definitions: <a href="../eval/METHOD.md">eval/METHOD.md</a>.</p>
+Game code excludes tests, tooling, third-party addons and generated files. Definitions: <a href="{esc(links.source("eval/METHOD.md"))}">eval/METHOD.md</a>.</p>
 <h2>Runs</h2>
-<div class="cards">{"".join(card_html(r, None) for r in rows)}</div>
+<div class="cards">{"".join(card_html(r, links) for r in rows)}</div>
 <h2>Prompts</h2>
-{prompts_html(rows)}
-<footer>Generated by <code>python3 tools/lab report</code> from metrics collected up to {latest_metrics(rows)}.</footer>
+{prompts_html(rows, links)}
+<footer>Generated by <code>python3 tools/lab report</code> from metrics collected up to {latest_metrics(rows)}.{source}</footer>
 </main><script>{SORT_JS}</script></body></html>
 """
+
+
+def write_html(rows):
+    os.makedirs(os.path.dirname(REPORT), exist_ok=True)
     with open(REPORT, "w", encoding="utf-8") as f:
-        f.write(body)
+        f.write(render_html(rows, Links("../")))
+
+
+def build_site(out):
+    """The report as a static site (GitHub Pages): out/index.html plus every run's media/ beside it."""
+    rows = load_all()
+    os.makedirs(out, exist_ok=True)
+    with open(os.path.join(out, "index.html"), "w", encoding="utf-8") as f:
+        f.write(render_html(rows, Links("")))
+    for r in rows:
+        src = os.path.join(common.run_dir(r["id"]), "media")
+        if os.path.isdir(src):
+            shutil.copytree(src, os.path.join(out, "runs", r["id"], "media"), dirs_exist_ok=True)
+    return len(rows)
 
 
 def build():

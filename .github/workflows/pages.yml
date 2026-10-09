@@ -1,0 +1,51 @@
+# Publishes the report to GitHub Pages: python3 tools/lab site builds index.html plus each run's
+# media from the committed metrics, so no agent logs are needed here.
+# Needs Settings → Pages → Source: "GitHub Actions" (and a public repo on a free plan).
+name: Report site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "runs/*/*.json"
+      - "runs/*/*.md"
+      - "runs/*/media/**"
+      - "prompts/**"
+      - "tools/lab/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Skipped rather than failed while the repo is private.
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Only what the report reads, not the builds' 1.3 GB of project files.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /tools/lab/
+            /prompts/
+            /runs/*/*.json
+            /runs/*/*.md
+            /runs/*/media/
+      - run: python3 tools/lab site _site
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5

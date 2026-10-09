@@ -6,6 +6,8 @@
     python3 tools/lab media [RUN ...]     chosen screenshots and videos -> compact copies in runs/<run>/media/
     python3 tools/lab report              runs/* -> README.md leaderboard and report/index.html
     python3 tools/lab all [RUN ...]       archive, media, collect, then report
+    python3 tools/lab site DIR            the report as a static site in DIR: index.html plus media
+                                          (GitHub Pages builds it this way, .github/workflows/pages.yml)
     python3 tools/lab new RUN             start runs/RUN/ from the template
 
 RUN is a folder name under runs/; without one, every run is processed.
@@ -83,6 +85,11 @@ def main(argv):
         return new_run(args)
     if cmd == "report":
         print(f"report: {report.build()} runs")
+        return
+    if cmd == "site":
+        if len(args) != 1:
+            raise SystemExit("usage: python3 tools/lab site <output dir>")
+        print(f"site: {report.build_site(args[0])} runs in {args[0]}")
         return
     if cmd not in ("archive", "collect", "media", "all"):
         raise SystemExit(f"unknown command {cmd!r}; see python3 tools/lab --help")
