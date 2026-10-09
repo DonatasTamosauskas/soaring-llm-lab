@@ -1,0 +1,184 @@
+{
+  "screenshots": [
+    {
+      "view": "overview",
+      "engine": "godot",
+      "sha256": "7609644e2be9e929f0924f55696811d72303ae44f75fca769754df9359b8aeb4",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "overview",
+      "engine": "unity",
+      "sha256": "75051b3a317ffed7e53ce9a7d59666582fffcff5dd30bf1ac7bbabc8df2a1eb3",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "village",
+      "engine": "godot",
+      "sha256": "b8dc35e0acd1553253016a2697eb7f2785dcbb193451b42f4da9fa5d7ca6a8f1",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "village",
+      "engine": "unity",
+      "sha256": "f93319242ef1eb7e3bc68ddbf77ded43279f13dafa109a2cdb73459f14f38ade",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "forest",
+      "engine": "godot",
+      "sha256": "c6eea7530dbef5b7c20e6fe4de55cd41e2c599424a5342931640547648fd3a62",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "forest",
+      "engine": "unity",
+      "sha256": "e6cdc503c88ec3e9e2015438518f849df8c2fd9b69c278254be4d5c8ba8a8921",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "lake",
+      "engine": "godot",
+      "sha256": "551266e17eea33df34b77aad63e84df1329195239aca961c52a44c71a38a2cc2",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "lake",
+      "engine": "unity",
+      "sha256": "e72523ecdae9f5508923b436ac983f182fca41a1afe702c4db65979d97bba3c2",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "canyon",
+      "engine": "godot",
+      "sha256": "a0a122998ddba31b40f432b7df7bfc2fa38a9c9aa6b0b8930cd37fe97a15874c",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "canyon",
+      "engine": "unity",
+      "sha256": "5efff3a0427efdf4ea134fd874fbee25a32a65eb08a5b539529838d8ca720131",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "menu",
+      "engine": "godot",
+      "sha256": "d1d57971f05364567e718e160c3b1bee91796f207e28324f43fd3b3e701c8d90",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "menu",
+      "engine": "unity",
+      "sha256": "1d9df72d93477c1fb2f76202825aceba1b0d6386d07e307ee575c497ba3386b3",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "flight",
+      "engine": "godot",
+      "sha256": "63d16d572fb41fcb4ea3f8aa2294990006d674d779644e2bbc1e077ee5aaf901",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "flight",
+      "engine": "unity",
+      "sha256": "8f24be704887da769419fb9b8ab5e0b504fe004839004ac0f8790074baf04e65",
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "pixelPreservation": [
+    {
+      "view": "overview",
+      "passed": true,
+      "sha256": "9371c1bb7edcfb75df146b76af8439faebc71cb052ea5d18b4b29a9cb7280c1a"
+    },
+    {
+      "view": "village",
+      "passed": true,
+      "sha256": "08a38f8d97b4d05050df70c157a26b0ea9b61911ac620717fc1f55b8dff37206"
+    },
+    {
+      "view": "forest",
+      "passed": true,
+      "sha256": "a2f21c5f007d0ac077906e196d12067319c108ce95e57af73bb9af6f3746c536"
+    },
+    {
+      "view": "lake",
+      "passed": true,
+      "sha256": "d9cb067c2ce67a1542d366ea79404ac4bc6c8fc313df9c999ee9649ef5a35ab8"
+    },
+    {
+      "view": "canyon",
+      "passed": true,
+      "sha256": "a37dcf39a2c331a71dd70afbf2f7cbd9987a4eb06adb198d0c4f00dd3ac32fdf"
+    },
+    {
+      "view": "menu",
+      "passed": true,
+      "sha256": "79721b6618f2b9ef75f92d091a685b7e9a254fd186a8c9f10c29397b5954209a"
+    },
+    {
+      "view": "flight",
+      "passed": true,
+      "sha256": "55b5a67e863ab86b68084f3794febdebc736333e85f6a945be7e2c94b5d7e191"
+    }
+  ],
+  "recordings": [
+    {
+      "file": "godot-tour.mp4",
+      "sha256": "fef85e7d2290977b965fbed66da03c9de10bce76bbe3789939beb4729bd24b42",
+      "width": 1280,
+      "height": 720,
+      "frames": 600,
+      "fps": 30,
+      "seconds": 20,
+      "decoded": true
+    },
+    {
+      "file": "unity-tour.mp4",
+      "sha256": "d7c02c5976aeec66420f57d88bc981af79d7617e2a6e4bca9406c894911f3948",
+      "width": 1280,
+      "height": 720,
+      "frames": 600,
+      "fps": 30,
+      "seconds": 20,
+      "decoded": true
+    },
+    {
+      "file": "side-by-side-tour.mp4",
+      "sha256": "586cd9b8527707bb2693d745e7178f4faacad9e4200217ccc4a2cd447b22c907",
+      "width": 2560,
+      "height": 816,
+      "frames": 600,
+      "fps": 30,
+      "seconds": 20,
+      "decoded": true
+    }
+  ],
+  "presentation": {
+    "sourceShadowProxies": 142,
+    "sceneryCasters": 19,
+    "menuTextElements": 7,
+    "xr": false
+  },
+  "presentationXR": {
+    "sourceShadowProxies": 142,
+    "sceneryCasters": 19,
+    "menuTextElements": 7,
+    "xr": true
+  },
+  "capturedOn": "2026-10-04"
+}

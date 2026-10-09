@@ -1,0 +1,16 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "secondsPerView": 4,
+  "verticalFov": 70,
+  "near": 0.05,
+  "far": 3000,
+  "views": [
+    {"id":"overview","title":"Valley overview","position":[-430,210,470],"target":[20,10,-60],"travel":[60,-12,-28]},
+    {"id":"village","title":"Village street","position":[-212,7.5,31],"target":[-60,5.5,29],"travel":[16,0,2]},
+    {"id":"forest","title":"Forest canopy","position":[-180,45,-180],"target":[-262,0,-258],"travel":[20,3,-12]},
+    {"id":"lake","title":"Lake and bridge","position":[20,14,-35],"target":[110,0,150],"travel":[16,3,14]},
+    {"id":"canyon","title":"Canyon arch","position":[118,16,-300],"target":[162,60,-455],"travel":[8,3,-18]}
+  ]
+}

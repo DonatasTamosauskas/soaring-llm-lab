@@ -1,0 +1,112 @@
+{
+    "engine": "6000.6.4f1",
+    "renderer": "Metal",
+    "mode": "world only; no NPCs or HUD; native lighting and materials",
+    "frameCount": 600,
+    "route": {
+        "width": 1280,
+        "height": 720,
+        "fps": 30,
+        "secondsPerView": 4,
+        "verticalFov": 70.0,
+        "near": 0.05000000074505806,
+        "far": 3000.0,
+        "views": [
+            {
+                "id": "overview",
+                "title": "Valley overview",
+                "position": [
+                    -430.0,
+                    210.0,
+                    470.0
+                ],
+                "target": [
+                    20.0,
+                    10.0,
+                    -60.0
+                ],
+                "travel": [
+                    60.0,
+                    -12.0,
+                    -28.0
+                ]
+            },
+            {
+                "id": "village",
+                "title": "Village street",
+                "position": [
+                    -212.0,
+                    7.5,
+                    31.0
+                ],
+                "target": [
+                    -60.0,
+                    5.5,
+                    29.0
+                ],
+                "travel": [
+                    16.0,
+                    0.0,
+                    2.0
+                ]
+            },
+            {
+                "id": "forest",
+                "title": "Forest canopy",
+                "position": [
+                    -180.0,
+                    45.0,
+                    -180.0
+                ],
+                "target": [
+                    -262.0,
+                    0.0,
+                    -258.0
+                ],
+                "travel": [
+                    20.0,
+                    3.0,
+                    -12.0
+                ]
+            },
+            {
+                "id": "lake",
+                "title": "Lake and bridge",
+                "position": [
+                    20.0,
+                    14.0,
+                    -35.0
+                ],
+                "target": [
+                    110.0,
+                    0.0,
+                    150.0
+                ],
+                "travel": [
+                    16.0,
+                    3.0,
+                    14.0
+                ]
+            },
+            {
+                "id": "canyon",
+                "title": "Canyon arch",
+                "position": [
+                    118.0,
+                    16.0,
+                    -300.0
+                ],
+                "target": [
+                    162.0,
+                    60.0,
+                    -455.0
+                ],
+                "travel": [
+                    8.0,
+                    3.0,
+                    -18.0
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Soaring · Godot / Unity comparison</title>
+<style>
+:root{color-scheme:dark;--paper:#f3f1e5;--muted:#b6c8c6;--bg:#112529;--line:#355153;--accent:#b9dbba}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--paper);font:16px/1.6 system-ui,sans-serif}main{max-width:1328px;margin:auto;padding:32px 24px 64px}h1{font-weight:600;letter-spacing:-.04em;font-size:clamp(32px,4vw,52px);margin:0 0 8px}h2{font-size:24px;margin:30px 0 12px}p{max-width:980px;margin:10px 0 20px;color:var(--muted)}a{color:var(--accent)}button{border:1px solid var(--line);color:var(--paper);background:transparent;border-radius:24px;padding:10px 18px;font:inherit;cursor:pointer}button[aria-pressed=true]{background:var(--paper);color:var(--bg)}nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}.frame{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;border-radius:6px}.frame img{position:absolute;width:100%;height:100%;object-fit:contain}.frame #godot{clip-path:inset(0 50% 0 0)}.line{position:absolute;left:50%;height:100%;width:2px;background:var(--paper);pointer-events:none}.tag{position:absolute;top:16px;padding:6px 12px;background:#112529dc;border-radius:4px;font-size:14px}.left{left:16px}.right{right:16px}.range{display:flex;align-items:center;gap:16px;margin:14px 0 0}input{flex:1;accent-color:var(--accent)}.links{display:flex;flex-wrap:wrap;gap:12px;font-size:14px}video{display:block;width:100%;background:#000;border-radius:6px}.ui{display:grid;gap:20px}.ui img{width:100%;height:auto;border-radius:6px}.small{font-size:14px}.badge{display:inline-block;border:1px solid var(--line);border-radius:4px;padding:3px 9px;color:var(--muted);font-size:13px;margin-bottom:14px}footer{border-top:1px solid var(--line);margin-top:40px;padding-top:20px}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+</style>
+<main>
+<span class="badge">Captured locally · 4 October 2026</span>
+<h1>One valley. Two engines.</h1>
+<p>Compare the original Godot game with its Unity 6.6 recreation. The five world views share camera position, aim, resolution, and field of view. Unity now includes selective sun shadows, the original shadow-only tree meshes, and the rebuilt illustrated UI. Each view keeps its engine’s current materials, lighting, fog, and decoration.</p>
+<nav aria-label="Choose a world view">
+<button data-id="overview" aria-pressed="true">Valley</button><button data-id="village" aria-pressed="false">Village</button><button data-id="forest" aria-pressed="false">Forest</button><button data-id="lake" aria-pressed="false">Lake &amp; bridge</button><button data-id="canyon" aria-pressed="false">Canyon</button>
+</nav>
+<div class="frame">
+<img id="unity" src="raw/unity/overview.png" alt="Unity valley overview">
+<img id="godot" src="raw/godot/overview.png" alt="Godot valley overview">
+<div id="divider" class="line"></div><span class="tag left">Godot 4.7.2</span><span class="tag right">Unity 6.6</span>
+</div>
+<div class="range"><span>Unity</span><input id="wipe" type="range" min="0" max="100" value="50" aria-label="Godot image coverage"><span>Godot</span></div>
+<p class="small">Drag to compare. 1280 × 720 per engine · 70° vertical FOV · 4× MSAA · Godot Forward+ / Vulkan; Unity URP / Metal. World capture excludes NPCs and HUD.</p>
+<div class="links"><a id="pair-link" href="overview-comparison.png">Full side-by-side PNG</a><a id="godot-link" href="raw/godot/overview.png">Original Godot PNG</a><a id="unity-link" href="raw/unity/overview.png">Original Unity PNG</a><a href="world-contact-sheet.jpg">All five world views</a></div>
+<p><a href="fog-investigation/index.html">Investigating Godot’s grey haze: original vs fog off, with separate tone-mapping controls</a></p>
+<h2>Matched camera tour</h2>
+<p>20 seconds, five four-second chapters, with the same camera motion in both engines. Silent, frame-sequence recordings at 30 fps.</p>
+<video controls preload="metadata" poster="overview-comparison.png"><source src="side-by-side-tour.mp4" type="video/mp4">Your browser cannot play this video. <a href="side-by-side-tour.mp4">Download the MP4</a>.</video>
+<div class="links"><a href="side-by-side-tour.mp4">Comparison MP4</a><a href="godot-tour.mp4">Godot only</a><a href="unity-tour.mp4">Unity only</a></div>
+<h2>Menu and first flight</h2>
+<p>These show each implementation’s native world-space UI and actual game scene. Input is scripted; the flight routes and timing differ. Both output 1280 × 720, with 90° vertical FOV in both engines. Godot’s harness explicitly selects its VR panel mode; Unity shows its curved VR panels through the desktop camera. The spawn views and scripted input paths differ.</p>
+<div class="ui"><a href="menu-comparison.png"><img src="menu-comparison.png" alt="Godot and Unity main menus side by side" loading="lazy"></a><a href="flight-comparison.png"><img src="flight-comparison.png" alt="Godot and Unity first-flight HUDs side by side" loading="lazy"></a></div>
+<h2>Restored Unity interface</h2>
+<p>The settings, illustrated flight guide, and wing calibration use the original Nunito fonts and artwork. The illustration below is the Meta Quest Pro simulator mirror; the linked settings and hold views are desktop player captures. The progress bar confirms a held restart; a short press keeps the current run.</p>
+<div class="ui"><a href="presentation/xr/04-help-flap.png"><img src="presentation/xr/04-help-flap.png" alt="Unity illustrated flight guide" loading="lazy"></a></div>
+<div class="links"><a href="presentation/xr/01-menu.png">XR menu</a><a href="presentation/xr/07-calibration.png">XR calibration</a><a href="presentation/02-settings.png">Settings</a><a href="presentation/03-tracking.png">Tracking</a><a href="presentation/05-help-speed.png">Speed lesson</a><a href="presentation/06-pause.png">Pause</a><a href="presentation/06a-hold-progress.png">Hold progress</a><a href="presentation/07-calibration.png">Calibration</a></div>
+<h2>Shadow verification</h2>
+<p>These two captures use the same Unity village camera with the sun’s shadow setting enabled and disabled. The automated check confirms that the sun casts visible shadows.</p>
+<div class="links"><a href="presentation/08-shadows-on.png">Shadows on</a><a href="presentation/09-shadows-off.png">Shadows off</a><a href="presentation/10-water-shadows-on.png">Bridge shadows on water</a><a href="first-pass/index.html">Previous comparison before these changes</a></div>
+<footer><p class="small">These are macOS desktop renders, not physical Quest Pro footage or frame-rate benchmarks. Movie time is scripted; capture cost is excluded from playback. Godot uses Forward+ because the source’s capture helper reports Mobile/MoltenVK artifacts on this Mac. Images have no color grading or retouching. <a href="README.md">Capture method and reproduction commands</a>.</p></footer>
+</main>
+<script>
+const names={overview:'valley overview',village:'village street',forest:'forest canopy',lake:'lake and bridge',canyon:'canyon arch'};
+const wipe=document.getElementById('wipe');
+wipe.addEventListener('input',()=>{document.getElementById('godot').style.clipPath=`inset(0 ${100-wipe.value}% 0 0)`;document.getElementById('divider').style.left=wipe.value+'%'});
+document.querySelectorAll('button[data-id]').forEach(button=>button.addEventListener('click',()=>{
+  const id=button.dataset.id;
+  document.querySelectorAll('button[data-id]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+  for(const engine of ['godot','unity']){
+    const src=`raw/${engine}/${id}.png`;
+    document.getElementById(engine).src=src;
+    document.getElementById(engine).alt=`${engine} ${names[id]}`;
+    document.getElementById(engine+'-link').href=src;
+  }
+  document.getElementById('pair-link').href=id+'-comparison.png';
+}));
+</script>
+</html>

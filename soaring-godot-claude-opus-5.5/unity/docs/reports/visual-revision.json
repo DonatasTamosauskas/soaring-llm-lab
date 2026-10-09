@@ -1,0 +1,14 @@
+{
+  "editModeTests": 21,
+  "desktopGameplayAssertions": 11,
+  "xrGameplayAssertions": 13,
+  "desktopPresentationAssertions": 96,
+  "xrPresentationAssertions": 96,
+  "sourceShadowProxies": 142,
+  "sceneryCasters": 19,
+  "sunShadowPixels": 15679,
+  "waterShadowPixels": 1498,
+  "apkSha256": "04180eb0471e87bca177b7ab5e57515d256248c7b42d2188743e572835ee418a",
+  "apkBytes": 135013430,
+  "physicalQuestTested": false
+}

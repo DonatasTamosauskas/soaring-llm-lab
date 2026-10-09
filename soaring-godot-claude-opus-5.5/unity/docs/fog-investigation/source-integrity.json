@@ -1,0 +1,18 @@
+{
+  "verifiedSourceFiles": 2596,
+  "sourceUnchanged": true,
+  "added": [],
+  "removed": [],
+  "modified": [],
+  "excludedGeneratedDirectories": [
+    ".agents",
+    ".codex",
+    ".git",
+    ".godot",
+    ".sandboxes",
+    "android",
+    "artifacts",
+    "build",
+    "unity"
+  ]
+}

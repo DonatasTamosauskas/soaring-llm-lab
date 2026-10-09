@@ -1,0 +1,5 @@
+Unity 6000.6.4f1
+Validated 2026-10-04T15:35:20.0380420Z
+Standalone enabled: MetaQuestTouchProControllerProfile, OculusTouchControllerProfile, MetaQuestTouchPlusControllerProfile
+Android enabled: MetaQuestFeature, MetaQuestTouchProControllerProfile, OculusTouchControllerProfile, MetaQuestTouchPlusControllerProfile, FoveatedRenderingFeature
+Errors: 0

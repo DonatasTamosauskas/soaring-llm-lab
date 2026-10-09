@@ -1,0 +1,124 @@
+{
+  "screenshots": [
+    {
+      "view": "overview",
+      "engine": "godot",
+      "sha256": "7609644e2be9e929f0924f55696811d72303ae44f75fca769754df9359b8aeb4",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "overview",
+      "engine": "unity",
+      "sha256": "ae736ce46c3afbb02d4d0d9b1c28f46ffdce79cbe48676c3e5c2c2d45ceee1c9",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "village",
+      "engine": "godot",
+      "sha256": "b8dc35e0acd1553253016a2697eb7f2785dcbb193451b42f4da9fa5d7ca6a8f1",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "village",
+      "engine": "unity",
+      "sha256": "f974553a7fe5a95dd576bcee02da5419f1037e367a8b8056dda2579140deaa99",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "forest",
+      "engine": "godot",
+      "sha256": "c6eea7530dbef5b7c20e6fe4de55cd41e2c599424a5342931640547648fd3a62",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "forest",
+      "engine": "unity",
+      "sha256": "3bea0bf89dd7ed7ac4c67f7529e25194453f06633c483bf0a0990e5dc22eb74d",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "lake",
+      "engine": "godot",
+      "sha256": "551266e17eea33df34b77aad63e84df1329195239aca961c52a44c71a38a2cc2",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "lake",
+      "engine": "unity",
+      "sha256": "1049a027e20946bfca5c3f6c6666ea7f12b7d4eb11b7340640dac64f20351787",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "canyon",
+      "engine": "godot",
+      "sha256": "a0a122998ddba31b40f432b7df7bfc2fa38a9c9aa6b0b8930cd37fe97a15874c",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "canyon",
+      "engine": "unity",
+      "sha256": "858e9dc1c5500c7d45ccb693b807bb05d5b2a0bd17833a4fce891046a3c2e324",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "menu",
+      "engine": "godot",
+      "sha256": "d1d57971f05364567e718e160c3b1bee91796f207e28324f43fd3b3e701c8d90",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "menu",
+      "engine": "unity",
+      "sha256": "48443e7cd9ba59e45a618fd656eb0e1eb5fe792d55d112b8f17c44cab0e291de",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "flight",
+      "engine": "godot",
+      "sha256": "63d16d572fb41fcb4ea3f8aa2294990006d674d779644e2bbc1e077ee5aaf901",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "view": "flight",
+      "engine": "unity",
+      "sha256": "46457065e9830f7afd821f560f4a0e7863e2865febe3031f1c804829a15f3d97",
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "videos": [
+    {
+      "file": "godot-tour.mp4",
+      "sha256": "fef85e7d2290977b965fbed66da03c9de10bce76bbe3789939beb4729bd24b42",
+      "bytes": 9244018
+    },
+    {
+      "file": "unity-tour.mp4",
+      "sha256": "19badd87e462a091d7510e8a46097e2e98a9baf1b20aa5253aa61bbf3b83470c",
+      "bytes": 8268695
+    },
+    {
+      "file": "side-by-side-tour.mp4",
+      "sha256": "2db9ce77263b18d3225edda46e9f12500d116299f81abff5c61ada64926d9867",
+      "bytes": 16124165
+    }
+  ],
+  "checks": {
+    "native_images_preserved": true,
+    "world_camera_route_shared": true
+  },
+  "capture_date": "2026-10-04"
+}

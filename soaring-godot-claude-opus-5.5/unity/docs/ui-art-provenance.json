@@ -1,0 +1,29 @@
+{
+  "source": "Original Soaring Godot UI: GestureArt, Emblem, BirdIcon, Nunito 700/900",
+  "gestureFrames": 12,
+  "fontToolsVersion": "4.59.2",
+  "files": {
+    "Art/bird_starling.png": "29751c57c50661c5ef1dc59034a194d0b7b7f0ee92fb6cd0eaedbdd0ee8fe0e5",
+    "Art/bird_eagle.png": "fd1ab7f00f90e86c23127f5560068347ffc4b77467ebe3a5838a35af3ed14d26",
+    "Art/bird_hawk.png": "51ca7bc3f5c1934a1acd39ee91440181ce94c787784371e47140357b8dce3237",
+    "Art/gesture_spread.png": "0532157f61d07721b870e300fbe2f68a80fc21065ce683d131787cd9ea373d1c",
+    "Art/gesture_glide.png": "4e0b932b73fb6bd0782d80d7541156dba8aa6e17562bf4fb343717a8677ceb99",
+    "Art/gesture_perch.png": "04d8b21ef1a2f5a6d0cb2a8b74c3f39a7f67651ae9e30b3f9faa672085945326",
+    "Art/bird_wren.png": "5c9d385e1678e02442c73a883468600429685ab2f0325c26290500a7aa1aae70",
+    "Art/gesture_controls.png": "9d61144c6ae1d216dddbb8a527e4f185e8749344ba6a09609e86c91107245ac5",
+    "Art/emblem.png": "5b5dac49a87bf52925b6da2a0a507b93e8b2b2c890f9df2bf1b6dc97952e1e25",
+    "Art/gesture_flap.png": "5c0084a6b5b31c2682c7c198316fa69fd1f7907c63fb7d37d4b092d01f1ef803",
+    "Art/bird_sparrow.png": "b4caa8199184a0c26e55f9474ebbb972ae69b0ffb6170d64adc31331a6e8de74",
+    "Art/gesture_hunt.png": "2973a9e4049860d5f44b5b56e9ee33b6f48e56ecc0f755173dd53f55e0d8348e",
+    "Art/bird_pigeon.png": "e3abd26c67f91a9815d44d0afc62fd586d164c95ac2089f4267817f5f4d9ba15",
+    "Art/gesture_speed.png": "5496dfd5df3993d6d37d0e5b1c34287961bde52f191db4fc61b3636e3e80e514",
+    "Art/gesture_turn.png": "3ac6e1cd0802bec199939a57948376cdb09cb7ef6deb9e69e19a13d9e982496c",
+    "Art/bird_swallow.png": "371267e23c009a442cb1bc2def05fb6832b9e9722a3ba4e804170ad4d89a05d2",
+    "Art/gesture_dive.png": "980606a7efa149c2f7feb2b4f8fdfe040a56091b5675d35ccb80212feaa59bb8",
+    "Art/bird_crow.png": "4c2b84e1f95c802d21f57942def1ebb6b88691d3281d6b65571318000ae5b07d",
+    "Art/bird_moth.png": "56256b5afb8ed84af70b3a868a291f4ecbe9ded37522dc01e8f73f562981a2da",
+    "Art/bird_gull.png": "9e7524f136a4c6af39cba0e41976e5e96a197ec6d0a3b31222c4e54de770c495",
+    "Fonts/Nunito-Bold.ttf": "0adc1651b5a6a00b15b1456163f6f341984fd23e67906f2f798be3873b7fb419",
+    "Fonts/Nunito-Black.ttf": "3e5cfe4944bae004211f686dab3f087dced5d27617dd5f23f4835c59f69ca0f2"
+  }
+}

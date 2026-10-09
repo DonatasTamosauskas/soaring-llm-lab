@@ -1,0 +1,463 @@
+{
+  "views": [
+    {
+      "id": "overview",
+      "baselineControlDifference": {
+        "meanAbsoluteRGBDifference": 0.0,
+        "maxChannelDifference": 0
+      },
+      "states": {
+        "baseline": {
+          "meanSaturation": 0.1779,
+          "meanLuma": 0.6518,
+          "lumaStdDev": 0.0656,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 0.0,
+            "maxChannelDifference": 0
+          }
+        },
+        "no-fog": {
+          "meanSaturation": 0.2805,
+          "meanLuma": 0.5931,
+          "lumaStdDev": 0.1223,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 20.1044,
+            "maxChannelDifference": 107
+          }
+        },
+        "linear": {
+          "meanSaturation": 0.225,
+          "meanLuma": 0.665,
+          "lumaStdDev": 0.0999,
+          "pixelsWithClippedChannel": 0.00848,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 7.5411,
+            "maxChannelDifference": 43
+          }
+        },
+        "no-fog-linear": {
+          "meanSaturation": 0.3146,
+          "meanLuma": 0.6022,
+          "lumaStdDev": 0.1584,
+          "pixelsWithClippedChannel": 0.0488,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 27.8158,
+            "maxChannelDifference": 105
+          }
+        }
+      },
+      "fogEffectRegions": {
+        "upper_scene": {
+          "meanAbsoluteRGBDifference": 30.1682,
+          "maxChannelDifference": 107
+        },
+        "foreground": {
+          "meanAbsoluteRGBDifference": 10.9201,
+          "maxChannelDifference": 55
+        }
+      }
+    },
+    {
+      "id": "village",
+      "baselineControlDifference": {
+        "meanAbsoluteRGBDifference": 0.0,
+        "maxChannelDifference": 0
+      },
+      "states": {
+        "baseline": {
+          "meanSaturation": 0.2195,
+          "meanLuma": 0.6283,
+          "lumaStdDev": 0.0807,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 0.0,
+            "maxChannelDifference": 0
+          }
+        },
+        "no-fog": {
+          "meanSaturation": 0.2527,
+          "meanLuma": 0.5833,
+          "lumaStdDev": 0.1292,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 12.7688,
+            "maxChannelDifference": 95
+          }
+        },
+        "linear": {
+          "meanSaturation": 0.2615,
+          "meanLuma": 0.635,
+          "lumaStdDev": 0.1049,
+          "pixelsWithClippedChannel": 0.00899,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 6.3459,
+            "maxChannelDifference": 43
+          }
+        },
+        "no-fog-linear": {
+          "meanSaturation": 0.2875,
+          "meanLuma": 0.5881,
+          "lumaStdDev": 0.1521,
+          "pixelsWithClippedChannel": 0.02602,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 19.2002,
+            "maxChannelDifference": 92
+          }
+        }
+      },
+      "fogEffectRegions": {
+        "upper_scene": {
+          "meanAbsoluteRGBDifference": 25.1223,
+          "maxChannelDifference": 95
+        },
+        "foreground": {
+          "meanAbsoluteRGBDifference": 0.3543,
+          "maxChannelDifference": 2
+        }
+      }
+    },
+    {
+      "id": "forest",
+      "baselineControlDifference": {
+        "meanAbsoluteRGBDifference": 0.0,
+        "maxChannelDifference": 0
+      },
+      "states": {
+        "baseline": {
+          "meanSaturation": 0.3027,
+          "meanLuma": 0.4686,
+          "lumaStdDev": 0.1258,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 0.0,
+            "maxChannelDifference": 0
+          }
+        },
+        "no-fog": {
+          "meanSaturation": 0.3991,
+          "meanLuma": 0.4275,
+          "lumaStdDev": 0.1365,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 12.8787,
+            "maxChannelDifference": 69
+          }
+        },
+        "linear": {
+          "meanSaturation": 0.3031,
+          "meanLuma": 0.4555,
+          "lumaStdDev": 0.1282,
+          "pixelsWithClippedChannel": 0.00017,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 4.1771,
+            "maxChannelDifference": 43
+          }
+        },
+        "no-fog-linear": {
+          "meanSaturation": 0.3901,
+          "meanLuma": 0.4156,
+          "lumaStdDev": 0.1359,
+          "pixelsWithClippedChannel": 0.00021,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 16.1857,
+            "maxChannelDifference": 66
+          }
+        }
+      },
+      "fogEffectRegions": {
+        "upper_scene": {
+          "meanAbsoluteRGBDifference": 15.5716,
+          "maxChannelDifference": 69
+        },
+        "foreground": {
+          "meanAbsoluteRGBDifference": 6.7171,
+          "maxChannelDifference": 23
+        }
+      }
+    },
+    {
+      "id": "lake",
+      "baselineControlDifference": {
+        "meanAbsoluteRGBDifference": 0.0,
+        "maxChannelDifference": 0
+      },
+      "states": {
+        "baseline": {
+          "meanSaturation": 0.2583,
+          "meanLuma": 0.5917,
+          "lumaStdDev": 0.0756,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 0.0,
+            "maxChannelDifference": 0
+          }
+        },
+        "no-fog": {
+          "meanSaturation": 0.3093,
+          "meanLuma": 0.5157,
+          "lumaStdDev": 0.1527,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 20.5139,
+            "maxChannelDifference": 100
+          }
+        },
+        "linear": {
+          "meanSaturation": 0.2969,
+          "meanLuma": 0.5884,
+          "lumaStdDev": 0.097,
+          "pixelsWithClippedChannel": 0.00168,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 6.1227,
+            "maxChannelDifference": 43
+          }
+        },
+        "no-fog-linear": {
+          "meanSaturation": 0.3346,
+          "meanLuma": 0.515,
+          "lumaStdDev": 0.1662,
+          "pixelsWithClippedChannel": 0.00497,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 25.6011,
+            "maxChannelDifference": 100
+          }
+        }
+      },
+      "fogEffectRegions": {
+        "upper_scene": {
+          "meanAbsoluteRGBDifference": 37.4514,
+          "maxChannelDifference": 93
+        },
+        "foreground": {
+          "meanAbsoluteRGBDifference": 0.9617,
+          "maxChannelDifference": 12
+        }
+      }
+    },
+    {
+      "id": "canyon",
+      "baselineControlDifference": {
+        "meanAbsoluteRGBDifference": 0.0,
+        "maxChannelDifference": 0
+      },
+      "states": {
+        "baseline": {
+          "meanSaturation": 0.1671,
+          "meanLuma": 0.5476,
+          "lumaStdDev": 0.1126,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 0.0,
+            "maxChannelDifference": 0
+          }
+        },
+        "no-fog": {
+          "meanSaturation": 0.2152,
+          "meanLuma": 0.5194,
+          "lumaStdDev": 0.1184,
+          "pixelsWithClippedChannel": 0.0,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 8.0837,
+            "maxChannelDifference": 61
+          }
+        },
+        "linear": {
+          "meanSaturation": 0.1864,
+          "meanLuma": 0.5412,
+          "lumaStdDev": 0.1401,
+          "pixelsWithClippedChannel": 0.03167,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 6.9567,
+            "maxChannelDifference": 43
+          }
+        },
+        "no-fog-linear": {
+          "meanSaturation": 0.2312,
+          "meanLuma": 0.5111,
+          "lumaStdDev": 0.1455,
+          "pixelsWithClippedChannel": 0.03725,
+          "differenceFromOriginal": {
+            "meanAbsoluteRGBDifference": 15.0464,
+            "maxChannelDifference": 63
+          }
+        }
+      },
+      "fogEffectRegions": {
+        "upper_scene": {
+          "meanAbsoluteRGBDifference": 12.4945,
+          "maxChannelDifference": 60
+        },
+        "foreground": {
+          "meanAbsoluteRGBDifference": 2.6963,
+          "maxChannelDifference": 16
+        }
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "raw/baseline/overview.png",
+      "sha256": "a207d600d469985d07ee04a0e260b05fa8d161082ebd7b69e25707af2df68111",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog/overview.png",
+      "sha256": "6e2fa65677502f020842af43807360c4c98f22652d11688eb358566252d80bd9",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/linear/overview.png",
+      "sha256": "565f9543bd75786937c8f88716f451c5d55a337ff31aad12c235e3f7bb1e8c4c",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog-linear/overview.png",
+      "sha256": "93ec2f8fcb3d846d7cfc5bf8b9f6c99b6b06760a50613bbfdc66b74e00afc323",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/baseline/village.png",
+      "sha256": "ffc0e431f51875d09a496e22f80e0791e7c4b7868ea832b247477dc2c5682820",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog/village.png",
+      "sha256": "04f3dde9b9f4531d8a9326ad01c1306ec1242e6cafaf18b902f86e44051cd204",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/linear/village.png",
+      "sha256": "bf1a3b170e1c130721a30ba6a5f1589af0ee91fd66a5068fd571dd8000f587c9",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog-linear/village.png",
+      "sha256": "b77abd655e56239109b22b054e3facab90c85e975d9eb87d0e60e84f356249d7",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/baseline/forest.png",
+      "sha256": "e1cae5524d50bc7f25cf255a72b992f98c96d1b703081db5f7d300d5b4371ebd",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog/forest.png",
+      "sha256": "380b0e6e2fa5140a91dee1f0da8d3487aa3139d3f4d6a3aa701e2ccce3f6cb90",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/linear/forest.png",
+      "sha256": "ca39a6a7f068a793db0a8b3a22a293da80c8b6719661ce7f470266e0a449ccd2",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog-linear/forest.png",
+      "sha256": "dde478778a4b6bb2b148ea5e1dce68e7d4fd3eb42d4158217309f2777f833b2f",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/baseline/lake.png",
+      "sha256": "9120bebf627be9cffea92bfbbd2272435384f6acef3ed66ad8c9cbf17574a318",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog/lake.png",
+      "sha256": "bc6d274a418689773b14269107c1fe216cbc29dc5917317d9b5760a9eec4a1be",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/linear/lake.png",
+      "sha256": "e7a4b863c6c916cfebc058d90482d1e29b4bda6be4f6bbb9d854b68bff8a9c8a",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog-linear/lake.png",
+      "sha256": "f42b0f64b38f32006ac908a85e205ad87d0b1f90a0590156ab7679075f33cd92",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/baseline/canyon.png",
+      "sha256": "6f7e5bb6f67f83352f81b03538ec9c811c0fb2de40541269d0987b42537bc986",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog/canyon.png",
+      "sha256": "695fbaa4ee47932b75fe5d9450ce4762ad8b8e1e0a00981cf0ef708bbda6fc57",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/linear/canyon.png",
+      "sha256": "3bafc1da722c1e8d6c9950144249aa64908377e23dff4f8827e9ef49f3e41e5f",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "raw/no-fog-linear/canyon.png",
+      "sha256": "7358337f37205c229d9f3e0b3fb2a4eb1a60bb4bd08e1fe312334aeb3a93bacc",
+      "size": [
+        1280,
+        720
+      ]
+    }
+  ],
+  "pixelPreservationPassed": true,
+  "baselineControlsExact": true
+}

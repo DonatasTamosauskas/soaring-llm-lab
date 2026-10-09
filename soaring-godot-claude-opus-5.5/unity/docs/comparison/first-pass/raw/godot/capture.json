@@ -1,0 +1,114 @@
+{
+  "driver": "vulkan",
+  "engine": "4.7.2-stable (official)",
+  "frame_count": 600,
+  "mode": "world only; no NPCs or HUD; native lighting and materials",
+  "renderer": "forward_plus",
+  "route": {
+    "far": 3000.0,
+    "fps": 30.0,
+    "height": 720.0,
+    "near": 0.05,
+    "secondsPerView": 4.0,
+    "verticalFov": 70.0,
+    "views": [
+      {
+        "id": "overview",
+        "position": [
+          -430.0,
+          210.0,
+          470.0
+        ],
+        "target": [
+          20.0,
+          10.0,
+          -60.0
+        ],
+        "title": "Valley overview",
+        "travel": [
+          60.0,
+          -12.0,
+          -28.0
+        ]
+      },
+      {
+        "id": "village",
+        "position": [
+          -212.0,
+          7.5,
+          31.0
+        ],
+        "target": [
+          -60.0,
+          5.5,
+          29.0
+        ],
+        "title": "Village street",
+        "travel": [
+          16.0,
+          0.0,
+          2.0
+        ]
+      },
+      {
+        "id": "forest",
+        "position": [
+          -180.0,
+          45.0,
+          -180.0
+        ],
+        "target": [
+          -262.0,
+          0.0,
+          -258.0
+        ],
+        "title": "Forest canopy",
+        "travel": [
+          20.0,
+          3.0,
+          -12.0
+        ]
+      },
+      {
+        "id": "lake",
+        "position": [
+          20.0,
+          14.0,
+          -35.0
+        ],
+        "target": [
+          110.0,
+          0.0,
+          150.0
+        ],
+        "title": "Lake and bridge",
+        "travel": [
+          16.0,
+          3.0,
+          14.0
+        ]
+      },
+      {
+        "id": "canyon",
+        "position": [
+          118.0,
+          16.0,
+          -300.0
+        ],
+        "target": [
+          162.0,
+          60.0,
+          -455.0
+        ],
+        "title": "Canyon arch",
+        "travel": [
+          8.0,
+          3.0,
+          -18.0
+        ]
+      }
+    ],
+    "width": 1280.0
+  },
+  "world_seed": 1
+}
