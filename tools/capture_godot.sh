@@ -29,6 +29,12 @@ deadline() { perl -e 'alarm shift; exec @ARGV' "$@"; }
 mkdir -p "$WORK" "$OUT"
 rsync -a --delete --exclude '/.godot/' --exclude '/build/' --exclude '/artifacts/' --exclude '/.sandboxes/' \
 	--exclude '/android/' "$SRC/" "$WORK/project/"
+# Pin the window to 1280x720 and give the copy its own, emptied user:// folder, so the capture
+# neither depends on nor writes into the saves of other builds called "Soaring" (tools/godot_overrides.py).
+USER_DIR_NAME="soaring-startup-$RUN"
+if [ "$(uname)" = Darwin ]; then DATA_HOME="$HOME/Library/Application Support"; else DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"; fi
+python3 "$ROOT/tools/godot_overrides.py" "$WORK/project/project.godot" --user-dir "$USER_DIR_NAME"
+rm -rf "${DATA_HOME:?}/$USER_DIR_NAME"
 
 VERSION="$("$GODOT" --version 2>/dev/null | tail -1)"
 deadline 900 "$GODOT" --headless --path "$WORK/project" --import --xr-mode off >"$WORK/import.log" 2>&1
@@ -67,14 +73,21 @@ if int(frames):
         {"file": "media/startup-first.jpg", "caption": "2 s after launch"},
         {"file": "media/startup-end.jpg", "caption": f"{length} s after launch"},
     ]
-data = {
+# Merge: other tools (tools/capture_gameplay_godot.sh) add their own keys and captures to this file.
+try:
+    with open(path) as f:
+        data = json.load(f)
+except FileNotFoundError:
+    data = {}
+others = [c for c in data.get("captures", []) if not c["file"].startswith("media/startup")]
+data.update({
     "checked": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     "godot": version,
     "import": {"ok": import_errors == "0" and (import_exit == "0" or import_done != "0"), "errors": int(import_errors),
                "crashed_on_exit": import_exit != "0"},
     "startup": {"exit": int(run_exit), "script_errors": int(run_errors), "frames": int(frames)},
-    "captures": captures,
-}
+    "captures": others + captures,
+})
 with open(path, "w") as f:
     json.dump(data, f, indent=2)
     f.write("\n")

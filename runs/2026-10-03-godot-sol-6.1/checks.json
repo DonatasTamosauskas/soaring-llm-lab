@@ -1,10 +1,10 @@
 {
-  "checked": "2026-10-09T16:40:36+00:00",
+  "checked": "2026-10-09T21:17:36+00:00",
   "godot": "4.7.2.stable.official.ed1daf0bf",
   "import": {
     "ok": true,
     "errors": 0,
-    "crashed_on_exit": true
+    "crashed_on_exit": false
   },
   "startup": {
     "exit": 0,
@@ -12,6 +12,22 @@
     "frames": 360
   },
   "captures": [
+    {
+      "file": "media/gameplay.mp4",
+      "caption": "Scripted flight on desktop, XR off: launch from the nest menu with ENTER, flap with SPACE, bank with A and D, dive with SHIFT, glide over the valley"
+    },
+    {
+      "file": "media/gameplay-1.jpg",
+      "caption": "Climbing out of the nest on SPACE flaps (4 s into the recording)"
+    },
+    {
+      "file": "media/gameplay-2.jpg",
+      "caption": "Banking over the Sunrise Quarter rooftops with A and D (11 s into the recording)"
+    },
+    {
+      "file": "media/gameplay-3.jpg",
+      "caption": "Back over the town after a SHIFT dive and a long D bank (31 s into the recording)"
+    },
     {
       "file": "media/startup.mp4",
       "caption": "First 12 s after launch: desktop window, XR off, no input"
@@ -24,5 +40,16 @@
       "file": "media/startup-end.jpg",
       "caption": "12 s after launch"
     }
-  ]
+  ],
+  "gameplay": {
+    "checked": "2026-10-09T20:42:04+00:00",
+    "godot": "4.7.2.stable.official.ed1daf0bf",
+    "seconds": 36.0,
+    "frames": 1080,
+    "frames_drawn": 1080,
+    "exit": 0,
+    "script_errors": 0,
+    "import_errors": 0,
+    "input": "eval/capture-input/2026-10-03-godot-sol-6.1.gd"
+  }
 }

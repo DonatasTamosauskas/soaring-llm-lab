@@ -14,12 +14,12 @@ spun out of the Opus 5.5 run.
 | Run | Model · agent tool | Engine | Measured up to | Est. API cost | Tokens (output) | Active time | Human messages | Game code | Test code | Docs | Check |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | [Prime Muse 1.2 · Godot](runs/2026-08-09-godot-prime-muse-1.2/) | Prime Muse 1.2 · unknown | Godot 4.7.1 | — | — (no logs) | — | ≈ 2.1 h (commits) | — | 1.5k GDScript | 229 | 126 | imports cleanly · no desktop view |
-| [Prime Muse 1.2 · Unity](runs/2026-08-11-unity-prime-muse-1.2/) | Prime Muse 1.2 · unknown | Unity 6000.5.7f1 | — | — (no logs) | — | — | — | 1.4k C# | — | — | — |
+| [Prime Muse 1.2 · Unity](runs/2026-08-11-unity-prime-muse-1.2/) | Prime Muse 1.2 · unknown | Unity 6000.5.7f1 | — | — (no logs) | — | — | — | 1.4k C# | — | — | imports cleanly · starts |
 | [Opus 5 · Godot](runs/2026-08-12-godot-opus-5/) | Claude Opus 5 · Claude Code | Godot 4.7 | — | — (no logs) | — | ≈ 46.8 h (commits) | — | 13.1k GDScript | 7.7k | 1.4k | imports cleanly · starts |
 | [Opus 5.5 · Godot](runs/2026-09-25-godot-opus-5.5/) | Claude Opus 5.5 · Claude Code | Godot 4.7.2 | v1 delivered | $3,241 | 10.4B (6.8M) | 43.0 h | 9 | 57.7k GDScript | 147.7k | 18.6k | imports cleanly · starts |
-| [Sol 6.1 · Unity](runs/2026-10-02-unity-sol-6.1/) | GPT-6.1 Sol · Codex | Unity 6000.6.4f1 | v1 delivered | ≥ $7.32 | 37.6M (152.4k) | 1.1 h | 3 | 2.2k C# | 75 | 142 | — |
+| [Sol 6.1 · Unity](runs/2026-10-02-unity-sol-6.1/) | GPT-6.1 Sol · Codex | Unity 6000.6.4f1 | v1 delivered | ≥ $7.32 | 37.6M (152.4k) | 1.1 h | 3 | 2.2k C# | 75 | 142 | imports cleanly · starts |
 | [Sol 6.1 · Godot](runs/2026-10-03-godot-sol-6.1/) | GPT-6.1 Sol · Codex | Godot 4.7.2 | v1 delivered | ≥ $10.68 | 48.1M (270.8k) | 1.0 h | 1 | 3.1k GDScript | 1.1k | 128 | imports cleanly · starts |
-| [Sol 6.1 · Unity port of Opus 5.5](runs/2026-10-04-unity-sol-6.1-port/) | GPT-6.1 Sol · Codex | Unity 6000.6.4f1 | port delivered | ≥ $7.91 | 40.7M (184k) | 1.5 h | 1 | 3.6k C# | 277 | 634 | — |
+| [Sol 6.1 · Unity port of Opus 5.5](runs/2026-10-04-unity-sol-6.1-port/) | GPT-6.1 Sol · Codex | Unity 6000.6.4f1 | port delivered | ≥ $7.91 | 40.7M (184k) | 1.5 h | 1 | 3.6k C# | 277 | 634 | imports cleanly · starts |
 
 _Not compared: [Fable 5.1 · Godot](runs/2026-09-12-godot-fable-5.1/). Paused after one 8.5-hour session, before the world and game loop, so it never became a playable build; only 23 API calls of its log survive._
 
@@ -51,6 +51,8 @@ references/     projects given to agents as examples (Unity Quest bootstrap)
 eval/           METHOD.md (what every number means), rubric, capture protocol, pricing, run template
 tools/lab/      the pipeline: python3 tools/lab --help
 tools/capture_godot.sh   import check and start-up capture of a Godot build
+tools/capture_gameplay_godot.sh   scripted-flight capture of a Godot build (eval/capture-input/)
+tools/capture_unity.sh   import check, start-up and scripted-flight captures of a Unity build
 report/         generated HTML report (the same page GitHub Pages serves)
 .github/workflows/pages.yml   publishes the report to GitHub Pages
 .claude/        impeccable, the design skill used on the report (Claude Code, this project only)

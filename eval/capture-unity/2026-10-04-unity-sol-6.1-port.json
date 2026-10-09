@@ -1,0 +1,23 @@
+{
+  "project": "Soaring",
+  "player_args": [
+    "-no-xr"
+  ],
+  "gameplay_seconds": 36,
+  "gameplay_stills": [
+    4,
+    23,
+    34
+  ],
+  "gameplay_poster": 4,
+  "captions": {
+    "startup": "Start-up on desktop, XR off (the build's own -no-xr flag), no input, recorded from a macOS player build in Unity 6000.6.4f1: after a flat lakeside view for the first few frames (under 0.3 s), the curved SOARING menu (Play, How to fly, Settings, Quit · hold) over the village houses, snowy mountains behind, unchanged to 12 s",
+    "startup-first": "2 s after launch: the SOARING menu over the village",
+    "startup-end": "12 s after launch: the same menu",
+    "gameplay": "Scripted flight on desktop, XR off: wing states fed through the build's own harness input hook (VRInput.harnessOverride, which its verification harness uses), steering as its desktop keys do (roll, pitch, tuck) with a steady flap effort; the run starts from the menu's Play. The sparrow launches from its perch by the village, climbs to about 20 m, then glides down the valley and skims low over the meadow, banking, while the in-game lessons advance from Flap to climb to Tuck to dive. Recorded from a macOS player build in Unity 6000.6.4f1",
+    "gameplay-1": "Scripted flight, 4 s in: gliding out over the valley after the launch (lesson 3, Glide)",
+    "gameplay-2": "Scripted flight, 23 s in: low over the meadow (lesson 4, Tilt for speed)",
+    "gameplay-3": "Scripted flight, 34 s in: turning toward the village and church (lesson 6, Tuck to dive)"
+  },
+  "notes": "Player started with the build's own -no-xr desktop flag (its bootstrap then skips XR initialisation). Copy changes: XR init off for Standalone (already off in this project), LabCapture scripts added, company name SoaringLab-<run> for a fresh data folder, Mono/Apple-silicon windowed player."
+}

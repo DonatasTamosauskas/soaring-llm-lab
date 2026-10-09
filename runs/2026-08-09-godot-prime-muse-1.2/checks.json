@@ -11,5 +11,34 @@
     "script_errors": 0,
     "frames": 0
   },
-  "captures": []
+  "captures": [
+    {
+      "file": "media/gameplay.mp4",
+      "caption": "Scripted flight on desktop, XR off, with the headset hand-off disabled: SPACE flaps, Q and E banks (this build also counts each bank key as a wing-stroke, so banks climb), long W dives and a mouse turn, from the start position in the air; the white capsule with pale wings ahead is the player's own bird, which this build's desktop camera sits behind, and the haze above about 60 m is its fog"
+    },
+    {
+      "file": "media/gameplay-1.jpg",
+      "caption": "Starting over the houses on a SPACE flap (1.5 s into the recording)"
+    },
+    {
+      "file": "media/gameplay-2.jpg",
+      "caption": "Banking with Q low over the houses (9 s into the recording)"
+    },
+    {
+      "file": "media/gameplay-3.jpg",
+      "caption": "Wings spread in a bank; the HUD shows size, flaps, airspeed and flight state (12.7 s into the recording)"
+    }
+  ],
+  "gameplay": {
+    "checked": "2026-10-09T21:09:21+00:00",
+    "godot": "4.7.2.stable.official.ed1daf0bf",
+    "seconds": 36.0,
+    "frames": 1080,
+    "frames_drawn": 1080,
+    "exit": 0,
+    "script_errors": 0,
+    "import_errors": 0,
+    "input": "eval/capture-input/2026-08-09-godot-prime-muse-1.2.gd",
+    "patch": "eval/capture-input/2026-08-09-godot-prime-muse-1.2.patch"
+  }
 }

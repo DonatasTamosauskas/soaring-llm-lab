@@ -27,6 +27,7 @@
   ],
   "milestones": [],
   "code_exclude": [],
+  "cover": "gameplay-2.jpg",
   "apk": {
     "source": "project/build/Soaring.apk",
     "package": "com.soaring.opus5",

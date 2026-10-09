@@ -1,0 +1,62 @@
+{
+  "checked": "2026-10-09T21:05:02+00:00",
+  "unity": "6000.6.4f1",
+  "import": {
+    "ok": true,
+    "errors": 0
+  },
+  "build": {
+    "ok": true,
+    "target": "macOS player (Apple silicon, Mono), XR init off"
+  },
+  "startup": {
+    "exit": 0,
+    "frames": 360,
+    "seconds": 12,
+    "width": 1280,
+    "height": 720,
+    "exceptions": 0,
+    "errors": 0
+  },
+  "gameplay": {
+    "exit": 0,
+    "frames": 1080,
+    "seconds": 36,
+    "width": 1280,
+    "height": 720,
+    "exceptions": 0,
+    "errors": 0,
+    "driver": "eval/capture-unity/2026-10-04-unity-sol-6.1-port.cs"
+  },
+  "captures": [
+    {
+      "file": "media/startup.mp4",
+      "caption": "Start-up on desktop, XR off (the build's own -no-xr flag), no input, recorded from a macOS player build in Unity 6000.6.4f1: after a flat lakeside view for the first few frames (under 0.3 s), the curved SOARING menu (Play, How to fly, Settings, Quit · hold) over the village houses, snowy mountains behind, unchanged to 12 s"
+    },
+    {
+      "file": "media/startup-first.jpg",
+      "caption": "2 s after launch: the SOARING menu over the village"
+    },
+    {
+      "file": "media/startup-end.jpg",
+      "caption": "12 s after launch: the same menu"
+    },
+    {
+      "file": "media/gameplay.mp4",
+      "caption": "Scripted flight on desktop, XR off: wing states fed through the build's own harness input hook (VRInput.harnessOverride, which its verification harness uses), steering as its desktop keys do (roll, pitch, tuck) with a steady flap effort; the run starts from the menu's Play. The sparrow launches from its perch by the village, climbs to about 20 m, then glides down the valley and skims low over the meadow, banking, while the in-game lessons advance from Flap to climb to Tuck to dive. Recorded from a macOS player build in Unity 6000.6.4f1"
+    },
+    {
+      "file": "media/gameplay-1.jpg",
+      "caption": "Scripted flight, 4 s in: gliding out over the valley after the launch (lesson 3, Glide)"
+    },
+    {
+      "file": "media/gameplay-2.jpg",
+      "caption": "Scripted flight, 23 s in: low over the meadow (lesson 4, Tilt for speed)"
+    },
+    {
+      "file": "media/gameplay-3.jpg",
+      "caption": "Scripted flight, 34 s in: turning toward the village and church (lesson 6, Tuck to dive)"
+    }
+  ],
+  "notes": "Player started with the build's own -no-xr desktop flag (its bootstrap then skips XR initialisation). Copy changes: XR init off for Standalone (already off in this project), LabCapture scripts added, company name SoaringLab-<run> for a fresh data folder, Mono/Apple-silicon windowed player."
+}

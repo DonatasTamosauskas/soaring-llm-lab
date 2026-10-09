@@ -17,6 +17,13 @@ TAG = "apks"
 TITLE = "Builds for Meta Quest"
 
 
+def source_path(run_id, apk):
+    """An agent's APK sits in the run's project/; one the lab built sits under raw/ (out of git)."""
+    if apk["source"].startswith("raw/"):
+        return os.path.join(common.ROOT, apk["source"])
+    return os.path.join(common.run_dir(run_id), apk["source"])
+
+
 def asset_name(run_id):
     return f"soaring-{run_id}.apk"
 
@@ -64,10 +71,13 @@ def _credits(run_id):
 
 
 def release_notes(entries, repo_url):
-    rows = []
+    rows, lab = [], []
     for run_id, run in entries:
         apk = run["apk"]
-        rows.append(f"| [{run['title']}]({repo_url}/tree/main/runs/{run_id}) | `{asset_name(run_id)}` | "
+        mark = " *" if apk.get("by") == "lab" else ""
+        if mark:
+            lab.append(f"\\* {run['title']}: {apk.get('note', 'built by the lab, not by its agent.')}")
+        rows.append(f"| [{run['title']}]({repo_url}/tree/main/runs/{run_id}){mark} | `{asset_name(run_id)}` | "
                     f"{apk.get('label', '?')} | `{apk.get('package', '?')}` | {apk.get('built', '?')} | "
                     f"{apk.get('bytes', 0) / 1048576:.0f} MB |")
     credits = []
@@ -77,8 +87,8 @@ def release_notes(entries, repo_url):
             credits.append(f"- {run['title']}: " + ", ".join(f"[{os.path.basename(f)}]({repo_url}/blob/main/{f})" for f in files))
     site = repo_url.split("github.com/")[-1].split("/")
     return "\n".join([
-        "Every build in the Soaring LLM Lab that left an APK, as its agent built it: unchanged, debug-signed, "
-        "for sideloading on a Meta Quest. They are experiments, not store apps.",
+        "The builds in the Soaring LLM Lab as APKs, debug-signed, for sideloading on a Meta Quest. Each is exactly "
+        "as its agent built it, except where marked *. They are experiments, not store apps.",
         "",
         f"How each one was made and what it cost: https://{site[0].lower()}.github.io/{site[1]}/",
         "",
@@ -97,6 +107,7 @@ def release_notes(entries, repo_url):
         "|---|---|---|---|---|---|",
         *rows,
         "",
+        *([*lab, ""] if lab else []),
         "## Credits",
         "",
         "Built with Godot or Unity and the Godot OpenXR Vendors plugin or Meta's XR packages. Third-party "
@@ -120,7 +131,7 @@ def publish(run_ids, dry_run=False):
         apk = run.get("apk")
         if not apk or run.get("excluded"):
             continue
-        source = os.path.join(common.run_dir(run_id), apk["source"])
+        source = source_path(run_id, apk)
         if not os.path.exists(source):
             print(f"  {run_id}: {apk['source']} is missing, skipped")
             continue
@@ -150,7 +161,7 @@ def publish(run_ids, dry_run=False):
                 print(f"  {run_id}: up to date")
                 continue
             link = os.path.join(tmp, name)
-            os.symlink(os.path.join(common.run_dir(run_id), run["apk"]["source"]), link)
+            os.symlink(source_path(run_id, run["apk"]), link)
             _gh("release", "upload", TAG, link, "-R", repo, "--clobber")
             print(f"  {run_id}: uploaded {name} ({size / 1048576:.0f} MB)")
     print(f"  {release_url(repo_url)}")

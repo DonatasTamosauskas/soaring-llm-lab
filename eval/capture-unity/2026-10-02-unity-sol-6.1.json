@@ -1,0 +1,23 @@
+{
+  "project": "Soaring",
+  "player_args": [
+    "--desktop"
+  ],
+  "gameplay_seconds": 36,
+  "gameplay_stills": [
+    6,
+    12,
+    25
+  ],
+  "gameplay_poster": 12,
+  "captions": {
+    "startup": "Start-up on desktop, XR off, no input, recorded from a macOS player build in Unity 6000.6.4f1: the home menu (\"Small wings. Big sky.\") over the village, unchanged for 12 s",
+    "startup-first": "2 s after launch: the home menu over the village",
+    "startup-end": "12 s after launch: still the home menu",
+    "gameplay": "Scripted flight on desktop, XR off: the build's own desktop controls (Space flaps, A/D bank, Shift tucks, E spreads) pressed on a timeline, after calibrating and starting a run through the game's API as its own showcase harness does. From the village the bird flies out over rocks and hills and climbs to the 150 m ceiling, banks both ways among golden prey and coral hunters, and catches one golden bird at about 29 s. Recorded from a macOS player build in Unity 6000.6.4f1",
+    "gameplay-1": "Scripted flight, 6 s in: over the rocks, a coral hunter to the right",
+    "gameplay-2": "Scripted flight, 12 s in: banking right toward the hills, hunter ahead",
+    "gameplay-3": "Scripted flight, 25 s in: near the ceiling, a coral hunter alongside and NPC birds ahead"
+  },
+  "notes": "Player started with the build's own --desktop flag (its keyboard preview mode; it also falls back to it when no XR loader is active). Copy changes: XR init off for Standalone, LabCapture scripts added, company name SoaringLab-<run> for a fresh data folder, Mono/Apple-silicon windowed player."
+}

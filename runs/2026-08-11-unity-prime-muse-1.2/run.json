@@ -27,6 +27,17 @@
   ],
   "milestones": [],
   "code_exclude": [],
+  "apk": {
+    "source": "raw/apks/2026-08-11-unity-prime-muse-1.2.apk",
+    "by": "lab",
+    "note": "Built by the lab on 9 Oct 2026 from the archived project, upgraded to Unity 6000.6.4f1 and with the one-file fix its scene needs to load. Not tested on a headset.",
+    "package": "com.DefaultCompany.VRTemplate",
+    "version": "1.0",
+    "label": "Soaring",
+    "bytes": 96043921,
+    "built": "2026-10-09 23:23"
+  },
+  "cover": "startup-first.jpg",
   "media": [],
-  "notes": "No screenshots exist yet and the Unity Library was cleared, so it needs a re-import before it can be captured."
+  "notes": "As archived, its scene does not load in a Unity 6000.6.4f1 player: a component declared inside another script's file (Perch, in WorldBuilder.cs) was saved into the scene 590 times. The lab's recordings and APK use a copy with that one class moved to its own file. It was made in Unity 6000.5.7f1, which is not installed here, so the copy was upgraded."
 }

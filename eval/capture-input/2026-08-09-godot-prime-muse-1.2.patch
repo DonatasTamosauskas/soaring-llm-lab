@@ -1,0 +1,17 @@
+Capture-only patch for runs/2026-08-09-godot-prime-muse-1.2 (tools/capture_gameplay_godot.sh applies it to the
+scratch copy in raw/_work; the archived project is never changed).
+
+The desktop fallback in BirdPlayer._ready still hands the main view to XR (use_xr = true) when the OpenXR
+interface exists but is not running, which is the case with --xr-mode off. The window then draws nothing
+and Godot's movie writer crashes on the empty frame. This drops that one line; flight code is untouched.
+
+--- a/scripts/BirdPlayer.gd	2026-10-09 23:00:25
++++ b/scripts/BirdPlayer.gd	2026-10-09 23:00:25
+@@ -82,7 +82,6 @@
+         print("[Soaring v2] XR active — LOCAL-hand flap + energy dive")
+     else:
+         if xr_interface:
+-            get_viewport().use_xr = true
+             _xr_active = xr_interface.is_initialized()
+         print("[Soaring v2] Desktop fallback — mouse + space")
+     if not _xr_active:

@@ -23,6 +23,33 @@
     {
       "file": "media/startup-end.jpg",
       "caption": "12 s after launch"
+    },
+    {
+      "file": "media/gameplay.mp4",
+      "caption": "Scripted flight on desktop, XR off, from a fresh first launch: Play from the main menu with ENTER, take off from the perch with SPACE flaps, then W for speed, A and D rolls, a SHIFT dive and more flaps; the game's first-flight lessons at the top advance as the input does what they ask"
+    },
+    {
+      "file": "media/gameplay-1.jpg",
+      "caption": "Taking off from the spawn perch with SPACE, while the game's lesson asks for exactly that (6.5 s into the recording)"
+    },
+    {
+      "file": "media/gameplay-2.jpg",
+      "caption": "Gliding past the village church; the tutorial counts the glide (14 s into the recording)"
+    },
+    {
+      "file": "media/gameplay-3.jpg",
+      "caption": "Over the lake and fields after A and D rolls (25 s into the recording)"
     }
-  ]
+  ],
+  "gameplay": {
+    "checked": "2026-10-09T21:02:55+00:00",
+    "godot": "4.7.2.stable.official.ed1daf0bf",
+    "seconds": 36.0,
+    "frames": 1080,
+    "frames_drawn": 1080,
+    "exit": 0,
+    "script_errors": 0,
+    "import_errors": 0,
+    "input": "eval/capture-input/2026-09-25-godot-opus-5.5.gd"
+  }
 }

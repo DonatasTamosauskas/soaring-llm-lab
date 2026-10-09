@@ -1,5 +1,5 @@
 {
-  "checked": "2026-10-09T16:39:24+00:00",
+  "checked": "2026-10-09T21:18:57+00:00",
   "godot": "4.7.2.stable.official.ed1daf0bf",
   "import": {
     "ok": true,
@@ -13,6 +13,22 @@
   },
   "captures": [
     {
+      "file": "media/gameplay.mp4",
+      "caption": "Scripted flight on desktop, XR off, from a fresh first launch: FLY clicked in the main menu, then SPACE wingbeats, W and SHIFT dives from 190 m down over the town, and A and D banks between its towers; the lines above the HUD are the game's first-launch coaching, and the dark ring in turns is its comfort vignette"
+    },
+    {
+      "file": "media/gameplay-1.jpg",
+      "caption": "Wingbeats over the town at 210 m, under the game's coaching line (6 s into the recording)"
+    },
+    {
+      "file": "media/gameplay-2.jpg",
+      "caption": "Over the town at 131 m after the W and SHIFT dive (13 s into the recording)"
+    },
+    {
+      "file": "media/gameplay-3.jpg",
+      "caption": "Banking past a tower at 131 m (27 s into the recording)"
+    },
+    {
       "file": "media/startup.mp4",
       "caption": "First 12 s after launch: desktop window, XR off, no input"
     },
@@ -24,5 +40,16 @@
       "file": "media/startup-end.jpg",
       "caption": "12 s after launch"
     }
-  ]
+  ],
+  "gameplay": {
+    "checked": "2026-10-09T21:08:04+00:00",
+    "godot": "4.7.2.stable.official.ed1daf0bf",
+    "seconds": 36.0,
+    "frames": 1080,
+    "frames_drawn": 1080,
+    "exit": 0,
+    "script_errors": 0,
+    "import_errors": 0,
+    "input": "eval/capture-input/2026-08-12-godot-opus-5.gd"
+  }
 }

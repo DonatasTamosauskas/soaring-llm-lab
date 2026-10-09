@@ -120,9 +120,9 @@ def gallery(r):
         path = os.path.join("media", m["file"])
         if os.path.exists(os.path.join(base, path)):
             items.append((path, m.get("caption", ""), "video" if path.endswith(".mp4") else "image"))
-    for c in (r["checks"].get("captures") or []):
+    for c in (r["checks"].get("captures") or []):  # made by the lab's capture tools, not by the agent
         if os.path.exists(os.path.join(base, c["file"])):
-            items.append((c["file"], c.get("caption", ""), "video" if c["file"].endswith(".mp4") else "image"))
+            items.append((c["file"], "Lab recording: " + c.get("caption", ""), "video" if c["file"].endswith(".mp4") else "image"))
     return items
 
 
@@ -398,11 +398,20 @@ def checks_html(checks):
     if not imp:
         return f'<span class="check none">{ICON["none"]}Not checked yet</span>'
     starts = bool((checks.get("startup") or {}).get("frames"))
+    patched = bool((checks.get("build") or {}).get("patch"))  # the copy needed a fix before it would start
     errors = f"{imp.get('errors', '?')} script errors"
+    start_ok = starts and not patched
+    start_text = "Starts only after a fix" if starts and patched else "Starts on desktop" if starts else "No desktop view"
     return (f'<span class="check {"ok" if imp["ok"] else "no"}">{ICON["ok" if imp["ok"] else "no"]}'
             f'{"Imports cleanly" if imp["ok"] else errors}</span>'
-            f'<span class="check {"ok" if starts else "no"}">{ICON["ok" if starts else "no"]}'
-            f'{"Starts on desktop" if starts else "No desktop view"}</span>')
+            f'<span class="check {"ok" if start_ok else "no"}">{ICON["ok" if start_ok else "no"]}{start_text}</span>')
+
+
+def check_rank(checks):
+    if not checks.get("import"):
+        return ""
+    starts = bool((checks.get("startup") or {}).get("frames")) and not (checks.get("build") or {}).get("patch")
+    return int(checks["import"]["ok"]) + int(starts)
 
 
 def num_cell(value, sort, sub=None, missing=False):
@@ -459,7 +468,7 @@ def glance_html(rows, links):
         else:
             cells.append(num_cell("—", None, None, missing=True))
         checks = r["checks"]
-        rank = "" if not checks.get("import") else int(checks["import"]["ok"]) + int(bool((checks.get("startup") or {}).get("frames")))
+        rank = check_rank(checks)
         cells.append(f'<td data-sort="{rank}">{checks_html(checks)}</td>')
         body.append("<tr>" + "".join(cells) + "</tr>")
     return (f'<div class="scroll"><table class="glance sortable"><caption class="visually-hidden">Every build, newest first, measured '
@@ -554,15 +563,19 @@ def facts_html(r, links):
     apk = r["run"].get("apk") or {}
     if apk.get("bytes") and links.repo:
         named = f', shows as “{esc(apk["label"])}”' if apk.get("label") else ""
+        lab = f'<span class="sub">{esc(apk["note"])}</span>' if apk.get("by") == "lab" and apk.get("note") else ""
         facts.append(("On a Quest", f'<a href="{esc(apks.asset_url(links.repo, r["id"]))}">Download the APK</a> '
-                                    f'({size(apk["bytes"])}{named}) · <a href="{esc(apks.release_url(links.repo))}">how to install</a>'))
+                                    f'({size(apk["bytes"])}{named}) · <a href="{esc(apks.release_url(links.repo))}">how to install</a>{lab}'))
     checks = r["checks"]
     imp = checks.get("import")
     if imp:
         engine = ("Godot " + checks["godot"].split(".stable")[0] if checks.get("godot")
                   else "Unity " + checks["unity"] if checks.get("unity") else r["run"]["engine"]["name"])
         upgraded = f", upgraded from {imp['upgraded_from']}" if imp.get("upgraded_from") else ""
-        facts.append(("Automated check", f'{checks_html(checks)}<span class="sub">imported and launched in {esc(engine)}{esc(upgraded)}</span>'))
+        fixed = "; as archived it does not start, so the recordings use a copy with one fix (see the details)" \
+            if (checks.get("build") or {}).get("patch") else ""
+        facts.append(("Automated check", f'{checks_html(checks)}<span class="sub">imported and launched in {esc(engine)}'
+                                         f'{esc(upgraded)}{esc(fixed)}</span>'))
     else:
         reason = "Unity builds need a re-import first" if r["run"]["engine"]["name"] == "Unity" else "no capture yet"
         facts.append(("Automated check", f'{checks_html(r["checks"])}<span class="sub">{esc(reason)}</span>'))
@@ -629,8 +642,10 @@ def entry_html(r, links, titles):
     links_html += [f'<a href="{esc(links.source(rel + "/run.json"))}">run.json</a>', '<a href="#glance">Back to the table</a>']
     facts, more = facts_html(r, links)
     settings_html = f'<p class="note">Settings changed during the run: {esc("; ".join(settings))}.</p>' if settings else ""
-    inner = more + phases_html(r) + settings_html
-    details = f'<details class="more"><summary>Tokens, files and milestones</summary>{inner}</details>' if inner else ""
+    check_notes = r["checks"].get("notes")
+    check_html = f'<p class="note">About the automated check: {esc(check_notes)}</p>' if check_notes else ""
+    inner = more + phases_html(r) + settings_html + check_html
+    details = f'<details class="more"><summary>Tokens, files, milestones and checks</summary>{inner}</details>' if inner else ""
     return (f'<article class="entry" id="{esc(r["id"])}"><header><h3>{esc(run["title"])}</h3><p class="meta">{meta_html}</p>'
             f'<p class="status">{esc(sentence(run.get("status", "")))}</p></header>'
             f'<div class="entry-body{" has-media" if items else ""}">{gallery_html(r, links, items)}<div class="entry-text">'
@@ -667,7 +682,7 @@ def prompts_html(rows, links):
                          for r in used.get(name, []))
         runs = runs or f'<span class="sub">{esc(used_by.replace("no run yet", "no build yet"))}</span>'
         items.append(f'<tr><td><a href="{esc(links.source(f"prompts/{name}.md"))}">{esc(name)}</a></td>'
-                     f'<td>{esc(lineage[:1].upper() + lineage[1:])}</td><td>{runs}</td></tr>')
+                     f'<td>{esc(sentence(lineage))}</td><td>{runs}</td></tr>')
     return ('<div class="scroll"><table class="prompts"><caption class="visually-hidden">Every prompt, oldest first</caption>'
             '<thead><tr><th scope="col">Prompt</th><th scope="col">What it is</th><th scope="col">Used by</th></tr></thead><tbody>'
             + "".join(items) + "</tbody></table></div>")
@@ -714,8 +729,10 @@ def site_url(repo):
 def install_html(installable, links):
     if not installable or not links.repo:
         return ""
+    lab_built = [r for r in installable if r["run"]["apk"].get("by") == "lab"]
     return (f'<p class="table-note">{words(len(installable)).capitalize()} builds can be installed on a Meta Quest in developer '
-            f'mode: <a href="{esc(apks.release_url(links.repo))}">download the APKs</a>, each as its agent built it.</p>')
+            f'mode: <a href="{esc(apks.release_url(links.repo))}">download the APKs</a>, each as its agent built it'
+            + (f' except {words(len(lab_built))}, built by the lab and marked as such' if lab_built else "") + ".</p>")
 
 
 def excluded_html(rows, links):
@@ -801,8 +818,11 @@ files. Every build wrote its own test harness, so lines of test code compare bet
 over 272K tokens are billed at a higher tier that is not modelled, so Codex costs are minimums too.</dd></div>
 <div><dt>Reasoning effort and ultracode</dt><dd>The agent tool's effort setting (low to xhigh), read from the logs. Ultracode
 is Claude Code's mode for running multi-agent workflows; “golden build” marks the build the game continues from.</dd></div>
-<div><dt>Automated check</dt><dd>Godot builds are imported headless and launched on desktop with XR off for 12 seconds. Unity
-builds are not checked yet. Neither replaces playing the game on a headset.</dd></div>
+<div><dt>Automated check</dt><dd>Each build is imported in its engine (Unity builds re-imported in Unity 6000.6.4f1) and
+launched on desktop with XR off: “starts” means it drew frames. Neither replaces playing the game on a headset.</dd></div>
+<div><dt>Lab recordings</dt><dd>Pictures captioned “Lab recording” were made by the lab on desktop with XR off: 12 seconds
+after launch with no input, and 36 seconds of flight driven by a fixed timeline of key or controller input. Every other
+picture was made by the build's own agent.</dd></div>
 </dl>
 </div></section>
 </main>

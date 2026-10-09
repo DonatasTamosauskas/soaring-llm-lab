@@ -93,6 +93,13 @@ Measured on the files git tracks in `project/`, so ignored build output never co
 - **Start-up capture** (Godot): the main scene in a desktop window, XR off, Forward+, 1280×720,
   fixed 30 fps, no input, for 12 seconds, through Godot's movie writer. It shows what each build
   presents on launch, not gameplay. See [capture-protocol.md](capture-protocol.md).
+- **Import check and captures** (Unity): the same, through `tools/capture_unity.sh` and a macOS
+  player build in Unity 6000.6.4f1; `checks.json` carries `unity`, `import.upgraded_from` /
+  `packages_upgraded`, `build` (with `patch` when the copy needed one), `startup` and `gameplay`.
+- **Gameplay capture**: 36 seconds of flight on desktop, XR off, driven by a fixed timeline of key
+  or controller input (`eval/capture-input/`, `eval/capture-unity/`); a build's own desktop
+  controls or harness input where it has them. It shows the world and the flight model, not how
+  the game plays in a headset. The report captions every lab capture "Lab recording".
 - **Chosen media**: screenshots and videos the agents made, listed in `run.json` and converted by
   `tools/lab media` to JPEG (≤1600 px wide) and H.264 MP4 (≤720 px high).
 - **APKs**: the APK each agent built, unchanged, is an asset of the `apks` GitHub release
@@ -110,6 +117,6 @@ Measured on the files git tracks in `project/`, so ignored build output never co
 - **Left out**: a run whose `run.json` has `"excluded": "<reason>"` stays in `runs/` but is not
   compared; the reason shows under the tables. Fable 5.1 is left out: it was paused after one
   session, before the world and game loop, and its local log covers only 23 API calls of 8.5 hours.
-- **Not yet verified**: Unity builds have no automated import check or start-up capture yet
-  (their Library folders were cleared and need a re-import), and no build has a standard gameplay
-  capture or a playtest score yet.
+- **Not yet verified**: no build has a playtest score yet. Prime Muse Unity's scene does not load
+  in a 6000.6.4f1 player as archived; its captures and its APK (built by the lab) include a one-file
+  fix.

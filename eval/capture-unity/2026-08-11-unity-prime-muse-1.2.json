@@ -1,0 +1,21 @@
+{
+  "project": "Soaring",
+  "player_args": [],
+  "gameplay_seconds": 36,
+  "gameplay_stills": [
+    6,
+    13,
+    33
+  ],
+  "gameplay_poster": 13,
+  "captions": {
+    "startup": "Start-up on desktop, XR off, no input, recorded from a macOS player build in Unity 6000.6.4f1 (project upgraded from 6000.5.7f1, with one fix in the copy so its scene loads; see notes). The view starts 18 m above a grey ground plane with round trees, poles, a tower block and NPC birds; with no input it drifts off and by 12 s only sky and haze are in view. The HUD's size and speed readouts are cut off at the left edge",
+    "startup-first": "2 s after launch: the town from 18 m, with the HUD hint line",
+    "startup-end": "12 s after launch: only sky and haze in view",
+    "gameplay": "Scripted flight on desktop, XR off: the build has no autopilot or desktop controls, so a driver poses the two controller transforms its wing tracker reads (flap strokes, one hand raised to bank, wings pitched to dive) and turns the head along the flight path, looking 30° down. The bird circles over the town of tower blocks and round trees, climbing all the while; just after 30 s it passes 120 m, the game's bounds check returns it to the start, and it ends flying low between tower blocks. Recorded from a macOS player build in Unity 6000.6.4f1 (upgraded from 6000.5.7f1, Perch fix in the copy)",
+    "gameplay-1": "Scripted flight, 6 s in: circling over the town",
+    "gameplay-2": "Scripted flight, 13 s in: tower blocks and trees below, the edge of the ground plane beyond",
+    "gameplay-3": "Scripted flight, 33 s in: back at the start after the reset, low between tower blocks"
+  },
+  "notes": "Opened in 6000.6.4f1 from 6000.5.7f1 (upgrade accepted in the scratch copy only; it also moved the packages to their 6000.6 versions, listed under import.packages_upgraded). As archived, the scene does not load in a 6000.6.4f1 player ('level0 is corrupted [Position out of bounds]'; not tested in 6000.5.7f1, which is not installed): the Perch MonoBehaviour is declared inside WorldBuilder.cs, and the 590 Perch components that the editor-time world generator saved into SampleScene point at a script embedded in the scene. The copy moves Perch, unchanged, into its own Perch.cs and re-points those components (eval/capture-unity/2026-08-11-unity-prime-muse-1.2.patch.py). Other copy changes: XR init off for Standalone, LabCapture scripts added, company name SoaringLab-<run> for a fresh data folder, Mono/Apple-silicon windowed player."
+}

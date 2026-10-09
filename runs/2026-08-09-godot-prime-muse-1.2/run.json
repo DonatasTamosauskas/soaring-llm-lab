@@ -28,6 +28,7 @@
   ],
   "milestones": [],
   "code_exclude": [],
+  "cover": "gameplay-3.jpg",
   "apk": {
     "source": "project/build/soaring-debug.apk",
     "package": "com.soaring.vr",
@@ -37,5 +38,5 @@
     "built": "2026-08-09 20:52"
   },
   "media": [],
-  "notes": "Its own README is the only record of how it was built; commits 0904a3c to 69aa505 are the agent's. The start-up capture has no frames: the desktop fallback still hands the main view to XR when OpenXR is present but not running (project/scripts/BirdPlayer.gd:85), so without a headset nothing is drawn."
+  "notes": "Its own README is the only record of how it was built; commits 0904a3c to 69aa505 are the agent's. The start-up capture has no frames: the desktop fallback still hands the main view to XR when OpenXR is present but not running (project/scripts/BirdPlayer.gd:85), so without a headset nothing is drawn. The lab's gameplay recording turns that hand-off off in a copy (eval/capture-input/2026-08-09-godot-prime-muse-1.2.patch)."
 }

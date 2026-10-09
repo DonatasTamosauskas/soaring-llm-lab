@@ -1,0 +1,80 @@
+{
+  "checked": "2026-10-09T21:04:32+00:00",
+  "unity": "6000.6.4f1",
+  "import": {
+    "ok": true,
+    "errors": 0,
+    "upgraded_from": "6000.5.7f1",
+    "packages_upgraded": {
+      "com.unity.inputsystem": "1.15.0 -> 1.20.0",
+      "com.unity.learn.iet-framework": "5.0.3 -> 6.0.7",
+      "com.unity.render-pipelines.universal": "17.0.3 -> 17.6.0",
+      "com.unity.timeline": "1.8.12 -> 6.6.0",
+      "com.unity.xr.androidxr-openxr": "1.2.0 -> 1.4.0",
+      "com.unity.xr.arfoundation": "6.5.0 -> 6.6.2",
+      "com.unity.xr.compositionlayers": "2.4.0 -> 2.6.0",
+      "com.unity.xr.core-utils": "2.5.3 -> 2.6.0",
+      "com.unity.xr.hands": "1.7.3 -> 1.9.0",
+      "com.unity.xr.interaction.toolkit": "3.4.1 -> 3.6.1",
+      "com.unity.xr.management": "4.5.4 -> 4.7.0",
+      "com.unity.xr.meta-openxr": "2.5.0 -> 2.6.1",
+      "com.unity.xr.openxr": "1.16.1 -> 1.18.0",
+      "com.unity.modules.tetgen": "- -> 1.0.0"
+    }
+  },
+  "build": {
+    "ok": true,
+    "target": "macOS player (Apple silicon, Mono), XR init off",
+    "patch": "eval/capture-unity/2026-08-11-unity-prime-muse-1.2.patch.py"
+  },
+  "startup": {
+    "exit": 0,
+    "frames": 360,
+    "seconds": 12,
+    "width": 1280,
+    "height": 720,
+    "exceptions": 0,
+    "errors": 0
+  },
+  "gameplay": {
+    "exit": 0,
+    "frames": 1080,
+    "seconds": 36,
+    "width": 1280,
+    "height": 720,
+    "exceptions": 0,
+    "errors": 0,
+    "driver": "eval/capture-unity/2026-08-11-unity-prime-muse-1.2.cs"
+  },
+  "captures": [
+    {
+      "file": "media/startup.mp4",
+      "caption": "Start-up on desktop, XR off, no input, recorded from a macOS player build in Unity 6000.6.4f1 (project upgraded from 6000.5.7f1, with one fix in the copy so its scene loads; see notes). The view starts 18 m above a grey ground plane with round trees, poles, a tower block and NPC birds; with no input it drifts off and by 12 s only sky and haze are in view. The HUD's size and speed readouts are cut off at the left edge"
+    },
+    {
+      "file": "media/startup-first.jpg",
+      "caption": "2 s after launch: the town from 18 m, with the HUD hint line"
+    },
+    {
+      "file": "media/startup-end.jpg",
+      "caption": "12 s after launch: only sky and haze in view"
+    },
+    {
+      "file": "media/gameplay.mp4",
+      "caption": "Scripted flight on desktop, XR off: the build has no autopilot or desktop controls, so a driver poses the two controller transforms its wing tracker reads (flap strokes, one hand raised to bank, wings pitched to dive) and turns the head along the flight path, looking 30° down. The bird circles over the town of tower blocks and round trees, climbing all the while; just after 30 s it passes 120 m, the game's bounds check returns it to the start, and it ends flying low between tower blocks. Recorded from a macOS player build in Unity 6000.6.4f1 (upgraded from 6000.5.7f1, Perch fix in the copy)"
+    },
+    {
+      "file": "media/gameplay-1.jpg",
+      "caption": "Scripted flight, 6 s in: circling over the town"
+    },
+    {
+      "file": "media/gameplay-2.jpg",
+      "caption": "Scripted flight, 13 s in: tower blocks and trees below, the edge of the ground plane beyond"
+    },
+    {
+      "file": "media/gameplay-3.jpg",
+      "caption": "Scripted flight, 33 s in: back at the start after the reset, low between tower blocks"
+    }
+  ],
+  "notes": "Opened in 6000.6.4f1 from 6000.5.7f1 (upgrade accepted in the scratch copy only; it also moved the packages to their 6000.6 versions, listed under import.packages_upgraded). As archived, the scene does not load in a 6000.6.4f1 player ('level0 is corrupted [Position out of bounds]'; not tested in 6000.5.7f1, which is not installed): the Perch MonoBehaviour is declared inside WorldBuilder.cs, and the 590 Perch components that the editor-time world generator saved into SampleScene point at a script embedded in the scene. The copy moves Perch, unchanged, into its own Perch.cs and re-points those components (eval/capture-unity/2026-08-11-unity-prime-muse-1.2.patch.py). Other copy changes: XR init off for Standalone, LabCapture scripts added, company name SoaringLab-<run> for a fresh data folder, Mono/Apple-silicon windowed player."
+}
