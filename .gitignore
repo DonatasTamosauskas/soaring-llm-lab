@@ -9,7 +9,13 @@
 *.import
 *.translation
 
+# Unity — Android native build scratch (outside Library/)
+.utmp/
+
 # Build output and scratch
 build/
 *.log
 *.tmp
+
+# Whole-project zips made to move a build to another machine
+/*.zip
